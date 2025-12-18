@@ -3,10 +3,12 @@
 | Field     | Value |
 | --------- | ----- |
 | Authors   | Tia Zanella [skhell](https://github.com/skhell) |
-| Revision  | 1.0.0 |
+| Revision  | 1.0.0-DRAFT |
 | Creation date      | 14 December 2025 |
-| Last revision date | 16 December 2025 |
+| Last revision date | 18 December 2025 |
 | Status    | Draft |
+| Specification ID | OSIRIS-1.0 |
+| Schema URI | tbd later |
 | License   | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
 | Repository | [github.com/osirisjson/osiris](https://github.com/osirisjson/osiris) |
 
@@ -81,3 +83,49 @@ This fragmentation creates recurring challenges:
 - **Lock-in risk:** Organizations may depend on closed-source or vendor specific normalization solutions, limiting portability, extensibility, and auditability.
 
 The absence of a vendor-neutral interchange format means the infrastructure management ecosystem lacks a common language, and producing a comprehensible hybrid cross-platform view typically requires bespoke translation layers that are costly to build and difficult to sustain.
+
+
+## 1.2 Solution overview
+OSIRIS addresses the fragmentation described in Section 1.1 by defining a canonical JSON schema that serves as a neutral interchange format between infrastructure data sources and consuming applications.
+
+Rather than requiring each consuming application to implement and maintain vendor-specific parsers, OSIRIS adopts a translation layer approach:
+
+- **Producers** (exporters, translators, or discovery agents) transform vendor-specific representations into OSIRIS format.
+- **Consumers** (diagramming tools, CMDBs, IPAMs, DCIMs, monitoring systems, documentation pipelines) read a single, Open Standard well-defined schema.
+
+This decouples data sources from consuming applications, reducing integration complexity from S×C (S sources × C consumers) to P+C (P producers + C consumers)
+
+This decouples data sources from consuming applications. In environments with **S** source systems and **C** consumer applications, the number of required integrations is reduced from potentially **S×C** vendor-to-tool mappings to **S** producer mappings (source > OSIRIS) plus **C** consumer mappings (OSIRIS > application).
+
+
+### Core capabilities
+OSIRIS provides:
+
+1. **Unified resource model**: A common structure for representing infrastructure resources (compute, network, storage, applications) with consistent field semantics regardless of origin.
+
+2. **Explicit relationship model**: First-class representation of connections, dependencies, containment and other topological relationships that are often implicit or vendor-specific.
+
+3. **Grouping constructs**: Support for logical and physical grouping that reflects organizational and architectural structure without mandating a single taxonomy.
+
+4. **Provider attribution**: Resources retain traceability to their originating platform (e.g., AWS, Azure, GCP, Arista Networks, Nokia, Cisco, Proxmox) while being described in standardized terms enabling mixed-source topologies.
+
+5. **Extensibility**: A defined mechanism for vendor-specific properties and custom resource types without breaking schema compatibility.
+
+
+### Design Approach
+OSIRIS is designed as a **static snapshot format** describing infrastructure state at a point in time.
+
+OSIRIS is not intended to be:
+- A real-time monitoring or telemetry protocol
+- An infrastructure-as-code deployment language
+- A configuration management system
+
+Instead, OSIRIS is optimized for interchange scenarios where infrastructure topology must be communicated between systems: 
+
+- generating high quality documentation
+- producing accurate diagrams
+- feeding CMDBs, IPAMs or DCIMs
+- supporting audit workflows
+- enabling cross-platform analytics
+
+By providing a stable interchange schema, OSIRIS allows the ecosystem to develop reusable parsers (vendor > OSIRIS) and consumers (OSIRIS > application-specific models) independently as an Open Standard, fostering interoperability and reducing duplicate and complexity effort.
