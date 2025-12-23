@@ -5,7 +5,7 @@
 | Authors   | Tia Zanella [skhell](https://github.com/skhell) |
 | Revision  | 1.0.0-DRAFT |
 | Creation date      | 14 December 2025 |
-| Last revision date | 18 December 2025 |
+| Last revision date | 23 December 2025 |
 | Status    | Draft |
 | Specification ID | OSIRIS-1.0 |
 | Schema URI | tbd later |
