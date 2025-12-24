@@ -1,9 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+# [1.0.0-DRAFT] - 2025-12-24
+### Added
+- Section 3: (3.1–3.4)
+
 # [1.0.0-DRAFT] - 2025-12-23
 ### Added
-- Section 2: (2.1–2.4).
+- Section 2: (2.1–2.4)
 
 # [1.0.0-DRAFT] - 2025-12-18
 ### Updated

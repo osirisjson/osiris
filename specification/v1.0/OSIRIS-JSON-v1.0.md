@@ -15,11 +15,23 @@
 
 ## Table of Content
 1. [Introduction](#introduction)
-    1.1 [Problem statement](#problem)
-    1.2 [Solution overview](#problem)
-    1.3 [Scope](#problem)
-    1.4 [Design principles](#problem)
-    1.5 [Terminology](#problem)
+    1.1 [Problem statement](#introduction-problem-statement)
+    1.2 [Solution overview](#introduction-solution-overview)
+    1.3 [Scope](#introduction-scope)
+    1.4 [Design principles](#introduction-design-principles)
+    1.5 [Terminology](#introduction-terminology)
+
+2. [Core concepts](#coreconcepts)
+	2.1 [Resources](#coreconcepts-resources)
+	2.2 [Connections](#coreconcepts-connections)
+	2.3 [Groups](#coreconcepts-groups)
+	2.4 [Metadata](#coreconcepts-metadata)
+
+3. [Schema structure](#schemastructure)
+	3.1 [Top-Level object](#schemastructure-toplevelobj)
+	3.2 [Version](#schemastructure-version)
+	3.3 [Metadata object](#schemastructure-metadataobj)
+	3.4 [Topology object](#schemastructure-topologyobj)
 
 
 ## Preface
@@ -302,7 +314,7 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**, **
 
 ---
 
-# Core concepts
+# 2 Core concepts
 This section introduces the fundamental building blocks of OSIRIS: **Resources**, **Connections**, **Groups** and **Metadata**. Understanding these core concepts is essential before examining the detailed schema structure in subsequent sections.
 
 OSIRIS models infrastructure as a graph composed of:
@@ -485,7 +497,7 @@ Each distinct relationship **MUST** be represented as a separate connection obje
 
 ## 2.3 Groups
 #### Definition
-A **Group** represents a logical or physical collection of resources organized by common characteristics, boundaries, or administrative domains. Groups provide structure to OSIRIS topologies and enable representation of organizational, architectural or geographical boundaries.
+A **Group** represents a logical or physical collection of resources organized by common characteristics, boundaries or administrative domains. Groups provide structure to OSIRIS topologies and enable representation of organizational, architectural or geographical boundaries.
 
 Groups **MAY** represent (non-exhaustive examples):
 
@@ -493,7 +505,7 @@ Groups **MAY** represent (non-exhaustive examples):
 - **Resource organization:** resource groups, projects, namespaces, folders, tenants.
 - **Physical location:** data centers, buildings, floors, rooms, racks, rows.
 - **Availability constructs:** regions, availability zones, fault domains.
-- **Administrative boundaries:** subscriptions, accounts, organizational units.
+- **Administrative boundaries:** subscriptions, accounts organizational units.
 - **Functional grouping:** application tiers (web/app/db), environments (production/staging/development).
 
 
@@ -598,7 +610,7 @@ Metadata serves several critical functions in the OSIRIS interchange model:
 #### Core metadata elements
 OSIRIS metadata **MUST** include at minimum:
 
-- **Timestamp:** An ISO 8601 timestamp indicating when the topology snapshot was generated (e.g., `2025-12-18T14:30:00Z`).
+- **Timestamp:** An ISO 8601 timestamp indicating when the topology snapshot was generated (e.g. `2025-12-18T14:30:00Z`).
 
 OSIRIS metadata **SHOULD** include:
 
@@ -616,7 +628,7 @@ OSIRIS metadata **MAY** include:
 
 
 #### Metadata extensibility
-Like resources, connections, and groups, metadata supports extension through custom properties. Producers **MAY** include vendor-specific or organization-specific metadata fields without breaking schema validity.
+Like resources, connections and groups, metadata supports extension through custom properties. Producers **MAY** include vendor-specific or organization-specific metadata fields without breaking schema validity.
 
 Consumers that do not recognize extended metadata properties **MUST** safely ignore them while processing the document.
 
@@ -644,3 +656,410 @@ Change detection and versioning logic are the responsibility of consuming system
 Metadata structure is part of the core OSIRIS schema and follows the same versioning and compatibility rules as the rest of the specification.
 
 Consumers **SHOULD** validate metadata before processing topology content to detect version mismatches or unsupported schema features early.
+
+---
+
+# 3 Schema Structure
+This section defines the structure of an OSIRIS document at the JSON schema level. It describes the top-level object, required fields and the organization of topology data.
+
+OSIRIS documents are JSON objects that conform to [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259.html). The schema is formally defined using JSON Schema (see Appendix A).
+
+---
+
+## 3.1 Top-Level Object
+#### Structure
+An OSIRIS document **MUST** be a JSON object containing **at least** the following top-level fields:
+
+```json
+{
+  "version": "1.0.0",
+  "metadata": { ... },
+  "topology": { ... }
+}
+```
+
+
+#### Required fields
+The following fields are **REQUIRED** at the top level:
+
+- **`version`** (string): The OSIRIS specification version to which this document conforms. See Section 3.2 for version string format and semantics.
+
+- **`metadata`** (object): Contextual information about the document's origin, scope and generation. See Section 3.3 for metadata object structure.
+
+- **`topology`** (object): The infrastructure topology data, including resources, connections and groups. See Section 3.4 for topology object structure.
+
+
+#### Additional top-level fields
+OSIRIS v1.0 defines only `version`, `metadata` and `topology` at the top level.
+
+Producers **SHOULD NOT** emit additional top-level fields in v1.0 documents.
+
+Consumers **MUST** ignore unknown top-level fields and **MAY** emit warnings about unrecognized fields. This ensures forward compatibility if future OSIRIS versions introduce additional top-level constructs (e.g. signatures, links, fragments).
+
+
+#### Document size considerations
+OSIRIS does not impose a maximum document size, but producers **SHOULD** consider practical limits:
+
+- Large topologies (thousands of resources) may benefit from splitting across multiple documents.
+- Consumers may have memory or processing constraints that limit document size.
+- Network transmission and storage efficiency favor reasonably-sized documents.
+
+Producers generating large topologies **MAY** split infrastructure across multiple OSIRIS documents based on logical boundaries (e.g. per region, per environment, per account) and document the scope in metadata.
+
+---
+
+## 3.2 Version
+#### Field definition
+The `version` field is a **REQUIRED** string at the top level of every OSIRIS document. It declares which version of the OSIRIS specification the document conforms to.
+
+
+#### Version string format
+The version string **MUST** follow semantic versioning principles as defined in [Semantic Versioning 2.0.0](https://semver.org).
+
+Version strings **MUST** use the format: `MAJOR.MINOR.PATCH`
+
+Examples:
+- `1.0.0` - OSIRIS version 1.0.0
+- `1.1.0` - OSIRIS version 1.1.0 (minor update, backward compatible)
+- `2.0.0` - OSIRIS version 2.0.0 (major update, may contain breaking changes)
+
+
+#### Version semantics
+Version numbers convey compatibility guarantees:
+
+- **MAJOR version** increments indicate breaking changes that are not backward compatible. Documents with different MAJOR versions may use incompatible schema structures or semantics.
+
+- **MINOR version** increments indicate backward-compatible additions or enhancements. New optional fields, resource types or connection types may be introduced. Existing fields and semantics remain unchanged.
+
+- **PATCH version** increments indicate backward-compatible fixes or clarifications to the specification that may affect interpretation or validation behavior, but do not change schema structure.
+
+
+#### Consumer version handling
+Consumers **MUST** check the `version` field before processing an OSIRIS document.
+
+Consumers **SHOULD** implement the following compatibility logic:
+
+- **Different MAJOR version**: Document is unsupported. Consumer **SHOULD** reject the document or emit an error.
+
+- **Same MAJOR version**: Document is supported.
+  - If the document has a **higher MINOR** version than the consumer supports, the consumer **MUST** ignore unknown fields and **MAY** emit informational warnings.
+  - If the document has the **same MINOR** version and a **higher PATCH** version, the consumer **MUST** accept the document.
+
+Example:
+- Consumer supports OSIRIS `1.0.0`
+- Document version `1.0.5` > **Accept** (same major.minor, higher patch)
+- Document version `1.2.0` > **Accept, ignore unknown fields, MAY warn** (same major, higher minor)
+- Document version `2.0.0` > **Reject or error** (different major)
+
+
+#### Version field placement
+The `version` field appears at the document's top level only. It does not appear in nested objects (metadata, resources, connections, groups).
+
+Metadata **MAY** include generator or tool version information, but this is distinct from the OSIRIS specification version declared in the top-level `version` field.
+
+---
+
+## 3.3 Metadata Object
+#### Structure
+The `metadata` field is a **REQUIRED** object at the top level of every OSIRIS document. It provides contextual information about the document's generation, scope and provenance as described in Section 2.4.
+
+A minimal metadata object:
+```json
+{
+  "timestamp": "2025-12-18T14:30:00Z"
+}
+```
+
+
+#### Required fields
+The following field is **REQUIRED** within the metadata object:
+
+- **`timestamp`** (string): An ISO 8601 formatted timestamp indicating when the topology snapshot was generated. The timestamp **MUST** include date and time and **MUST** include a timezone designator (either `Z` for UTC or an offset such as `+02:00` or `-05:00`).
+
+> [!NOTE] 
+> OSIRIS recommends using RFC 3339 compatible timestamps for maximum interoperability.
+
+Examples of valid timestamps:
+  - `2025-12-18T14:30:00Z` (UTC)
+  - `2025-12-18T14:30:00+00:00` (UTC with offset notation)
+  - `2025-12-18T09:30:00-05:00` (Eastern Time with offset)
+
+> [!WARNING] 
+> Timestamps without timezone designators (e.g. `2025-12-18T14:30:00`) are **NOT VALID**.
+
+
+#### Optional fields
+The following fields are **OPTIONAL** but **RECOMMENDED**:
+
+- **`generator`** (object): Information about the tool or system that produced the document. If present, the generator object **SHOULD** contain:
+  - `name` (string): Name of the generating tool or system
+  - `version` (string): Version of the generating tool
+  - `url` (string, optional): Reference URL for the generator
+
+Example:
+```json
+  {
+    "name": "osiris-aws-exporter",
+    "version": "1.2.3",
+    "url": "https://github.com/osirisjson/hyperscaler-parser/aws/osiris-aws-exporter"
+  }
+```
+
+- **`scope`** (object): Description of what infrastructure is represented in this document. The scope object **MAY** contain:
+    - `name` (string): Human readable name for this topology
+    - `description` (string): Textual description of the scope
+    - `providers` (array of strings): List of infrastructure providers included (e.g. `["aws", "azure"]`)
+    - `regions` (array of strings): Geographic regions or zones included
+    - `accounts` (array of strings): Account, subscription or project identifiers
+    - `environments` (array of strings): Environment designations (e.g. `["production", "staging"]`)
+    - `sites` (array of strings): On-premises sites or facility identifiers (e.g. `["MXP-DC-1", "AGP-DC-2"]`)
+    - `clusters` (array of strings): Cluster identifiers (e.g. `["proxmox-prod"]`, `["vsphere-cluster-a"]`)
+
+
+> [!NOTE] 
+> Detailed physical hierarchy (building/floor/room/row/rack) **SHOULD** be represented using **groups** in the topology.
+
+Hyperscaler example:
+```json
+  {
+    "name": "Production Infrastructure - US East",
+    "providers": ["aws"],
+    "regions": ["us-east-1", "us-east-2"],
+    "accounts": ["1234567890"],
+    "environments": ["production"]
+  }
+```
+
+
+#### Extension fields
+The metadata object **MAY** contain additional fields beyond those defined above. These extension fields enable producers to include:
+
+- Custom organizational metadata (cost centers, ownership, compliance tags)
+- Source system references (API endpoints, query parameters)
+- Validation or processing hints
+- Vendor-specific context
+
+Consumers **MUST** ignore unrecognized metadata fields. Consumers **MAY** preserve unknown fields when transforming or re-exporting OSIRIS documents, provided such fields do not violate security or redaction requirements.
+
+
+#### Metadata object size
+Metadata objects **SHOULD** be concise. Large amounts of auxiliary data (e.g. full audit logs, detailed cost breakdowns) **SHOULD** be stored externally and referenced via URL or identifier rather than embedded directly in metadata.
+
+
+#### Complete metadata example
+##### Hyperscaler example
+```json
+{
+  "timestamp": "2025-12-18T14:30:00Z",
+  "generator": {
+    "name": "osiris-multihyperscalers-exporter",
+    "version": "2.1.0"
+  },
+  "scope": {
+    "name": "Production multi Hyperscalers topology",
+    "description": "Primary production workloads across AWS and Azure",
+    "providers": ["aws", "azure"],
+    "regions": ["us-east-1", "eastus"],
+    "environments": ["production"]
+  },
+  "tags": {
+    "cost-center": "engineering",
+    "compliance": "sox"
+  }
+}
+
+```
+
+##### On-premise example
+```json
+{
+  "timestamp": "2025-12-18T14:30:00Z",
+  "generator": {
+    "name": "osiris-hybrid-exporter",
+    "version": "0.9.0"
+  },
+  "scope": {
+    "name": "Hybrid production topology",
+    "description": "AWS workloads including on-prem DCs fabric with Proxmox cluster",
+    "providers": ["aws", "arista", "dell", "proxmox"],
+    "regions": ["eu-west-1"],
+    "sites": ["MXP-DC-1"],
+    "clusters": ["proxmox-prod-1"],
+    "environments": ["production"]
+  },
+  "tags": {
+    "owner": "it-systems-services",
+    "compliance": "iso27001"
+  }
+}
+```
+
+
+---
+
+## 3.4 Topology Object
+#### Structure
+The `topology` field is a **REQUIRED** object at the top level of every OSIRIS document. It contains the infrastructure topology data: resources, connections between resources and logical or physical groupings.
+
+A minimal valid topology object:
+```json
+{
+  "resources": []
+}
+```
+
+
+#### Required fields
+The following field is **REQUIRED** within the topology object:
+
+- **`resources`** (array): An array of resource objects representing infrastructure components. Each resource object is defined in Chapter 4 (Resource Model).
+
+  The resources array **MAY** be empty (representing a topology with no resources), but the field itself **MUST** be present.
+
+
+#### Optional fields
+The following fields are **OPTIONAL**:
+
+- **`connections`** (array): An array of connection objects representing relationships between resources. Each connection object is defined in Chapter 5 (Connection model).
+
+  If omitted, the topology contains resources but no explicit relationships. Consumers **SHOULD** treat an absent `connections` field as equivalent to an empty array.
+
+- **`groups`** (array): An array of group objects representing logical or physical collections of resources. Each group object is defined in Chapter 6 (Group model).
+
+If omitted, the topology contains resources but no explicit grouping structure. Consumers **SHOULD** treat an absent `groups` field as equivalent to an empty array.
+
+
+#### Field ordering
+The order of `resources`, `connections` and `groups` arrays within the topology object is not semantically significant. Producers **MAY** emit these fields in any order.
+
+However, for human readability and diff-friendliness, producers **SHOULD** use a consistent field order. The **RECOMMENDED** order is: `resources`, `connections`, `groups`.
+
+
+#### Array element ordering
+The order of elements within `resources`, `connections` and `groups` arrays is not semantically significant unless otherwise specified by consumer requirements.
+
+Producers **SHOULD** consider stable, deterministic ordering (e.g. sorted by ID) to produce diff-friendly outputs when the same infrastructure is exported multiple times.
+
+
+#### Referential integrity
+Resources, connections and groups reference each other by identifier:
+
+- Connections reference resources via `source` and `target` fields
+- Groups reference resources via `members` arrays
+- Groups may reference other groups for hierarchical nesting
+
+All identifier references **MUST** point to objects that exist within the same OSIRIS document. Cross-document references are not supported in OSIRIS v1.0.
+
+Producers **SHOULD** validate referential integrity before emitting documents. Consumers **MUST** handle referential integrity violations gracefully (see chapter 9, Section 9.3 for validation rules). Consumers **MAY** ignore invalid connections or groups while still processing valid resources.
+
+
+#### Topology object example
+##### Hyperscaler example
+```json
+{
+  "resources": [
+    {
+      "id": "vm-001",
+      "name": "web-server-1",
+      "type": "compute.vm",
+      "provider": {
+        "name": "aws"
+      }
+    },
+    {
+      "id": "db-001",
+      "name": "database-1",
+      "type": "storage.database",
+      "provider": {
+        "name": "aws"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "conn-001",
+      "source": "vm-001",
+      "target": "db-001",
+      "type": "depends_on"
+    }
+  ],
+  "groups": [
+    {
+      "id": "vpc-prod",
+      "type": "network.vpc",
+      "members": ["vm-001", "db-001"]
+    }
+  ]
+}
+```
+##### On-premise example
+```json
+{
+  "resources": [
+    {
+      "id": "MXP-F1-R01-SW-001",
+      "name": "mxp-sw-leaf-01",
+      "type": "network.switch",
+      "provider": { "name": "arista" },
+      "properties": { "rack_unit_start": 12, "rack_unit_height": 1, "face": "front" }
+    },
+    {
+      "id": "MXP-F1-R98-SRV-001",
+      "name": "mxp-f1-srv-r98-001",
+      "type": "compute.server",
+      "provider": { "name": "dell" },
+      "properties": { "rack_unit_start": 30, "rack_unit_height": 2, "face": "front" }
+    },
+    {
+      "id": "MXP-F1-R98-HV-001",
+      "name": "mxp-srv-proxmox-01",
+      "type": "compute.hypervisor",
+      "provider": { "name": "proxmox" }
+    }
+  ],
+  "connections": [
+    {
+      "id": "MXP-F1-CONN-001",
+      "source": "MXP-F1-R01-SW-001",
+      "target": "MXP-F1-R98-SRV-001",
+      "type": "connected_to"
+    },
+    {
+      "id": "MXP-F1-R98-RUNS-001",
+      "source": "MXP-F1-R98-HV-001",
+      "target": "MXP-F1-R98-SRV-001",
+      "type": "runs_on"
+    }
+  ],
+  "groups": [
+    { "id": "MXP-DC-1", "type": "facility.datacenter", "members": [], "children": ["MXP-F1"] },
+    { "id": "MXP-F1", "type": "facility.floor", "members": [], "children": ["MXP-F1-ROW-A"] },
+    { "id": "MXP-F1-ROW-A", "type": "facility.row", "members": [], "children": ["MXP-F1-R01", "MXP-F1-R98"] },
+    { "id": "MXP-F1-R01", "type": "facility.rack", "members": ["MXP-F1-R01-SW-001"] },
+    { "id": "MXP-F1-R98", "type": "facility.rack", "members": ["MXP-F1-R98-SRV-001"] }
+  ]
+}
+```
+
+> [!NOTE]
+> Resource types and group types in this example (e.g. `storage.database`, `network.vpc`) are illustrative. The complete type taxonomy is defined in Chapter 7 (Resource type taxonomy) and Section 6.2 (Group types). Identifiers are opaque strings and producers **MAY** use structured IDs based on specific naming conventions.
+
+
+#### Empty topologies
+A topology with no resources, connections or groups is valid:
+
+```json
+{
+  "resources": []
+}
+```
+
+When the `resources` array is empty, producers **SHOULD** either emit `connections` and `groups` as empty arrays or omit them entirely. Producers **MUST NOT** emit connections or groups that reference non-existent resources.
+
+Empty topologies may represent:
+
+- Newly provisioned environments awaiting resource deployment
+- Filtered exports where no resources matched selection criteria
+- Placeholder documents for testing or validation purposes
+
+Consumers **MUST** handle empty topologies without error.
