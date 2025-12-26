@@ -198,7 +198,7 @@ The following are explicitly **out of scope** for OSIRIS v1.0:
 - **Cost and billing information:** Detailed billing and financial modeling are outside the core schema scope, although cost-related metadata may be included by extension.
 
 
-#### Version specific considerations
+### 1.3.3 Version specific considerations
 OSIRIS v1.0 prioritizes:
 
 1. **Core IT infrastructure:** Network, storage and compute resources across hyperscalers, public cloud providers and on-premises environments.
@@ -210,7 +210,7 @@ OSIRIS v1.0 prioritizes:
 4. **OT integration as secondary objective:** While OT resources are architecturally feseable and supported conceptually, comprehensive OT taxonomy and relationship modeling may evolve in subsequent versions based on community feedback.
 
 
-#### Future Extensibility
+### 1.3.4 Future Extensibility
 OSIRIS is designed to accommodate:
 
 - Additional resource types through the extension mechanism
@@ -225,37 +225,37 @@ The core schema structure and extension mechanisms are designed primarly for sta
 ## 1.4 Design principles
 OSIRIS is guided by the following core principles:
 
-#### Open Standard and driven by Community Governance
+### 1.4.1 Open Standard and driven by Community Governance
 OSIRIS is an **Open Standard** intended for broad adoption across vendors, platforms and communities. The specification and evolution of the schema are intended to be community-driven and openly reviewable.
 
-#### Simplicity
+### 1.4.2  Simplicity
 OSIRIS prioritizes ease of understanding and implementation. The schema uses straightforward JSON structures with clear field semantics. Complexity is introduced only where necessary to represent real-world infrastructure. Producers and consumers **SHOULD** be able to implement basic OSIRIS support without extensive specialized knowledge.
 
-#### Vendor neutrality
+### 1.4.3  Vendor neutrality
 OSIRIS does not favor any particular vendor, platform or technology. Infrastructure sources including hyperscalers, cloud providers, on-premises systems and OT environments are represented using consistent patterns. Provider specific details are accommodated through well defined extension mechanisms rather than privileged positions in the core schema.
 
-#### Extensibility without fragmentation
+### 1.4.4  Extensibility without fragmentation
 OSIRIS supports vendor-specific properties, custom resource types and domain-specific extensions without breaking compatibility. Extensions follow structured conventions to preserve interoperability: consumers that do not recognize extensions **MUST** be able to safely ignore them while still processing core data.
 
-#### Explicit over implicit
+### 1.4.5  Explicit over implicit
 Relationships, dependencies and topological connections are represented explicitly. Resource properties are clearly named with defined semantics. The schema avoids ambiguous or context-dependent interpretations that would require out-of-band knowledge to resolve.
 
-#### Stability and compatibility
+### 1.4.6  Stability and compatibility
 The core schema structure is designed for long-term stability. Version changes follow semantic versioning principles. Backwards compatibility **SHOULD** be maintained across minor versions and breaking changes **MUST** be introduced only in major versions with clear migration guidance and deprecation policies.
 
-#### Practicality and parial data
+### 1.4.7  Practicality and parial data
 OSIRIS is designed for real-world infrastructure conditions, including incomplete inventories, mixed-vendor environments and partial topology exports. The schema supports scenarios where full resource details or relationships are unavailable, enabling incremental adoption.
 
-##### Interoperability
+#### Interoperability
 OSIRIS uses the widely supported JSON format and aligns with established conventions, including JSON Schema for structural validation and [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119.html) keywords for normative requirements. OSIRIS is designed to integrate with existing toolchains, programming languages and data processing pipelines without requiring specialized runtimes.
 
-##### Human readability
+#### Human readability
 While OSIRIS is machine-readable by design, the JSON structure remains human-readable for debugging, auditing and manual inspection. Field names use clear, descriptive terminology and the schema avoids unnecessary encoding that would obscure content.
 
-##### Semantic richness
+#### Semantic richness
 OSIRIS represents not only resource existence but also meaningful relationships and hierarchies. The schema distinguishes between different connection types (e.g. network connectivity, dependency, containment). It supports grouping constructs and preserves provider attribution to enable accurate visualization and analysis.
 
-##### Separation of concerns
+#### Separation of concerns
 OSIRIS focuses on **Infrastructure Resources Interchange**. It does not define deployment orchestration, monitoring or telemetry, configuration management or access control. This focused scope allows OSIRIS to serve as a stable interchange layer that complements specialized systems.
 
 ---
@@ -264,11 +264,11 @@ OSIRIS focuses on **Infrastructure Resources Interchange**. It does not define d
 This section defines key terms used throughout this specification.
 
 
-#### Normative keywords
+### 1.5.1 Normative keywords
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**,  **MAY** and **OPTIONAL** in this document are to be interpreted as described in [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119.html).
 
 
-#### Core terms
+### 1.5.2 Core terms
 **OSIRIS document:** A JSON document conforming to the OSIRIS specification, representing an infrastructure documentation at a specific point in time.
 
 **OSIRIS topology:** The complete set of resources, connections, groups and metadata describing an infrastructure environment and its relationships at a specific point in time conforming to the OSIRIS specification.
@@ -294,7 +294,7 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**, **
 **Topology:** The complete set of resources, connections and groups that describe an infrastructure environment's structure and relationships.
 
 
-#### Domain specific terms
+### 1.5.2 Domain specific terms
 **Hyperscaler:** A large-scale provider offering a broad portfolio of infrastructure services (e.g. AWS, Azure, GCP oracle Cloud, IBM Cloud, Alibaba Cloud, Tencent Cloud).
 
 **Cloud provider:** A minor provider offering cloud services such as IaaS, PaaS, SaaS or NaaS.
@@ -308,7 +308,7 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**, **
 **Interchange format:** A standardized data representation designed for exchange between heterogeneous systems and not tied to any single tool’s internal model.
 
 
-#### JSON and schema terms
+### 1.5.3 JSON and schema terms
 **JSON (JavaScript Object Notation):** The data serialization format used by OSIRIS, as defined in [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259.html).
 
 **JSON Schema:** A vocabulary for validating the structure of JSON documents, used to define the formal structure of OSIRIS documents.
@@ -336,7 +336,7 @@ Together these elements enable OSIRIS to represent complex, heterogeneous infras
 ---
 
 ## 2.1 Resources
-#### Definition
+### 2.1.1 Definition
 A **Resource** represents a discrete infrastructure component with identity, properties and lifecycle. Resources are the fundamental baseline units of an OSIRIS topology and **MAY** correspond to (non-exhaustive examples):
 
 - **Compute resources:** virtual machines, containers, physical servers.
@@ -347,7 +347,7 @@ A **Resource** represents a discrete infrastructure component with identity, pro
 - **Operational technology elements:** building automation controllers, industrial sensors, SCADA components.
 
 
-#### Resource identity
+### 2.1.2 Resource identity
 Every resource **MUST** have a unique identifier within an OSIRIS document. Resource identifiers enable references from connections, group memberships and other objects.
 
 Resource identity in OSIRIS is **document-scoped**: identifiers **MUST** be unique within a single OSIRIS document but need not be globally unique across other documents or systems. This simplifies producer implementation while preserving referential integrity within each snapshot.
@@ -355,7 +355,7 @@ Resource identity in OSIRIS is **document-scoped**: identifiers **MUST** be uniq
 Resources **SHOULD** retain stable identifiers across multiple exports of the same infrastructure when feasible. Stable identifiers enable consumers to correlate resources over time, detect changes and compare snapshots.
 
 
-#### Resource types
+### 2.1.3 Resource types
 Each resource **MUST** declare a type that classifies what kind of infrastructure component it represents. Resource types follow a hierarchical dot notation convention (e.g. `compute.vm`, `network.switch`, `storage.volume`) that supports both categorization and specificity.
 
 The type system includes:
@@ -367,7 +367,7 @@ The type system includes:
 Consumers **MUST** be able to process resources with unknown types by treating them as opaque resources while still preserving identity, properties and relationships.
 
 
-#### Provider attribution
+### 2.1.4 Provider attribution
 Resources retain attribution to their originating system through provider information. 
 
 Provider attribution enables:
@@ -380,7 +380,7 @@ Provider attribution enables:
 Provider information typically includes provider name (e.g. AWS, Azure, Arista, Cisco, Proxmox), native resource identifiers, account/subscription/project context and regional or zonal placement where applicable.
 
 
-#### Resource properties
+### 2.1.5 Resource properties
 Resources carry properties that describe characteristics, configuration and operational attributes. 
 
 Properties **MAY** include:
@@ -393,7 +393,7 @@ Properties **MAY** include:
 The core OSIRIS schema defines a standard property structure. The extension mechanism allows producers to include additional properties without breaking schema validity. Consumers that do not recognize extended properties **MUST** safely ignore them while processing core fields.
 
 
-#### Resource status and state
+### 2.1.6 Resource status and state
 Resources **MAY** include high-level status and/or state information to support filtering, visualization and operational awareness.
 
 - **Status** generally refers to lifecycle presence or availability within the snapshot context.
@@ -402,7 +402,7 @@ Resources **MAY** include high-level status and/or state information to support 
 The exact fields and allowed values are defined in the chapter 4 Resource model (see Section 4.5).
 
 
-#### Resource lifecycle considerations
+### 2.1.7 Resource lifecycle considerations
 OSIRIS represents infrastructure at a point in time. Resources reflect their observed state when the OSIRIS document was generated, not ongoing changes. Lifecycle events such as creation, modification or deletion are not represented within a single document but **MAY** be inferred by comparing multiple snapshots.
 
 Resources that no longer exist in source systems **SHOULD NOT** appear in subsequent exports unless producers intentionally emit tombstones or inactive entries for change-tracking purposes (as defined by the schema and producer behavior).
@@ -410,7 +410,7 @@ Resources that no longer exist in source systems **SHOULD NOT** appear in subseq
 ---
 
 ## 2.2 Connections
-#### Definition
+### 2.2.1 Definition
 A **Connection** represents an explicit relationship between two resources. Connectios are the edges in the OSIRIS topology graph and describe how resources interact depend on each other or are organized hierarchically.
 
 Connections capture relationships that **MAY** include (non-exhaustive examples):
@@ -423,13 +423,13 @@ Connections capture relationships that **MAY** include (non-exhaustive examples)
 - **Logical associations:** Membership in availability zones, assignment to projects, tagging relationships.
 
 
-#### Connection identity
+### 2.2.2 Connection identity
 Every connection **MUST** have a unique identifier within an OSIRIS document. Connection identifiers enable reference and validation.
 
 Connection identity is **document-scoped**, analogous to resource identity. Identifiers **MUST** be unique within a single OSIRIS document but need not be globally unique.
 
 
-#### Source and target
+### 2.2.3 Source and target
 Each connection **MUST** identify a source resource and a target resource using their respective resource identifiers.
 
 Both source and target identifiers **MUST** reference resources that exist within the same OSIRIS document. Connections **MUST NOT** reference resources outside the document boundary.
@@ -437,7 +437,7 @@ Both source and target identifiers **MUST** reference resources that exist withi
 Producers **SHOULD** validate referential integrity before emitting OSIRIS documents. Consumers **MUST** handle connections with invalid references gracefully, either by reporting validation errors or by ignoring malformed connections while processing valid topology data.
 
 
-#### Connection types
+### 2.2.4 Connection types
 Each connection **MUST** declare a type that classifies the nature of the relationship. Connection types enable consumers to distinguish between different kinds of relationships and apply appropriate logic for visualization, analysis or validation.
 
 The connection type system includes:
@@ -449,7 +449,7 @@ The connection type system includes:
 Consumers **MUST** be able to process connections with unknown types by treating them as generic relationships while preserving their source, target and properties.
 
 
-#### Directionality
+### 2.2.5 Directionality
 Connections **MAY** specify directionality to indicate the orientation or flow of the relationship:
 
 - **Bidirectional:** The relationship applies equally in both directions (e.g. a Layer 2 network link, peering relationships).
@@ -460,7 +460,7 @@ If directionality is unspecified, consumers **SHOULD** treat the connection as b
 Directionality is distinct from the graph structure itself: the source and target fields define graph topology, while directionality provides semantic annotation about how the relationship should be interpreted.
 
 
-#### Connection properties
+### 2.2.6 Connection properties
 Connections **MAY** carry properties that describe relationship characteristics:
 
 - **Protocol or mechanism:** TCP, HTTP, NFS, iSCSI, routing protocol.
@@ -472,13 +472,13 @@ Connections **MAY** carry properties that describe relationship characteristics:
 As with resources, the extension mechanism allows producers to include vendor specific or custom properties without breaking schema validity. Consumers that do not recognize extended properties **MUST** safely ignore them.
 
 
-#### Connection status
+### 2.2.7 Connection status
 Connections **MAY** include status information indicating operational health or availability to support filtering and visualization.
 
 Common values include `active`, `inactive`, `degraded` and `unknown`. The exact field structure and allowed values are defined in chapter 5 Connection model (see Section 5.4 Connection properties).
 
 
-#### Implicit vs. explicit relationships
+### 2.2.8 Implicit vs. explicit relationships
 OSIRIS requires connections to be **explicit**. Relationships that could be inferred from resource properties (e.g. a VM referencing a VPC ID in its properties) **SHOULD** also be represented as explicit connection objects.
 
 Explicit representation ensures:
@@ -490,7 +490,7 @@ Explicit representation ensures:
 Producers **MAY** emit both property based references and explicit connections for redundancy and compatibility with different consumer implementations.
 
 
-#### Multiple connections between resources
+### 2.2.9 Multiple connections between resources
 Two resources **MAY** have multiple connections of different types or with different properties.
 
 For example:
@@ -503,7 +503,7 @@ Each distinct relationship **MUST** be represented as a separate connection obje
 ---
 
 ## 2.3 Groups
-#### Definition
+### 2.3.1 Definition
 A **Group** represents a logical or physical collection of resources organized by common characteristics, boundaries or administrative domains. Groups provide structure to OSIRIS topologies and enable representation of organizational, architectural or geographical boundaries.
 
 Groups **MAY** represent (non-exhaustive examples):
@@ -516,13 +516,13 @@ Groups **MAY** represent (non-exhaustive examples):
 - **Functional grouping:** application tiers (web/app/db), environments (production/staging/development).
 
 
-#### Group identity
+### 2.3.2 Group identity
 Every group **MUST** have a unique identifier within an OSIRIS document. Group identifiers enable reference from other groups and from metadata contexts.
 
 Group identity is **document-scoped**, consistent with resources and connections. Identifiers **MUST** be unique within a single OSIRIS document but need not be globally unique.
 
 
-#### Group types
+### 2.3.3 Group types
 Each group **MUST** declare a type that classifies what kind of collection or boundary it represents. Group types follow a hierarchical dot-notation convention similar to resource types (e.g. `network.vpc`, `logical.environment`, `physical.datacenter`).
 
 The group type system includes:
@@ -534,7 +534,7 @@ The group type system includes:
 Consumers **MUST** be able to process groups with unknown types by treating them as generic collections while preserving membership and hierarchy.
 
 
-#### Membership (resources)
+### 2.3.4 Membership (resources)
 Groups contain **members**, which are resource identifiers representing the resources that belong to the group. Membership is represented as an array of resource IDs.
 
 All member identifiers **MUST** reference resources that exist within the same OSIRIS document. Groups **MUST NOT** reference resources outside the document boundary.
@@ -544,7 +544,7 @@ A resource **MAY** be a member of multiple groups simultaneously. For example, a
 Membership is **explicit and direct**: resources listed in a group are members of that group only. Consumers that require transitive membership **SHOULD** implement traversal logic.
 
 
-#### Hierarchical groups (nesting)
+### 2.3.5 Hierarchical groups (nesting)
 Groups **MAY** define hierarchy by referencing other groups by identifier as children (sub-groups). Group hierarchies **MUST NOT** contain cycles.
 
 This enables nested organizational structures such as:
@@ -561,7 +561,7 @@ Group nesting **MUST** be explicit (e.g. a `children[]` list of group IDs). Reso
 Producers **MUST** ensure that group hierarchies do not create circular references. Consumers **SHOULD** detect and handle circular hierarchies gracefully, either by reporting validation errors or by ignoring problematic relationships.
 
 
-#### Group properties
+### 2.3.6 Group properties
 Groups **MAY** carry properties that describe collection characteristics:
 
 - **Boundaries or constraints:** IP ranges (subnets), VLAN IDs, VRF names, geographic coordinates (data centers).
@@ -572,7 +572,7 @@ Groups **MAY** carry properties that describe collection characteristics:
 As with resources and connections, the extension mechanism allows producers to include vendor-specific or custom properties without breaking schema validity. Consumers that do not recognize extended properties **MUST** safely ignore them.
 
 
-#### Groups vs. connections
+### 2.3.7 Groups vs. connections
 Groups and connections serve complementary purposes:
 
 - **Groups** represent **containment and organization** (boundaries, membership, hierarchy).
@@ -585,7 +585,7 @@ Example (in hybrid environments):
 Producers **SHOULD** choose the representation that most clearly expresses the intended semantics. Consumers **SHOULD** support both patterns and **MUST NOT** assume exclusive use of either mechanism.
 
 
-#### Empty groups
+### 2.3.8 Empty groups
 Groups **MAY** have an empty membership list (zero members). Empty groups are valid and may represent:
 
 - Pre-defined organizational structures awaiting resource assignment.
@@ -597,13 +597,13 @@ Consumers **MUST** handle empty groups without error.
 ---
 
 ## 2.4 Metadata
-#### Definition
+### 2.4.1 Definition
 **Metadata** provides contextual information about an OSIRIS document, including its origin, scope, generation details and provenance. Metadata enables consumers to understand what infrastructure the document represents, when it was produced and how to interpret or validate its contents.
 
 Metadata is distinct from resource properties: metadata describes the **document and topology as a whole** not individual infrastructure components.
 
 
-#### Purpose of metadata
+### 2.4.2 Purpose of metadata
 Metadata serves several critical functions in the OSIRIS interchange model:
 
 - **Provenance tracking:** Identifying the source system, tool or process that generated the document.
@@ -614,7 +614,7 @@ Metadata serves several critical functions in the OSIRIS interchange model:
 - **Consumer guidance:** Providing advisory hints that help consuming tools interpret or validate the topology.
 
 
-#### Core metadata elements
+### 2.4.3 Core metadata elements
 OSIRIS metadata **MUST** include at minimum:
 
 - **Timestamp:** An ISO 8601 timestamp indicating when the topology snapshot was generated (e.g. `2025-12-18T14:30:00Z`).
@@ -634,13 +634,13 @@ OSIRIS metadata **MAY** include:
 > The OSIRIS specification version is declared at the document level (see Section 3.2). Metadata **MAY** repeat this information for convenience, but any duplicated version information **MUST** be consistent.
 
 
-#### Metadata extensibility
+### 2.4.4 Metadata extensibility
 Like resources, connections and groups, metadata supports extension through custom properties. Producers **MAY** include vendor-specific or organization-specific metadata fields without breaking schema validity.
 
 Consumers that do not recognize extended metadata properties **MUST** safely ignore them while processing the document.
 
 
-#### Metadata vs. resource properties
+### 2.4.5 Metadata vs. resource properties
 It is important to distinguish metadata from resource level properties:
 
 - **Metadata** describes the OSIRIS document: "This topology was exported from AWS on 2025-12-18 at 14:30 UTC covering us-east-1 and us-west-2a."
@@ -649,7 +649,7 @@ It is important to distinguish metadata from resource level properties:
 Information that applies to the entire document or export process belongs in metadata. Information that applies to a specific resource belongs in that resource's properties.
 
 
-#### Metadata and change tracking
+### 2.4.6 Metadata and change tracking
 While OSIRIS represents infrastructure at a point in time, metadata enables consumers to correlate multiple snapshots over time:
 
 - Timestamps allow chronological ordering of documents.
@@ -659,7 +659,7 @@ While OSIRIS represents infrastructure at a point in time, metadata enables cons
 Change detection and versioning logic are the responsibility of consuming systems but metadata provides the context to support these workflows.
 
 
-#### Metadata stability
+### 2.4.7 Metadata stability
 Metadata structure is part of the core OSIRIS schema and follows the same versioning and compatibility rules as the rest of the specification.
 
 Consumers **SHOULD** validate metadata before processing topology content to detect version mismatches or unsupported schema features early.
@@ -674,7 +674,7 @@ OSIRIS documents are JSON objects that conform to [RFC 8259](https://www.rfc-edi
 ---
 
 ## 3.1 Top-Level Object
-#### Structure
+### 3.1.1 Structure
 An OSIRIS document **MUST** be a JSON object containing **at least** the following top-level fields:
 
 ```json
@@ -686,7 +686,7 @@ An OSIRIS document **MUST** be a JSON object containing **at least** the followi
 ```
 
 
-#### Required fields
+### 3.1.2 Required fields
 The following fields are **REQUIRED** at the top level:
 
 - **`version`** (string): The OSIRIS specification version to which this document conforms. See Section 3.2 for version string format and semantics.
@@ -696,7 +696,7 @@ The following fields are **REQUIRED** at the top level:
 - **`topology`** (object): The infrastructure topology data, including resources, connections and groups. See Section 3.4 for topology object structure.
 
 
-#### Additional top-level fields
+### 3.1.3 Additional top-level fields
 OSIRIS v1.0 defines only `version`, `metadata` and `topology` at the top level.
 
 Producers **SHOULD NOT** emit additional top-level fields in v1.0 documents.
@@ -704,7 +704,7 @@ Producers **SHOULD NOT** emit additional top-level fields in v1.0 documents.
 Consumers **MUST** ignore unknown top-level fields and **MAY** emit warnings about unrecognized fields. This ensures forward compatibility if future OSIRIS versions introduce additional top-level constructs (e.g. signatures, links, fragments).
 
 
-#### Document size considerations
+### 3.1.4 Document size considerations
 OSIRIS does not impose a maximum document size, but producers **SHOULD** consider practical limits:
 
 - Large topologies (thousands of resources) may benefit from splitting across multiple documents.
@@ -716,11 +716,11 @@ Producers generating large topologies **MAY** split infrastructure across multip
 ---
 
 ## 3.2 Version
-#### Field definition
+### 3.2.1 Field definition
 The `version` field is a **REQUIRED** string at the top level of every OSIRIS document. It declares which version of the OSIRIS specification the document conforms to.
 
 
-#### Version string format
+### 3.2.2 Version string format
 The version string **MUST** follow semantic versioning principles as defined in [Semantic Versioning 2.0.0](https://semver.org).
 
 Version strings **MUST** use the format: `MAJOR.MINOR.PATCH`
@@ -731,7 +731,7 @@ Examples:
 - `2.0.0` - OSIRIS version 2.0.0 (major update, may contain breaking changes)
 
 
-#### Version semantics
+### 3.2.3 Version semantics
 Version numbers convey compatibility guarantees:
 
 - **MAJOR version** increments indicate breaking changes that are not backward compatible. Documents with different MAJOR versions may use incompatible schema structures or semantics.
@@ -741,7 +741,7 @@ Version numbers convey compatibility guarantees:
 - **PATCH version** increments indicate backward-compatible fixes or clarifications to the specification that may affect interpretation or validation behavior, but do not change schema structure.
 
 
-#### Consumer version handling
+### 3.2.4 Consumer version handling
 Consumers **MUST** check the `version` field before processing an OSIRIS document.
 
 Consumers **SHOULD** implement the following compatibility logic:
@@ -759,7 +759,7 @@ Example:
 - Document version `2.0.0` > **Reject or error** (different major)
 
 
-#### Version field placement
+### 3.2.5 Version field placement
 The `version` field appears at the document's top level only. It does not appear in nested objects (metadata, resources, connections, groups).
 
 Metadata **MAY** include generator or tool version information, but this is distinct from the OSIRIS specification version declared in the top-level `version` field.
@@ -767,7 +767,7 @@ Metadata **MAY** include generator or tool version information, but this is dist
 ---
 
 ## 3.3 Metadata Object
-#### Structure
+### 3.3.1 Structure
 The `metadata` field is a **REQUIRED** object at the top level of every OSIRIS document. It provides contextual information about the document's generation, scope and provenance as described in Section 2.4.
 
 A minimal metadata object:
@@ -778,7 +778,7 @@ A minimal metadata object:
 ```
 
 
-#### Required fields
+### 3.3.2 Required fields
 The following field is **REQUIRED** within the metadata object:
 
 - **`timestamp`** (string): An ISO 8601 formatted timestamp indicating when the topology snapshot was generated. The timestamp **MUST** include date and time and **MUST** include a timezone designator (either `Z` for UTC or an offset such as `+02:00` or `-05:00`).
@@ -795,7 +795,7 @@ Examples of valid timestamps:
 > Timestamps without timezone designators (e.g. `2025-12-18T14:30:00`) are **NOT VALID**.
 
 
-#### Optional fields
+### 3.3.3 Optional fields
 The following fields are **OPTIONAL** but **RECOMMENDED**:
 
 - **`generator`** (object): Information about the tool or system that produced the document. If present, the generator object **SHOULD** contain:
@@ -838,7 +838,7 @@ Hyperscaler example:
 ```
 
 
-#### Extension fields
+### 3.3.4 Extension fields
 The metadata object **MAY** contain additional fields beyond those defined above. These extension fields enable producers to include:
 
 - Custom organizational metadata (cost centers, ownership, compliance tags)
@@ -849,12 +849,12 @@ The metadata object **MAY** contain additional fields beyond those defined above
 Consumers **MUST** ignore unrecognized metadata fields. Consumers **MAY** preserve unknown fields when transforming or re-exporting OSIRIS documents, provided such fields do not violate security or redaction requirements.
 
 
-#### Metadata object size
+### 3.3.5 Metadata object size
 Metadata objects **SHOULD** be concise. Large amounts of auxiliary data (e.g. full audit logs, detailed cost breakdowns) **SHOULD** be stored externally and referenced via URL or identifier rather than embedded directly in metadata.
 
 
-#### Complete metadata example
-##### Hyperscaler example
+### 3.3.6 Complete metadata example
+#### Hyperscaler example
 ```json
 {
   "timestamp": "2025-12-18T14:30:00Z",
@@ -877,7 +877,7 @@ Metadata objects **SHOULD** be concise. Large amounts of auxiliary data (e.g. fu
 
 ```
 
-##### On-premise example
+#### On-premise example
 ```json
 {
   "timestamp": "2025-12-18T14:30:00Z",
@@ -905,7 +905,7 @@ Metadata objects **SHOULD** be concise. Large amounts of auxiliary data (e.g. fu
 ---
 
 ## 3.4 Topology Object
-#### Structure
+### 3.4.1 Structure
 The `topology` field is a **REQUIRED** object at the top level of every OSIRIS document. It contains the infrastructure topology data: resources, connections between resources and logical or physical groupings.
 
 A minimal valid topology object:
@@ -916,7 +916,7 @@ A minimal valid topology object:
 ```
 
 
-#### Required fields
+### 3.4.2 Required fields
 The following field is **REQUIRED** within the topology object:
 
 - **`resources`** (array): An array of resource objects representing infrastructure components. Each resource object is defined in Chapter 4 (Resource Model).
@@ -924,7 +924,7 @@ The following field is **REQUIRED** within the topology object:
   The resources array **MAY** be empty (representing a topology with no resources), but the field itself **MUST** be present.
 
 
-#### Optional fields
+### 3.4.3 Optional fields
 The following fields are **OPTIONAL**:
 
 - **`connections`** (array): An array of connection objects representing relationships between resources. Each connection object is defined in Chapter 5 (Connection model).
@@ -936,19 +936,19 @@ The following fields are **OPTIONAL**:
 If omitted, the topology contains resources but no explicit grouping structure. Consumers **SHOULD** treat an absent `groups` field as equivalent to an empty array.
 
 
-#### Field ordering
+### 3.4.4 Field ordering
 The order of `resources`, `connections` and `groups` arrays within the topology object is not semantically significant. Producers **MAY** emit these fields in any order.
 
 However, for human readability and diff-friendliness, producers **SHOULD** use a consistent field order. The **RECOMMENDED** order is: `resources`, `connections`, `groups`.
 
 
-#### Array element ordering
+### 3.4.5 Array element ordering
 The order of elements within `resources`, `connections` and `groups` arrays is not semantically significant unless otherwise specified by consumer requirements.
 
 Producers **SHOULD** consider stable, deterministic ordering (e.g. sorted by ID) to produce diff-friendly outputs when the same infrastructure is exported multiple times.
 
 
-#### Referential integrity
+### 3.4.6 Referential integrity
 Resources, connections and groups reference each other by identifier:
 
 - Connections reference resources via `source` and `target` fields
@@ -960,8 +960,8 @@ All identifier references **MUST** point to objects that exist within the same O
 Producers **SHOULD** validate referential integrity before emitting documents. Consumers **MUST** handle referential integrity violations gracefully (see chapter 9, Section 9.3 for validation rules). Consumers **MAY** ignore invalid connections or groups while still processing valid resources.
 
 
-#### Topology object example
-##### Hyperscaler example
+### 3.4.7 Topology object example
+#### Hyperscaler example
 ```json
 {
   "resources": [
@@ -999,7 +999,7 @@ Producers **SHOULD** validate referential integrity before emitting documents. C
   ]
 }
 ```
-##### On-premise example
+#### On-premise example
 ```json
 {
   "resources": [
@@ -1052,7 +1052,7 @@ Producers **SHOULD** validate referential integrity before emitting documents. C
 > Resource types and group types in this example (e.g. `storage.database`, `network.vpc`) are illustrative. The complete type taxonomy is defined in Chapter 7 (Resource type taxonomy) and Section 6.2 (Group types). Identifiers are opaque strings and producers **MAY** use structured IDs based on specific naming conventions.
 
 
-#### Empty topologies
+### 3.4.8 Empty topologies
 A topology with no resources, connections or groups is valid:
 
 ```json
@@ -1088,7 +1088,7 @@ A resource object is designed to:
 ---
 
 ## 4.1 Resource object structure
-#### Overview
+### 4.1.1 Overview
 A resource is represented as a JSON object. At minimum a resource **MUST** include an identifier, a type and `provider` object.
 
 A minimal valid resource object:
@@ -1107,7 +1107,7 @@ A minimal valid resource object:
 > `id` values are opaque to consumers and **MUST** be unique within the document.
 
 
-#### Required fields
+### 4.1.2 Required fields
 Each resource object **MUST** include the following fields:
 
 - **`id`** (string): A document scoped unique identifier for the resource. Resource identifiers **MUST** be unique within a single OSIRIS document but need not be globally unique across documents. Identifiers are **case-sensitive** and opaque to consumers. Consumers **MUST NOT** infer semantic meaning from identifier structure or formatting.
@@ -1129,7 +1129,7 @@ Each resource object **MUST** include the following fields:
 > For resources from unknown or offline sources, producers **MAY** use `provider.name = "unknown"` or `provider.name = "custom"` with additional context in `provider.source` or `provider.system` (see Section 4.3).
 
 
-#### Optional fields
+### 4.1.3 Optional fields
 A resource object **MAY** include the following optional fields:
 
 - **`name`** (string): A human-readable name or label for the resource (e.g. hostname, instance name, device name). If present, `name` **SHOULD** remain stable across multiple exports of the same infrastructure when feasible.
@@ -1190,7 +1190,7 @@ A resource object **MAY** include the following optional fields:
 > Platform native label concepts (e.g. Kubernetes labels, annotations) **SHOULD** be represented in the `extensions` object (e.g. `extensions.osiris.k8s.labels`) to preserve platform-specific semantics while keeping the core schema simple.
 
 
-#### Field extensibility and unknown fields
+### 4.1.4 Field extensibility and unknown fields
 Consumers **MUST** ignore unknown fields to ensure forward compatibility. Producers **SHOULD** place non-standard fields under `properties` or `extensions` and **SHOULD NOT** introduce new top-level resource fields in documents conforming to OSIRIS v1.0.
 
 This approach ensures:
@@ -1200,13 +1200,12 @@ This approach ensures:
 - Simplified validation and schema evolution
 
 
-#### Resource object validation
+### 4.1.5 Resource object validation
 Resource objects **MUST** conform to the OSIRIS JSON Schema (Appendix A). Structural validation ensures required fields are present and field types are correct.
 
 Additional semantic validation rules (ID uniqueness, type validity, referential integrity) are defined in Chapter 9 (Validation).
 
-
-##### Hyperscaler compute resource
+#### Hyperscaler compute resource
 ```json
 {
   "id": "i-0abc123def456",
@@ -1234,8 +1233,7 @@ Additional semantic validation rules (ID uniqueness, type validity, referential 
 }
 ```
 
-
-##### On-premise network device
+#### On-premise network device
 ```json
 {
   "id": "MXP-F1-R01-SW-001",
@@ -1268,7 +1266,7 @@ Additional semantic validation rules (ID uniqueness, type validity, referential 
 ---
 
 ## 4.2 Resource types
-#### Overview
+### 4.2.1 Overview
 The `type` field classifies what kind of infrastructure component a resource represents. Resource types enable consumers to:
 
 - Categorize resources for filtering and visualization
@@ -1279,7 +1277,7 @@ The `type` field classifies what kind of infrastructure component a resource rep
 Resource types use a hierarchical dot notation that balances human readability with machine categorization.
 
 
-#### Type field definition
+### 4.2.2 Type field definition
 The `type` field is a **REQUIRED** string (see Section 4.1). Type values:
 
 - **MUST NOT** contain whitespace
@@ -1310,7 +1308,7 @@ Examples of invalid type strings:
 Type strings **MUST** be validated against the pattern rules above.
 
 
-#### Dot notation structure
+### 4.2.3 Dot notation structure
 Resource types use hierarchical dot notation with segments ordered from general to specific:
 
 ```
@@ -1331,7 +1329,7 @@ Resource types use hierarchical dot notation with segments ordered from general 
 **Hierarchy depth:** Types **SHOULD NOT** exceed 4-5 segments to maintain readability. Highly specific details belong in `properties` rather than type strings. Consumers **MUST** accept types with deeper hierarchies and treat them as normal type strings without error.
 
 
-#### Namespace reservation
+### 4.2.4 Namespace reservation
 To ensure clear separation between standard types and extensions:
 
 - Standard types **MUST NOT** start with `osiris.`
@@ -1340,7 +1338,7 @@ To ensure clear separation between standard types and extensions:
 This convention enables unambiguous identification of extension types and simplifies validation.
 
 
-#### Standard types
+### 4.2.5 Standard types
 **Standard types** are resource types defined in the OSIRIS specification and enumerated in Chapter 7 (Resource type taxonomy). Standard types have first-class support and well-defined semantics across implementations.
 
 Examples of standard types (see Chapter 7 for complete list):
@@ -1355,7 +1353,7 @@ Examples of standard types (see Chapter 7 for complete list):
 Consumers **SHOULD** implement rendering, filtering or behavioral logic for standard types where applicable.
 
 
-#### Vendor-specific and custom types
+### 4.2.6 Vendor-specific and custom types
 Resources representing vendor-specific or organization-specific components that do not map to standard types **SHOULD** use namespaced type strings.
 
 **Namespace convention:** Custom types **MUST** use the `osiris.<namespace>.<type>` pattern, where:
@@ -1394,7 +1392,7 @@ Example:
 }
 ```
 
-#### Unknown type handling
+### 4.2.7 Unknown type handling
 Consumers **MUST** accept resources with unknown or unrecognized types. This ensures forward compatibility and allows incremental adoption of new types.
 
 When encountering unknown types, consumers **SHOULD**:
@@ -1413,7 +1411,7 @@ Consumers **MUST NOT**:
 - Silently discard resources with unknown types
 
 
-#### Type evolution and stability
+### 4.2.8 Type evolution and stability
 **Standard types** defined in Chapter 7 are considered stable within OSIRIS v1.x releases. New standard types **MAY** be added in minor version updates (e.g. 1.1.0) without breaking compatibility.
 
 Standard types **SHOULD NOT** be removed or have their semantics changed in minor updates. Deprecated types **SHOULD** remain documented and supported for at least one major version cycle.
@@ -1421,7 +1419,7 @@ Standard types **SHOULD NOT** be removed or have their semantics changed in mino
 **Extension types** (`osiris.*`) are not governed by OSIRIS and may evolve independently. Producers using extension types **SHOULD** version their generator tools if type semantics change to help consumers track compatibility.
 
 
-#### Type selection guidance
+### 4.2.9 Type selection guidance
 When producing OSIRIS documents, use this decision tree for type selection:
 
 1. **Does a standard type match the resource semantics?**  
@@ -1443,7 +1441,7 @@ Examples:
 - Custom monitoring appliance > `osiris.acme.monitor` (organization-specific)
 
 
-#### Type field validation
+### 4.2.10 Type field validation
 The `type` field value **MUST** conform to the format rules defined in this section. Structural validation (format, allowed characters, minimum segments) is enforced by JSON Schema (Appendix A).
 
 Semantic validation (whether a type is defined in the standard taxonomy) is **OPTIONAL** and implementation-dependent. Consumers **MAY** validate against Chapter 7 but **MUST NOT** reject documents with valid but unrecognized types.
@@ -1451,13 +1449,13 @@ Semantic validation (whether a type is defined in the standard taxonomy) is **OP
 ---
 
 ## 4.3 Provider information
-#### Overview
+### 4.3.1 Overview
 The `provider` object is a **REQUIRED** field in every resource (see Section 4.1). It describes the originating platform or system from which the resource was sourced, enabling traceability, correlation and enrichment.
 
 The provider object answers: **"Where did this resource come from?"** rather than **"Where is this resource located?"** Regional placement **MAY** be recorded in `provider.region` or `provider.zone` for correlation with provider APIs; broader export boundaries belong in `metadata.scope`.
 
 
-#### Provider object purpose
+### 4.3.2 Provider object purpose
 Provider attribution serves several critical functions:
 
 - **Provenance tracking**: Identifying the source system for validation and audit purposes
@@ -1467,7 +1465,7 @@ Provider attribution serves several critical functions:
 - **Change detection**: Tracking resource origin across multiple snapshot exports
 
 
-#### Required fields
+### 4.3.3 Required fields
 The provider object **MUST** include:
 
 - **`name`** (string): The vendor, platform or system name (e.g. `aws`, `azure`, `gcp`, `arista`, `proxmox`, `cisco`, `dell`).
@@ -1489,7 +1487,7 @@ The provider object **MUST** include:
   - `cisco` (Cisco systems)
 
 
-#### Optional fields
+### 4.3.4 Optional fields
 The provider object **MAY** include:
 
 - **`native_id`** (string): The resource's native identifier in the source system. This enables correlation with vendor APIs, reconciliation across exports and deduplication.
@@ -1530,7 +1528,7 @@ The provider object **MAY** include:
 - **`source`** (string): a short identifier of the data source path/method, e.g. cloudtrail, cloud_asset_inventory, eapi, netconf, snmp, cmdb_export.
 
 
-#### Unknown and custom providers
+### 4.3.5 Unknown and custom providers
 For resources from unknown, offline or organization-specific sources, producers **MAY** use:
 
 - **`provider.name = "unknown"`**: When the source system cannot be determined or is intentionally omitted.
@@ -1553,7 +1551,7 @@ For resources from unknown, offline or organization-specific sources, producers 
 Consumers **MUST** accept resources with `provider.name = "unknown"` or `provider.name = "custom"` and **SHOULD** treat them as generic resources while preserving all provider metadata.
 
 
-#### Provider vs metadata scope
+### 4.3.6 Provider vs metadata scope
 The `provider` object and `metadata.scope` serve distinct but complementary purposes:
 
 **`resource.provider`** (per-resource attribution):
@@ -1597,7 +1595,7 @@ Resource provider (per-resource):
 The metadata establishes document scope. The provider provides specific attribution for each resource. Both are valuable and non-redundant.
 
 
-#### Provider object stability
+### 4.3.7 Provider object stability
 Provider object fields **SHOULD** remain stable across multiple exports of the same infrastructure. Stable provider attribution enables:
 
 - Resource identity correlation over time
@@ -1607,8 +1605,8 @@ Provider object fields **SHOULD** remain stable across multiple exports of the s
 Producers **SHOULD** preserve `provider.native_id` when available, as it provides the strongest correlation anchor.
 `native_id` **MAY** be the provider’s primary identifier (e.g. instance ID) or a fully-qualified identifier (e.g. ARN/Azure resource ID).
 
-#### Provider object examples
-##### Hyperscaler resource
+### 4.3.8 Provider object examples
+#### Hyperscaler resource
 ```json
 {
   "provider": {
@@ -1620,7 +1618,7 @@ Producers **SHOULD** preserve `provider.native_id` when available, as it provide
 }
 ```
 
-##### Network device
+#### Network device
 ```json
 {
   "provider": {
@@ -1632,7 +1630,7 @@ Producers **SHOULD** preserve `provider.native_id` when available, as it provide
 }
 ```
 
-##### Virtualization platform
+#### Virtualization platform
 ```json
 {
   "provider": {
@@ -1643,7 +1641,7 @@ Producers **SHOULD** preserve `provider.native_id` when available, as it provide
 }
 ```
 
-##### Custom internal system
+#### Custom internal system
 ```json
 {
   "provider": {
@@ -1656,7 +1654,7 @@ Producers **SHOULD** preserve `provider.native_id` when available, as it provide
 ```
 
 
-#### Provider field validation
+### 4.3.9 Provider field validation
 The provider object **MUST** conform to the structural requirements defined in this section. At minimum, `provider.name` is required. All other fields are optional and producer-defined based on available source data.
 
 Consumers **MUST** accept provider objects with unrecognized fields and preserve them when re-exporting or transforming documents.
@@ -1664,7 +1662,7 @@ Consumers **MUST** accept provider objects with unrecognized fields and preserve
 ---
 
 ## 4.4 Properties and extensions
-#### Overview
+### 4.4.1 Overview
 Resources in OSIRIS use two complementary mechanisms to represent data beyond the standard fields defined in Section 4.1:
 
 - **`properties`**: A free-form object for resource attributes and configuration details
@@ -1673,8 +1671,8 @@ Resources in OSIRIS use two complementary mechanisms to represent data beyond th
 Both fields are **OPTIONAL**, but they provide essential flexibility for representing heterogeneous infrastructure while preserving interoperability.
 
 
-#### Properties object
-##### Purpose
+### 4.4.2 Properties object
+#### Purpose
 The `properties` object captures resource-specific attributes that vary by resource type or implementation, such as:
 
 - Configuration parameters (e.g. instance size, disk size, VLAN IDs)
@@ -1683,7 +1681,7 @@ The `properties` object captures resource-specific attributes that vary by resou
 
 Properties enable producers to export rich details without requiring all consumers to understand every attribute.
 
-##### Structure
+#### Structure
 If present, `properties` **MUST** be a JSON object.
 ```json
 {
@@ -1699,7 +1697,7 @@ If present, `properties` **MUST** be a JSON object.
 Properties **MAY** contain primitive values, arrays, and nested objects of arbitrary depth.
 
 
-#### Naming conventions
+### 4.4.3 Naming conventions
 Property keys **SHOULD** follow these conventions:
 
 - Lowercase with underscores for multi-word keys (e.g. `instance_type`, `private_ip`, `disk_size_gb`)
@@ -1709,18 +1707,18 @@ Property keys **SHOULD** follow these conventions:
 Property keys **SHOULD NOT** embed vendor prefixes (e.g. avoid `awsInstanceType`). Vendor-specific structures belong in `extensions`.
 
 
-#### Properties vs standard fields
+### 4.4.4 Properties vs standard fields
 Producers **SHOULD** use standard OSIRIS fields when an attribute maps cleanly to OSIRIS semantics (e.g. `id`, `type`, `provider`, `status`, `name`).
 
 Producers **SHOULD** use `properties` for intrinsic resource details that do not have a standardized OSIRIS field.
 
 
-#### Sensitive data
+### 4.4.5 Sensitive data
 Producers **MUST NOT** include secrets in `properties`, including tokens, passwords, private keys or connection strings containing credentials.
 
 
-#### Extensions object
-##### Purpose
+### 4.4.6 Extensions object
+#### Purpose
 The `extensions` object provides a namespacing mechanism for:
 
 - Vendor-native structures (e.g. provider-specific metadata)
@@ -1729,7 +1727,7 @@ The `extensions` object provides a namespacing mechanism for:
 
 This allows rich producer-specific data without polluting the core OSIRIS model.
 
-##### Structure and namespacing rules
+#### Structure and namespacing rules
 If present, `extensions` **MUST** be a JSON object.
 
 Each extension entry **MUST** be keyed by a namespace using the reserved `osiris.` prefix:
@@ -1754,13 +1752,13 @@ Namespaces **SHOULD** be stable and collision resistant:
 - Well-known vendors **MAY** use simple namespaces (e.g. `osiris.aws`, `osiris.azure`, `osiris.gcp`, `osiris.arista`)
 - Organizations **SHOULD** use a stable identifier (e.g. `osiris.com.acme`)
 
-##### Consumer behavior
+#### Consumer behavior
 Consumers **MUST** ignore unrecognized extension namespaces and fields.
 
 Consumers that transform or re-export OSIRIS documents **SHOULD** preserve extensions data when feasible (some consumers are intentionally lossy).
 
 
-#### Properties vs extensions
+### 4.4.7 Properties vs extensions
 Producers **SHOULD** use:
 
 - **`properties`** for broadly useful, portable attributes that generic consumers might filter/visualize
@@ -1771,32 +1769,32 @@ If the same concept appears in both:
 - `extensions` is the authoritative vendor/tool structure
 
 
-#### Tags (resource labeling)
-##### Definition
+### 4.4.8 Tags (resource labeling)
+#### Definition
 The `tags` field **MAY** be present. If present, it **MUST** be a JSON object mapping string keys to string values.
 Tags support categorization and filtering (e.g. environment, owner, cost center).
 
-##### Rules
+#### Rules
 Producers **MUST NOT** store secrets in `tags`.
 Producers **SHOULD** keep tag keys stable across exports.
 
 If a platform has richer label/annotation concepts (e.g. Kubernetes), producers **SHOULD** represent those under `extensions` (e.g. `extensions.osiris.k8s.labels`).
 
 
-#### Forward compatibility rules
-##### Consumers MUST:
+### 4.4.9 Forward compatibility rules
+#### Consumers MUST:
 - Accept resources with unknown `properties` keys
 - Accept resources with unknown `extensions` namespaces/fields
 - Ignore unrecognized fields without error
 
-##### Producers SHOULD:
+#### Producers SHOULD:
 - Keep property keys stable across exports
 - Keep extension namespaces stable across exports
 - Avoid excessive redundancy between `metadata`, `provider`, `properties`, and `extensions`
 
 
-#### Examples
-##### Compute resource with portable properties + vendor extension
+### 4.4.10 Examples
+#### Compute resource with portable properties + vendor extension
 ```json
 {
   "id": "vm-web-001",
@@ -1829,8 +1827,7 @@ If a platform has richer label/annotation concepts (e.g. Kubernetes), producers 
 }
 ```
 
-
-##### Network device with properties + vendor and org extensions
+#### Network device with properties + vendor and org extensions
 ```json
 {
   "id": "switch-dc1-leaf-01",
@@ -1865,8 +1862,7 @@ If a platform has richer label/annotation concepts (e.g. Kubernetes), producers 
 }
 ```
 
-
-##### Kubernetes pod with platform-native labels/annotations in extensions
+#### Kubernetes pod with platform-native labels/annotations in extensions
 ```json
 {
   "id": "pod-nginx-7d8f9c",
@@ -1905,8 +1901,7 @@ If a platform has richer label/annotation concepts (e.g. Kubernetes), producers 
 }
 ```
 
-
-##### Custom resource with organization extensions (namespaced type)
+#### Custom resource with organization extensions (namespaced type)
 ```json
 {
   "id": "custom-monitor-01",
@@ -1934,7 +1929,7 @@ If a platform has richer label/annotation concepts (e.g. Kubernetes), producers 
 ```
 
 
-#### Validation
+### 4.4.11 Validation
 If present, `properties` and `extensions` **MUST** be JSON objects.
 
 Structural validation is enforced by JSON Schema (Appendix A). Semantic validation of property keys and extension contents is **OPTIONAL** and consumer-dependent. 
@@ -1944,7 +1939,7 @@ Consumers **MUST NOT** reject documents solely due to unrecognized `properties` 
 ---
 
 ## 4.5 Status and state
-#### Overview
+### 4.5.1 Overview
 The `status` and `state` fields are **OPTIONAL** fields that provide snapshot-time indicators of resource operational condition. 
 
 These fields enable:
@@ -1958,11 +1953,11 @@ These fields enable:
 > `status` and `state` represent point-in-time observations at the moment of export. They are **NOT** intended for real-time monitoring, alerting, or telemetry. For runtime observability, use dedicated monitoring systems (e.g. OpenTelemetry, Prometheus).
 
 
-#### Status field
-##### Definition
+### 4.5.2 Status field
+#### Definition
 The `status` field provides a normalized snapshot indicator of resource operational condition. If present, it **MUST** be a string.
 
-##### Recommended values
+#### Recommended values
 Producers **SHOULD** use one of the following standard status values when applicable:
 
 - **`active`**: Resource is operational and serving its intended function
@@ -1971,7 +1966,7 @@ Producers **SHOULD** use one of the following standard status values when applic
 - **`retired`**: Resource no longer exists or is permanently removed from service (e.g. terminated VM, decommissioned device)
 - **`unknown`**: Status cannot be determined or is unavailable
 
-##### Semantics
+#### Semantics
 Status values represent **high-level operational condition at snapshot time**, combining lifecycle phase and health indicators:
 
 - `active` indicates the resource is functioning as designed
@@ -1980,7 +1975,7 @@ Status values represent **high-level operational condition at snapshot time**, c
 - `retired` indicates permanent removal or termination
 - `unknown` is a fallback when status cannot be reliably determined
 
-##### Unknown status values
+#### Unknown status values
 Consumers **MUST** accept resources with unrecognized status values. When encountering unknown status values, consumers **SHOULD**:
 
 - Preserve the status value when re-exporting (when feasible)
@@ -1989,7 +1984,7 @@ Consumers **MUST** accept resources with unrecognized status values. When encoun
 
 Consumers **MUST NOT** reject documents containing unrecognized status values.
 
-##### Omitting status
+#### Omitting status
 If `status` is omitted, consumers **SHOULD** assume the resource status is unknown or not applicable. Producers **MAY** omit `status` when:
 
 - Status information is unavailable from the source system
@@ -1997,19 +1992,19 @@ If `status` is omitted, consumers **SHOULD** assume the resource status is unkno
 - The export represents historical or planned infrastructure (not current state)
 
 
-#### State field
-##### Definition
+### 4.5.3 State field
+#### Definition
 The `state` field provides detailed, provider-specific operational state information. If present, it **MUST** be a string.
 Producers **SHOULD** normalize state to lowercase when the provider uses a known canonical lowercase set.
 
-##### Purpose
+#### Purpose
 While `status` offers broad categorization, `state` captures vendor-specific lifecycle phases or operational modes:
 
 - AWS EC2: `running`, `stopped`, `stopping`, `pending`, `shutting-down`, `terminated`
 - Kubernetes pod: `pending`, `running`, `succeeded`, `failed`, `unknown`
 - Network interface: `up`, `down`, `admin-down`, `testing`
 
-##### State vs status
+#### State vs status
 The relationship between `state` and `status`:
 
 - **`status`** is normalized across vendors (active/inactive/degraded/retired/unknown)
@@ -2046,7 +2041,7 @@ Producers **MAY** include both fields. When both are present:
 }
 ```
 
-##### Unknown state values
+#### Unknown state values
 Consumers **MUST** accept resources with any `state` value. State values are provider-defined and not governed by OSIRIS.
 
 Consumers **SHOULD**:
@@ -2055,8 +2050,8 @@ Consumers **SHOULD**:
 - Not attempt to normalize or validate state values
 
 
-#### Producer rules
-##### When to set status
+### 4.5.4 Producer rules
+#### When to set status
 Producers **SHOULD** set `status` when:
 
 - The source system provides operational status information
@@ -2065,7 +2060,7 @@ Producers **SHOULD** set `status` when:
 
 Producers **MAY** use `"unknown"` when status information is unavailable but the field is being populated for consistency.
 
-##### When to set state
+#### When to set state
 Producers **MAY** set `state` to capture vendor-specific lifecycle information. State is entirely optional and provider-defined.
 
 Producers **SHOULD**:
@@ -2073,19 +2068,19 @@ Producers **SHOULD**:
 - Keep state values stable across exports for the same resource
 - Avoid inventing custom state values when vendor-native values exist
 
-##### When to omit status/state
+#### When to omit status/state
 Producers **MAY** omit both `status` and `state` when:
 
 - Operating on static inventory data (e.g. CMDB exports without live status)
 - Exporting planned or historical infrastructure
 - Source systems do not provide status information
 
-##### Sensitive information
+#### Sensitive information
 Producers **MUST NOT** include credentials, tokens, or secrets in `status` or `state`. Producers **SHOULD** avoid embedding verbose diagnostic logs or incident identifiers in these fields.
 
 
-#### Consumer rules
-##### Accepting unknown values
+### 4.5.5 Consumer rules
+#### Accepting unknown values
 Consumers **MUST**:
 - Accept resources with any `status` or `state` value (including unrecognized values)
 - Not reject or discard resources based on unknown status/state values
@@ -2093,21 +2088,21 @@ Consumers **MUST**:
 Consumers **SHOULD**:
 - Preserve status/state when re-exporting or transforming documents (when feasible)
 
-##### Display and filtering
+#### Display and filtering
 When encountering unknown status values, consumers **SHOULD**:
 - Display the literal value for debugging
 - Treat unknown status as equivalent to `"unknown"` for filtering
 - Provide user configuration to map custom status values to standard categories
 
-##### Validation
+#### Validation
 Consumers **MAY**:
 - Emits warnings for unrecognized status values (but **MUST NOT** fail parsing)
 - Validate status against the recommended vocabulary in non-strict mode
 - Apply heuristic to infer status category from state (e.g. "stopped" state > "inactive" status)
 
 
-#### Examples
-##### Cloud VM with status and state
+### 4.5.6 Examples
+#### Cloud VM with status and state
 ```json
 {
   "id": "vm-web-001",
@@ -2127,7 +2122,7 @@ Consumers **MAY**:
 }
 ```
 
-##### Network switch with degraded status
+#### Network switch with degraded status
 ```json
 {
   "id": "switch-dc1-leaf-01",
@@ -2147,7 +2142,7 @@ Consumers **MAY**:
 }
 ```
 
-##### Kubernetes pod with vendor-specific state
+#### Kubernetes pod with vendor-specific state
 ```json
 {
   "id": "pod-nginx-abc123",
@@ -2181,7 +2176,7 @@ Consumers **MAY**:
 }
 ```
 
-##### Stopped VM (inactive status)
+#### Stopped VM (inactive status)
 ```json
 {
   "id": "vm-staging-002",
@@ -2201,7 +2196,7 @@ Consumers **MAY**:
 }
 ```
 
-##### Terminated VM (retired status)
+#### Terminated VM (retired status)
 ```json
 {
   "id": "vm-legacy-001",
@@ -2221,7 +2216,7 @@ Consumers **MAY**:
 }
 ```
 
-##### Resource with unknown status (source unavailable)
+#### Resource with unknown status (source unavailable)
 ```json
 {
   "id": "legacy-db-001",
