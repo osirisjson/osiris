@@ -33,6 +33,13 @@
 	3.3 [Metadata object](#schemastructure-metadataobj)
 	3.4 [Topology object](#schemastructure-topologyobj)
 
+4. [Resource model](#schemastructure)
+	4.1 [Resource object structure](#schemastructure)
+	4.2 [Resource types](#schemastructure)
+	4.3 [Provider information](#schemastructure)
+	4.4 [Properties and extensions](#schemastructure)
+	4.5 [Status and state](#schemastructure)
+
 
 ## Preface
 This document specifies the Open Standard for Infrastructure Resource Interchange Schema (OSIRIS), a JSON-based data format for describing infrastructure resources, their properties and their topological relationships in a vendor-neutral manner.
@@ -1063,3 +1070,1172 @@ Empty topologies may represent:
 - Placeholder documents for testing or validation purposes
 
 Consumers **MUST** handle empty topologies without error.
+
+---
+
+# 4 Resource model
+This chapter defines the OSIRIS **Resource** object, the fundamental unit for representing infrastructure components in an OSIRIS topology.
+
+Resources model heterogeneous infrastructure elements, compute instances, network devices, storage systems, platform services, applications and operational technology components in a consistent, vendor neutral format while preserving provider origin and supporting extensibility.
+
+A resource object is designed to:
+
+- Provide stable identity within an OSIRIS document
+- Declare a type that enables categorization and consumer-specific behavior
+- Retain provider attribution for traceability and enrichment
+- Carry properties and extensions without requiring vendor-specific parsers in consuming tools
+
+---
+
+## 4.1 Resource object structure
+#### Overview
+A resource is represented as a JSON object. At minimum a resource **MUST** include an identifier, a type and `provider` object.
+
+A minimal valid resource object:
+
+```json
+{
+  "id": "urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+  "type": "compute.vm",
+  "provider": {
+    "name": "aws"
+  }
+}
+```
+
+> [!NOTE]
+> `id` values are opaque to consumers and **MUST** be unique within the document.
+
+
+#### Required fields
+Each resource object **MUST** include the following fields:
+
+- **`id`** (string): A document scoped unique identifier for the resource. Resource identifiers **MUST** be unique within a single OSIRIS document but need not be globally unique across documents. Identifiers are **case-sensitive** and opaque to consumers. Consumers **MUST NOT** infer semantic meaning from identifier structure or formatting.
+
+    Examples of valid resource IDs:
+
+    - `vm-001`
+    - `i-0abc123def456` (an example of AWS instance ID style)
+    - `MXP-F1-R01-SW-001` (structured datacenter naming convention)
+    - `urn:uuid:f81a4bcd-7efg-11h0-a765-00a0c91e5fg7` (UUID-based)
+
+- **`type`** (string): The resource type classification using hierarchical dot notation (e.g. `compute.vm`, `network.switch`, `storage.volume`). Resource type conventions are defined in Section 4.2 and the complete taxonomy is specified in Chapter 7 (Resource type taxonomy).
+
+- **`provider`** (object): Provider attribution describing the originating platform or system for this resource. The provider object structure is defined in Section 4.3 (Provider information).
+
+> [!NOTE]
+> The `provider` field is **REQUIRED** in OSIRIS v1.0 because origin and traceability are core to the interchange model. Resources without provider attribution lose critical context for validation, enrichment and correlation with source systems.
+>
+> For resources from unknown or offline sources, producers **MAY** use `provider.name = "unknown"` or `provider.name = "custom"` with additional context in `provider.source` or `provider.system` (see Section 4.3).
+
+
+#### Optional fields
+A resource object **MAY** include the following optional fields:
+
+- **`name`** (string): A human-readable name or label for the resource (e.g. hostname, instance name, device name). If present, `name` **SHOULD** remain stable across multiple exports of the same infrastructure when feasible.
+
+- **`description`** (string): A free-text description of the resource's purpose, function or characteristics.
+
+- **`properties`** (object): An object containing resource-specific properties that describe characteristics, configuration and attributes. Properties are free-form and producer-defined. Property conventions and extensibility are detailed in Section 4.4 (Properties and extensions).
+
+  Example:
+    ```json
+    {
+        "properties": {
+        "instance_type": "t3.medium",
+        "vcpus": 2,
+        "memory_gb": 4,
+        "private_ip": "10.0.1.2"
+        }
+    }
+    ```
+
+- **`extensions`** (object): Namespaced extension data for vendor-specific or domain-specific fields that extend beyond core OSIRIS semantics. Extensions **MUST** use the `osiris.<namespace>` prefix convention (e.g. `osiris.aws`, `osiris.azure`, `osiris.custom`). Extension mechanisms are defined in Chapter 8 (Extension mechanism) and Section 4.4.
+
+  Example:
+    ```json
+    {
+        "extensions": {
+        "osiris.aws": {
+            "placement": {
+            "tenancy": "default",
+            "partition_number": 1
+            }
+        }
+        }
+    }
+    ```
+
+- **`status`** (string): Optional high-level lifecycle or availability indicator. Status represents a **coarse lifecycle or availability category** (e.g. whether a resource is operational, degraded or offline).
+
+- **`state`** (string): Optional operational condition indicator. State provides **more specific operational detail** beyond status (e.g. running, stopped, starting, stopping).
+
+> [!NOTE]
+> The distinction between `status` and `state`, allowed values and usage semantics are defined in Section 4.5 (Status and state).
+
+- **`tags`** (object): Key-value labels used for organizational categorization, filtering or metadata annotation (e.g. environment, owner, cost-center, compliance requirements). Tags are general-purpose and cross-platform.
+
+  Example:
+```json
+  {
+    "tags": {
+      "environment": "production",
+      "owner": "platform-team",
+      "cost-center": "engineering"
+    }
+  }
+```
+
+> [!NOTE]
+> Platform native label concepts (e.g. Kubernetes labels, annotations) **SHOULD** be represented in the `extensions` object (e.g. `extensions.osiris.k8s.labels`) to preserve platform-specific semantics while keeping the core schema simple.
+
+
+#### Field extensibility and unknown fields
+Consumers **MUST** ignore unknown fields to ensure forward compatibility. Producers **SHOULD** place non-standard fields under `properties` or `extensions` and **SHOULD NOT** introduce new top-level resource fields in documents conforming to OSIRIS v1.0.
+
+This approach ensures:
+
+- Forward compatibility when new OSIRIS versions introduce fields
+- Clear extension boundaries for vendor-specific data
+- Simplified validation and schema evolution
+
+
+#### Resource object validation
+Resource objects **MUST** conform to the OSIRIS JSON Schema (Appendix A). Structural validation ensures required fields are present and field types are correct.
+
+Additional semantic validation rules (ID uniqueness, type validity, referential integrity) are defined in Chapter 9 (Validation).
+
+
+##### Hyperscaler compute resource
+```json
+{
+  "id": "i-0abc123def456",
+  "type": "compute.vm",
+  "name": "web-server-prod-01",
+  "provider": {
+    "name": "aws",
+    "region": "us-east-1",
+    "account": "123456789012"
+  },
+  "properties": {
+    "instance_type": "t3.medium",
+    "vcpus": 2,
+    "memory_gb": 4,
+    "private_ip": "10.0.1.22",
+    "public_ip": "203.0.113.1",
+    "ami_id": "ami-0abcdef1234567890"
+  },
+  "status": "active",
+  "tags": {
+    "environment": "production",
+    "tier": "web",
+    "managed_by": "terraform"
+  }
+}
+```
+
+
+##### On-premise network device
+```json
+{
+  "id": "MXP-F1-R01-SW-001",
+  "type": "network.switch",
+  "name": "mxp-sw-leaf-01",
+  "provider": {
+    "name": "arista",
+    "model": "7050X4-48Y-4DF"
+  },
+  "properties": {
+    "management_ip": "10.130.100.12",
+    "serial_number": "XXXXXXXXXXXXXX",
+    "rack_unit_start": 12,
+    "rack_unit_height": 1,
+    "face": "front",
+    "ports": 48,
+    "uplink_ports": ["Ethernet49/1", "Ethernet50/1"]
+  },
+  "status": "active",
+  "tags": {
+    "site": "MXP-DC-1",
+    "floor": "F1",
+    "rack": "R01",
+    "role": "leaf",
+    "platform": "arista-eos"
+  }
+}
+```
+
+---
+
+## 4.2 Resource types
+#### Overview
+The `type` field classifies what kind of infrastructure component a resource represents. Resource types enable consumers to:
+
+- Categorize resources for filtering and visualization
+- Apply type-specific rendering or behavior
+- Understand resource semantics without parsing properties
+- Map resources to internal models or taxonomies
+
+Resource types use a hierarchical dot notation that balances human readability with machine categorization.
+
+
+#### Type field definition
+The `type` field is a **REQUIRED** string (see Section 4.1). Type values:
+
+- **MUST NOT** contain whitespace
+- **MUST** be lowercase strings
+- **MUST** use dot (`.`) as the segment separator
+- **MUST** contain at least two segments (see Dot notation structure below)
+- **MAY** contain alphanumeric characters (`a-z`, `0-9`) within segments
+- **SHOULD** use dots for hierarchy rather than hyphens (e.g. `compute.vm.template` rather than `compute.vm-template`)
+- **MUST NOT** start or end with a dot
+- **MUST NOT** contain consecutive dots (`..`)
+- **SHOULD** be stable across OSIRIS versions for standard types
+
+Examples of valid type strings:
+- `compute.vm`
+- `network.switch`
+- `storage.volume`
+- `network.switch.leaf`
+- `compute.vm.template`
+
+Examples of invalid type strings:
+- `Compute.VM` (uppercase not allowed)
+- `compute` (single segment - violates minimum requirement)
+- `.compute.vm` (starts with dot)
+- `network..switch` (consecutive dots)
+- `network.switch.` (ends with dot)
+
+
+Type strings **MUST** be validated against the pattern rules above.
+
+
+#### Dot notation structure
+Resource types use hierarchical dot notation with segments ordered from general to specific:
+
+```
+<category>.<subcategory>[.<variant>][.<detail>]
+```
+
+**Minimum structure:** Types **MUST** contain at least two segments (category and subcategory):
+- `compute.vm` (category: compute, subcategory: vm)
+- `network.switch` (category: network, subcategory: switch)
+- `storage.volume` (category: storage, subcategory: volume)
+
+**Extended hierarchy:** Types **MAY** include additional segments for specificity:
+- `network.switch.leaf` (leaf switch in network fabric)
+- `network.switch.spine` (spine switch in network fabric)
+- `storage.volume.block` (block storage volume)
+- `storage.volume.file` (file storage volume)
+
+**Hierarchy depth:** Types **SHOULD NOT** exceed 4-5 segments to maintain readability. Highly specific details belong in `properties` rather than type strings. Consumers **MUST** accept types with deeper hierarchies and treat them as normal type strings without error.
+
+
+#### Namespace reservation
+To ensure clear separation between standard types and extensions:
+
+- Standard types **MUST NOT** start with `osiris.`
+- Extension types **MUST** start with `osiris.`
+
+This convention enables unambiguous identification of extension types and simplifies validation.
+
+
+#### Standard types
+**Standard types** are resource types defined in the OSIRIS specification and enumerated in Chapter 7 (Resource type taxonomy). Standard types have first-class support and well-defined semantics across implementations.
+
+Examples of standard types (see Chapter 7 for complete list):
+- `compute.vm` - Virtual machine
+- `compute.container` - Container instance
+- `compute.server` - Physical server
+- `network.switch` - Network switch
+- `network.router` - Network router
+- `storage.volume` - Storage volume
+- `storage.bucket` - Object storage bucket
+
+Consumers **SHOULD** implement rendering, filtering or behavioral logic for standard types where applicable.
+
+
+#### Vendor-specific and custom types
+Resources representing vendor-specific or organization-specific components that do not map to standard types **SHOULD** use namespaced type strings.
+
+**Namespace convention:** Custom types **MUST** use the `osiris.<namespace>.<type>` pattern, where:
+- `osiris.` prefix indicates an extension type
+- `<namespace>` identifies the vendor organization or domain
+- `<type>` follows standard dot notation rules
+
+Examples of namespaced types:
+- `osiris.aws.lambda` (AWS Lambda function)
+- `osiris.azure.app.service` (Azure App Service)
+- `osiris.arista.vrf` (Arista VRF instance)
+- `osiris.proxmox.vm` (Proxmox VM)
+- `osiris.acme.custom.device` (organization-specific device type)
+
+**Namespace selection:** There is no central namespace registry for OSIRIS v1.0. To reduce collision risk:
+
+- Well-known vendor namespaces **SHOULD** use simple vendor names (e.g. `osiris.aws`, `osiris.cisco`, `osiris.proxmox`)
+- Organization-specific namespaces **SHOULD** use stable identifiers such as reverse domain notation (e.g. `osiris.com-acme`, `osiris.org-example`)
+
+Namespace consistency within a producer or organization improves interoperability and maintainability.
+
+**Fallback behavior:** When vendor-specific types are necessary but a close standard equivalent exists, producers **SHOULD** consider:
+- Using the standard type with vendor details in `properties` or `extensions`
+- Using the namespaced type only when semantics differ significantly from standard types
+
+Example:
+```json
+{
+  "id": "lambda-001",
+  "type": "osiris.aws.lambda",
+  "provider": { "name": "aws" },
+  "properties": {
+    "runtime": "python3.11",
+    "memory_mb": 512
+  }
+}
+```
+
+#### Unknown type handling
+Consumers **MUST** accept resources with unknown or unrecognized types. This ensures forward compatibility and allows incremental adoption of new types.
+
+When encountering unknown types, consumers **SHOULD**:
+- Preserve the resource in the topology graph
+- Treat it as a generic infrastructure node
+- Display the type string verbatim for debugging or manual interpretation
+- Process connections, group memberships and other relationships normally
+
+Consumers **MAY**:
+- Apply heuristic categorization based on type prefix (e.g. types starting with `compute.` likely represent compute resources)
+- Emit warnings for unrecognized types during validation
+- Provide configuration to map unknown types to internal models
+
+Consumers **MUST NOT**:
+- Reject documents containing unknown types
+- Silently discard resources with unknown types
+
+
+#### Type evolution and stability
+**Standard types** defined in Chapter 7 are considered stable within OSIRIS v1.x releases. New standard types **MAY** be added in minor version updates (e.g. 1.1.0) without breaking compatibility.
+
+Standard types **SHOULD NOT** be removed or have their semantics changed in minor updates. Deprecated types **SHOULD** remain documented and supported for at least one major version cycle.
+
+**Extension types** (`osiris.*`) are not governed by OSIRIS and may evolve independently. Producers using extension types **SHOULD** version their generator tools if type semantics change to help consumers track compatibility.
+
+
+#### Type selection guidance
+When producing OSIRIS documents, use this decision tree for type selection:
+
+1. **Does a standard type match the resource semantics?**  
+   - Use the standard type from Chapter 7
+
+2. **Is the resource vendor-specific with no standard equivalent?**  
+   - Use a namespaced type: `osiris.<vendor>.<type>`
+
+3. **Is the resource a specialization of a standard type?**  
+   - Consider using the standard type with details in `properties` or use extended hierarchy: `<standard-type>.<variant>`
+
+4. **Is the resource highly organization-specific?**  
+   - Use namespaced custom type: `osiris.<org>.<type>`
+
+Examples:
+- AWS EC2 instance > `compute.vm` (standard type)
+- AWS Lambda function > `osiris.aws.lambda` (no standard equivalent)
+- Cisco Nexus leaf switch > `network.switch.leaf` or `network.switch` with `properties.role = "leaf"`
+- Custom monitoring appliance > `osiris.acme.monitor` (organization-specific)
+
+
+#### Type field validation
+The `type` field value **MUST** conform to the format rules defined in this section. Structural validation (format, allowed characters, minimum segments) is enforced by JSON Schema (Appendix A).
+
+Semantic validation (whether a type is defined in the standard taxonomy) is **OPTIONAL** and implementation-dependent. Consumers **MAY** validate against Chapter 7 but **MUST NOT** reject documents with valid but unrecognized types.
+
+---
+
+## 4.3 Provider information
+#### Overview
+The `provider` object is a **REQUIRED** field in every resource (see Section 4.1). It describes the originating platform or system from which the resource was sourced, enabling traceability, correlation and enrichment.
+
+The provider object answers: **"Where did this resource come from?"** rather than **"Where is this resource located?"** Regional placement **MAY** be recorded in `provider.region` or `provider.zone` for correlation with provider APIs; broader export boundaries belong in `metadata.scope`.
+
+
+#### Provider object purpose
+Provider attribution serves several critical functions:
+
+- **Provenance tracking**: Identifying the source system for validation and audit purposes
+- **Correlation**: Enabling lookups or enrichment by referencing native vendor systems
+- **Mixed-vendor topologies**: Distinguishing resources from different platforms in unified views
+- **Tool-specific behavior**: Allowing consumers to apply platform-specific rendering or logic
+- **Change detection**: Tracking resource origin across multiple snapshot exports
+
+
+#### Required fields
+The provider object **MUST** include:
+
+- **`name`** (string): The vendor, platform or system name (e.g. `aws`, `azure`, `gcp`, `arista`, `proxmox`, `cisco`, `dell`).
+
+    `provider.name` identifies the originating system/vendor for that resource type (e.g. cloud platform for cloud resources; hardware vendor for physical assets; virtualization platform for hypervisors).
+
+  Provider names **SHOULD** be:
+  - Lowercase
+  - Short and recognizable (vendor name or product name)
+  - Consistent across exports from the same producer
+
+  Examples:
+  - `aws` (Amazon Web Services)
+  - `azure` (Microsoft Azure)
+  - `gcp` (Google Cloud Platform)
+  - `arista` (Arista Networks)
+  - `proxmox` (Proxmox Virtual Environment)
+  - `vmware` (VMware vSphere)
+  - `cisco` (Cisco systems)
+
+
+#### Optional fields
+The provider object **MAY** include:
+
+- **`native_id`** (string): The resource's native identifier in the source system. This enables correlation with vendor APIs, reconciliation across exports and deduplication.
+
+  Examples:
+  - AWS ARN: `arn:aws:ec2:us-east-1:123456789012:instance/i-0abc123def456`
+  - Azure Resource ID: `/subscriptions/{sub}/resourceGroups/{rg}/providers/Microsoft.Compute/virtualMachines/{vm}`
+  - GCP full resource name: `//compute.googleapis.com/projects/{project}/zones/{zone}/instances/{instance}`
+  - Device serial number: `JPE19350123`
+
+- **`region`** (string): The geographic region, zone or location where the resource is deployed (e.g. `us-east-1`, `westeurope`, `asia-southeast1`).
+
+  > [!NOTE]
+  > `provider.region` describes where the resource exists within the provider's infrastructure. Document wide regional scope is represented in `metadata.scope.regions` (see chapter 3, section 3.3).
+
+- **`account`** (string): The account, subscription, project or tenant identifier within the provider's platform.
+
+  Examples:
+  - AWS account ID: `123456789012`
+  - Azure subscription ID: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
+  - GCP project ID: `my-project-12345`
+
+- **`zone`** (string): Availability zone, fault domain or sub-regional placement (e.g. `us-east-1a`, `eastus`).
+
+- **`model`** (string): Hardware or software model identifier for physical devices or appliances.
+
+  Examples:
+  - `DCS-7050SX3-48YC12` (Arista switch model)
+  - `PowerEdge R750` (Dell server model)
+  - `5132` (Ciena router model)
+
+- **`version`** (string): Software version, firmware version or platform version (e.g. `EOS-4.28.3F`, `ESXi 7.0.3`).
+
+- **`namespace`** (string): An organization or domain identifier for custom or internal providers (see Unknown and custom providers below).
+
+- **`system`** (string): The producing system name or source inventory system identifier (useful for custom and multi-source exporters).
+
+- **`source`** (string): a short identifier of the data source path/method, e.g. cloudtrail, cloud_asset_inventory, eapi, netconf, snmp, cmdb_export.
+
+
+#### Unknown and custom providers
+For resources from unknown, offline or organization-specific sources, producers **MAY** use:
+
+- **`provider.name = "unknown"`**: When the source system cannot be determined or is intentionally omitted.
+
+- **`provider.name = "custom"`** with **`provider.namespace`**: For organization-specific or internal systems that do not map to recognized vendors.
+
+  When `provider.name` is set to `"custom"`, the `namespace` field **MUST** be provided to uniquely identify the organization or system.
+
+  Example:
+```json
+  {
+    "provider": {
+      "name": "custom",
+      "namespace": "acme-internal-cmdb",
+      "system": "legacy-inventory-v2"
+    }
+  }
+```
+
+Consumers **MUST** accept resources with `provider.name = "unknown"` or `provider.name = "custom"` and **SHOULD** treat them as generic resources while preserving all provider metadata.
+
+
+#### Provider vs metadata scope
+The `provider` object and `metadata.scope` serve distinct but complementary purposes:
+
+**`resource.provider`** (per-resource attribution):
+- Identifies the source system for an individual resource
+- Enables correlation with native vendor identifiers
+- Supports mixed-vendor topologies where resources from different providers coexist
+
+**`metadata.scope`** (document-wide context):
+- Describes what infrastructure the entire document represents
+- Lists which providers, regions, accounts or environments are included in the export
+- Documents the boundaries of the topology snapshot
+
+**Example of overlap without duplication:**
+
+Metadata scope (document-wide):
+```json
+{
+  "metadata": {
+    "scope": {
+      "providers": ["aws", "azure"],
+      "regions": ["us-east-1", "eastus"],
+      "environments": ["production"]
+    }
+  }
+}
+```
+
+Resource provider (per-resource):
+```json
+{
+  "id": "vm-001",
+  "provider": {
+    "name": "aws",
+    "region": "us-east-1",
+    "account": "123456789012",
+    "native_id": "arn:aws:ec2:us-east-1:123456789012:instance/i-0abc123"
+  }
+}
+```
+
+The metadata establishes document scope. The provider provides specific attribution for each resource. Both are valuable and non-redundant.
+
+
+#### Provider object stability
+Provider object fields **SHOULD** remain stable across multiple exports of the same infrastructure. Stable provider attribution enables:
+
+- Resource identity correlation over time
+- Change detection by comparing snapshots
+- Reliable mapping to external systems
+
+Producers **SHOULD** preserve `provider.native_id` when available, as it provides the strongest correlation anchor.
+`native_id` **MAY** be the provider’s primary identifier (e.g. instance ID) or a fully-qualified identifier (e.g. ARN/Azure resource ID).
+
+#### Provider object examples
+##### Hyperscaler resource
+```json
+{
+  "provider": {
+    "name": "aws",
+    "region": "us-east-1",
+    "account": "123456789012",
+    "native_id": "arn:aws:ec2:us-east-1:123456789012:instance/i-0abc123def456"
+  }
+}
+```
+
+##### Network device
+```json
+{
+  "provider": {
+    "name": "arista",
+    "model": "DCS-7050SX3-48YC12",
+    "version": "EOS-4.28.3F",
+    "native_id": "JPEXXXXXXXX"
+  }
+}
+```
+
+##### Virtualization platform
+```json
+{
+  "provider": {
+    "name": "proxmox",
+    "version": "8.1.3",
+    "native_id": "qemu/101"
+  }
+}
+```
+
+##### Custom internal system
+```json
+{
+  "provider": {
+    "name": "custom",
+    "namespace": "acme-corp",
+    "system": "asset-management-db",
+    "native_id": "ASSET-EU-04567"
+  }
+}
+```
+
+
+#### Provider field validation
+The provider object **MUST** conform to the structural requirements defined in this section. At minimum, `provider.name` is required. All other fields are optional and producer-defined based on available source data.
+
+Consumers **MUST** accept provider objects with unrecognized fields and preserve them when re-exporting or transforming documents.
+
+---
+
+## 4.4 Properties and extensions
+#### Overview
+Resources in OSIRIS use two complementary mechanisms to represent data beyond the standard fields defined in Section 4.1:
+
+- **`properties`**: A free-form object for resource attributes and configuration details
+- **`extensions`**: A namespaced object for vendor-specific or organization-specific structures that must not collide with the core schema
+
+Both fields are **OPTIONAL**, but they provide essential flexibility for representing heterogeneous infrastructure while preserving interoperability.
+
+
+#### Properties object
+##### Purpose
+The `properties` object captures resource-specific attributes that vary by resource type or implementation, such as:
+
+- Configuration parameters (e.g. instance size, disk size, VLAN IDs)
+- Addressing and identifiers (e.g. IPs, MACs, serial numbers)
+- Physical placement details (e.g. rack units for hardware)
+
+Properties enable producers to export rich details without requiring all consumers to understand every attribute.
+
+##### Structure
+If present, `properties` **MUST** be a JSON object.
+```json
+{
+  "properties": {
+    "key1": "value1",
+    "key2": 123,
+    "key3": ["array", "of", "values"],
+    "nested": { "object": "allowed" }
+  }
+}
+```
+
+Properties **MAY** contain primitive values, arrays, and nested objects of arbitrary depth.
+
+
+#### Naming conventions
+Property keys **SHOULD** follow these conventions:
+
+- Lowercase with underscores for multi-word keys (e.g. `instance_type`, `private_ip`, `disk_size_gb`)
+- Include units in the key name where applicable (e.g. `memory_gb`, `throughput_mbps`)
+- Remain stable across exports from the same producer
+
+Property keys **SHOULD NOT** embed vendor prefixes (e.g. avoid `awsInstanceType`). Vendor-specific structures belong in `extensions`.
+
+
+#### Properties vs standard fields
+Producers **SHOULD** use standard OSIRIS fields when an attribute maps cleanly to OSIRIS semantics (e.g. `id`, `type`, `provider`, `status`, `name`).
+
+Producers **SHOULD** use `properties` for intrinsic resource details that do not have a standardized OSIRIS field.
+
+
+#### Sensitive data
+Producers **MUST NOT** include secrets in `properties`, including tokens, passwords, private keys or connection strings containing credentials.
+
+
+#### Extensions object
+##### Purpose
+The `extensions` object provides a namespacing mechanism for:
+
+- Vendor-native structures (e.g. provider-specific metadata)
+- Tool-specific annotations (e.g. Terraform/diagram hints)
+- Organization-specific tracking fields (e.g. internal ownership/compliance attributes)
+
+This allows rich producer-specific data without polluting the core OSIRIS model.
+
+##### Structure and namespacing rules
+If present, `extensions` **MUST** be a JSON object.
+
+Each extension entry **MUST** be keyed by a namespace using the reserved `osiris.` prefix:
+```
+osiris.<namespace>
+```
+
+The value associated with each `osiris.<namespace>` key **MUST** be a JSON object.
+
+Example:
+```json
+{
+  "extensions": {
+    "osiris.aws": { "security_groups": ["sg-123"] },
+    "osiris.acme": { "owner_team": "platform" }
+  }
+}
+```
+
+Namespaces **SHOULD** be stable and collision resistant:
+
+- Well-known vendors **MAY** use simple namespaces (e.g. `osiris.aws`, `osiris.azure`, `osiris.gcp`, `osiris.arista`)
+- Organizations **SHOULD** use a stable identifier (e.g. `osiris.com.acme`)
+
+##### Consumer behavior
+Consumers **MUST** ignore unrecognized extension namespaces and fields.
+
+Consumers that transform or re-export OSIRIS documents **SHOULD** preserve extensions data when feasible (some consumers are intentionally lossy).
+
+
+#### Properties vs extensions
+Producers **SHOULD** use:
+
+- **`properties`** for broadly useful, portable attributes that generic consumers might filter/visualize
+- **`extensions`** for vendor/tool/org-specific structures that most generic consumers will ignore
+
+If the same concept appears in both:
+- `properties` is the portable summary
+- `extensions` is the authoritative vendor/tool structure
+
+
+#### Tags (resource labeling)
+##### Definition
+The `tags` field **MAY** be present. If present, it **MUST** be a JSON object mapping string keys to string values.
+Tags support categorization and filtering (e.g. environment, owner, cost center).
+
+##### Rules
+Producers **MUST NOT** store secrets in `tags`.
+Producers **SHOULD** keep tag keys stable across exports.
+
+If a platform has richer label/annotation concepts (e.g. Kubernetes), producers **SHOULD** represent those under `extensions` (e.g. `extensions.osiris.k8s.labels`).
+
+
+#### Forward compatibility rules
+##### Consumers MUST:
+- Accept resources with unknown `properties` keys
+- Accept resources with unknown `extensions` namespaces/fields
+- Ignore unrecognized fields without error
+
+##### Producers SHOULD:
+- Keep property keys stable across exports
+- Keep extension namespaces stable across exports
+- Avoid excessive redundancy between `metadata`, `provider`, `properties`, and `extensions`
+
+
+#### Examples
+##### Compute resource with portable properties + vendor extension
+```json
+{
+  "id": "vm-web-001",
+  "name": "web-server-01",
+  "type": "compute.vm",
+  "provider": {
+    "name": "aws",
+    "region": "us-east-1",
+    "account": "123456789012",
+    "native_id": "arn:aws:ec2:us-east-1:123456789012:instance/i-0abc123def456"
+  },
+  "properties": {
+    "instance_type": "t3.large",
+    "vcpus": 2,
+    "memory_gb": 8,
+    "private_ip": "10.0.1.10",
+    "public_ip": "203.0.113.10",
+    "root_volume_size_gb": 100
+  },
+  "extensions": {
+    "osiris.aws": {
+      "subnet_id": "subnet-0abc1234def567",
+      "security_groups": ["sg-0123456789abcdef0"]
+    }
+  },
+  "tags": {
+    "environment": "production",
+    "managed_by": "terraform"
+  }
+}
+```
+
+
+##### Network device with properties + vendor and org extensions
+```json
+{
+  "id": "switch-dc1-leaf-01",
+  "name": "dc1-leaf-01",
+  "type": "network.switch.leaf",
+  "provider": {
+    "name": "arista",
+    "model": "DCS-7050SX3-48YC12",
+    "version": "EOS-4.28.3F",
+    "native_id": "SERIAL:JPE19350123"
+  },
+  "properties": {
+    "management_ip": "10.0.0.101",
+    "port_count": 48,
+    "uplink_ports": ["Ethernet49/1", "Ethernet50/1"],
+    "rack_unit_start": 42,
+    "rack_unit_height": 1,
+    "face": "front"
+  },
+  "extensions": {
+    "osiris.arista": {
+      "system_mac": "00:1c:73:aa:bb:cc",
+      "mlag": { 
+        "domain_id": "MLAG1", 
+        "peer_link": "Port-Channel1" 
+      }
+    },
+    "osiris.acme": {
+      "maintenance_window": "sunday-02:00-04:00"
+    }
+  }
+}
+```
+
+
+##### Kubernetes pod with platform-native labels/annotations in extensions
+```json
+{
+  "id": "pod-nginx-7d8f9c",
+  "name": "nginx-7d8f9c-abcde",
+  "type": "compute.container",
+  "provider": {
+    "name": "k8s",
+    "system": "prod-cluster-1",
+    "native_id": "pod/nginx-7d8f9c-abcde"
+  },
+  "properties": {
+    "namespace": "production",
+    "image": "nginx:1.21",
+    "restart_count": 0,
+    "node": "worker-03"
+  },
+  "extensions": {
+    "osiris.k8s": {
+      "labels": {
+        "app": "nginx",
+        "version": "1.21",
+        "environment": "production"
+      },
+      "annotations": {
+        "prometheus.io/scrape": "true",
+        "prometheus.io/port": "9113"
+      },
+      "owner_references": [
+        { 
+          "kind": "ReplicaSet", 
+          "name": "nginx-7d8f9c" 
+        }
+      ]
+    }
+  }
+}
+```
+
+
+##### Custom resource with organization extensions (namespaced type)
+```json
+{
+  "id": "custom-monitor-01",
+  "name": "APM-Monitor-NYC",
+  "type": "osiris.acme.apm.monitor",
+  "provider": {
+    "name": "custom",
+    "namespace": "acme-monitoring",
+    "system": "observability-platform",
+    "native_id": "monitor/01"
+  },
+  "properties": {
+    "monitoring_url": "https://apm.acme.com/monitor/01",
+    "health": "healthy",
+    "targets": ["web-01", "web-02", "api-01"]
+  },
+  "extensions": {
+    "osiris.acme": {
+      "owner_team": "sre-observability",
+      "cost_center": "CC-1234",
+      "compliance_required": true
+    }
+  }
+}
+```
+
+
+#### Validation
+If present, `properties` and `extensions` **MUST** be JSON objects.
+
+Structural validation is enforced by JSON Schema (Appendix A). Semantic validation of property keys and extension contents is **OPTIONAL** and consumer-dependent. 
+
+Consumers **MUST NOT** reject documents solely due to unrecognized `properties` keys or unknown `extensions` namespaces.
+
+---
+
+## 4.5 Status and state
+#### Overview
+The `status` and `state` fields are **OPTIONAL** fields that provide snapshot-time indicators of resource operational condition. 
+
+These fields enable:
+
+- **Filtering** resources by operational status in visualizations or queries
+- **Correlation** with resource relationships (e.g. identifying degraded dependencies)
+- **Change detection** when comparing snapshots over time
+- **Visual differentiation** in diagrams or dashboards
+
+> [!NOTE]
+> `status` and `state` represent point-in-time observations at the moment of export. They are **NOT** intended for real-time monitoring, alerting, or telemetry. For runtime observability, use dedicated monitoring systems (e.g. OpenTelemetry, Prometheus).
+
+
+#### Status field
+##### Definition
+The `status` field provides a normalized snapshot indicator of resource operational condition. If present, it **MUST** be a string.
+
+##### Recommended values
+Producers **SHOULD** use one of the following standard status values when applicable:
+
+- **`active`**: Resource is operational and serving its intended function
+- **`inactive`**: Resource exists but is not currently operational (e.g. stopped VM, disabled interface)
+- **`degraded`**: Resource is operational but experiencing issues (e.g. reduced capacity, partial failure)
+- **`retired`**: Resource no longer exists or is permanently removed from service (e.g. terminated VM, decommissioned device)
+- **`unknown`**: Status cannot be determined or is unavailable
+
+##### Semantics
+Status values represent **high-level operational condition at snapshot time**, combining lifecycle phase and health indicators:
+
+- `active` indicates the resource is functioning as designed
+- `inactive` indicates intentional or controlled non-operation
+- `degraded` indicates operational with impaired functionality
+- `retired` indicates permanent removal or termination
+- `unknown` is a fallback when status cannot be reliably determined
+
+##### Unknown status values
+Consumers **MUST** accept resources with unrecognized status values. When encountering unknown status values, consumers **SHOULD**:
+
+- Preserve the status value when re-exporting (when feasible)
+- Treat the resource as having `unknown` status for filtering or visualization
+- Display the literal status string for manual interpretation
+
+Consumers **MUST NOT** reject documents containing unrecognized status values.
+
+##### Omitting status
+If `status` is omitted, consumers **SHOULD** assume the resource status is unknown or not applicable. Producers **MAY** omit `status` when:
+
+- Status information is unavailable from the source system
+- Status is not meaningful for the resource type (e.g. static configuration objects)
+- The export represents historical or planned infrastructure (not current state)
+
+
+#### State field
+##### Definition
+The `state` field provides detailed, provider-specific operational state information. If present, it **MUST** be a string.
+Producers **SHOULD** normalize state to lowercase when the provider uses a known canonical lowercase set.
+
+##### Purpose
+While `status` offers broad categorization, `state` captures vendor-specific lifecycle phases or operational modes:
+
+- AWS EC2: `running`, `stopped`, `stopping`, `pending`, `shutting-down`, `terminated`
+- Kubernetes pod: `pending`, `running`, `succeeded`, `failed`, `unknown`
+- Network interface: `up`, `down`, `admin-down`, `testing`
+
+##### State vs status
+The relationship between `state` and `status`:
+
+- **`status`** is normalized across vendors (active/inactive/degraded/retired/unknown)
+- **`state`** is vendor-specific and granular
+
+Producers **MAY** include both fields. When both are present:
+
+- `status` provides vendor-neutral categorization for generic consumers
+- `state` provides detailed information for vendor-aware tools
+
+**Example mapping:**
+```json
+{
+  "status": "active",
+  "state": "running"
+}
+```
+```json
+{
+  "status": "inactive",
+  "state": "stopped"
+}
+```
+```json
+{
+  "status": "degraded",
+  "state": "impaired"
+}
+```
+```json
+{
+  "status": "retired",
+  "state": "terminated"
+}
+```
+
+##### Unknown state values
+Consumers **MUST** accept resources with any `state` value. State values are provider-defined and not governed by OSIRIS.
+
+Consumers **SHOULD**:
+- Preserve state values when re-exporting (when feasible)
+- Display state verbatim for manual interpretation
+- Not attempt to normalize or validate state values
+
+
+#### Producer rules
+##### When to set status
+Producers **SHOULD** set `status` when:
+
+- The source system provides operational status information
+- Status can be reliably mapped to one of the standard values (`active`, `inactive`, `degraded`, `retired`)
+- The export represents current infrastructure state (not historical or planned)
+
+Producers **MAY** use `"unknown"` when status information is unavailable but the field is being populated for consistency.
+
+##### When to set state
+Producers **MAY** set `state` to capture vendor-specific lifecycle information. State is entirely optional and provider-defined.
+
+Producers **SHOULD**:
+- Use state values directly from the source system without normalization
+- Keep state values stable across exports for the same resource
+- Avoid inventing custom state values when vendor-native values exist
+
+##### When to omit status/state
+Producers **MAY** omit both `status` and `state` when:
+
+- Operating on static inventory data (e.g. CMDB exports without live status)
+- Exporting planned or historical infrastructure
+- Source systems do not provide status information
+
+##### Sensitive information
+Producers **MUST NOT** include credentials, tokens, or secrets in `status` or `state`. Producers **SHOULD** avoid embedding verbose diagnostic logs or incident identifiers in these fields.
+
+
+#### Consumer rules
+##### Accepting unknown values
+Consumers **MUST**:
+- Accept resources with any `status` or `state` value (including unrecognized values)
+- Not reject or discard resources based on unknown status/state values
+
+Consumers **SHOULD**:
+- Preserve status/state when re-exporting or transforming documents (when feasible)
+
+##### Display and filtering
+When encountering unknown status values, consumers **SHOULD**:
+- Display the literal value for debugging
+- Treat unknown status as equivalent to `"unknown"` for filtering
+- Provide user configuration to map custom status values to standard categories
+
+##### Validation
+Consumers **MAY**:
+- Emits warnings for unrecognized status values (but **MUST NOT** fail parsing)
+- Validate status against the recommended vocabulary in non-strict mode
+- Apply heuristic to infer status category from state (e.g. "stopped" state > "inactive" status)
+
+
+#### Examples
+##### Cloud VM with status and state
+```json
+{
+  "id": "vm-web-001",
+  "name": "web-server-01",
+  "type": "compute.vm",
+  "provider": {
+    "name": "aws",
+    "region": "us-east-1",
+    "native_id": "i-0abc123def456"
+  },
+  "status": "active",
+  "state": "running",
+  "properties": {
+    "instance_type": "t3.medium",
+    "private_ip": "10.0.1.10"
+  }
+}
+```
+
+##### Network switch with degraded status
+```json
+{
+  "id": "switch-dc1-leaf-01",
+  "name": "dc1-leaf-01",
+  "type": "network.switch.leaf",
+  "provider": {
+    "name": "arista",
+    "model": "DCS-7050SX3-48YC12",
+    "native_id": "JPEXXXXXXXX"
+  },
+  "status": "degraded",
+  "state": "fan-failure-detected",
+  "properties": {
+    "management_ip": "10.0.0.101",
+    "port_count": 48
+  }
+}
+```
+
+##### Kubernetes pod with vendor-specific state
+```json
+{
+  "id": "pod-nginx-abc123",
+  "name": "nginx-deployment-abc123",
+  "type": "compute.container",
+  "provider": {
+    "name": "k8s",
+    "native_id": "pod/nginx-deployment-abc123"
+  },
+  "status": "active",
+  "state": "Running",
+  "properties": {
+    "namespace": "production",
+    "image": "nginx:1.21",
+    "node": "worker-node-03"
+  },
+  "extensions": {
+    "osiris-k8s": {
+      "conditions": [
+        {
+          "type": "Ready",
+          "status": "True"
+        },
+        {
+          "type": "ContainersReady",
+          "status": "True"
+        }
+      ]
+    }
+  }
+}
+```
+
+##### Stopped VM (inactive status)
+```json
+{
+  "id": "vm-staging-002",
+  "name": "staging-app-server",
+  "type": "compute.vm",
+  "provider": {
+    "name": "azure",
+    "region": "eastus",
+    "native_id": "/subscriptions/.../virtualMachines/staging-app-02"
+  },
+  "status": "inactive",
+  "state": "stopped",
+  "properties": {
+    "vm_size": "Standard_B2s",
+    "os_type": "Linux"
+  }
+}
+```
+
+##### Terminated VM (retired status)
+```json
+{
+  "id": "vm-legacy-001",
+  "name": "legacy-web-server",
+  "type": "compute.vm",
+  "provider": {
+    "name": "aws",
+    "region": "us-west-2",
+    "native_id": "i-0xyz789abc123"
+  },
+  "status": "retired",
+  "state": "terminated",
+  "properties": {
+    "instance_type": "t2.micro",
+    "termination_time": "2025-12-15T10:30:00Z"
+  }
+}
+```
+
+##### Resource with unknown status (source unavailable)
+```json
+{
+  "id": "legacy-db-001",
+  "name": "legacy-database",
+  "type": "storage.database",
+  "provider": {
+    "name": "custom",
+    "namespace": "legacy-systems",
+    "native_id": "DB-001"
+  },
+  "status": "unknown",
+  "properties": {
+    "database_engine": "postgresql",
+    "version": "9.6"
+  }
+}
+```
