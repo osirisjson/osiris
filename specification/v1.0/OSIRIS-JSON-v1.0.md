@@ -5,7 +5,7 @@
 | Authors   | Tia Zanella [skhell](https://github.com/skhell) |
 | Revision  | 1.0.0-DRAFT |
 | Creation date      | 14 December 2025 |
-| Last revision date | 23 December 2025 |
+| Last revision date | 26 December 2025 |
 | Status    | Draft |
 | Specification ID | OSIRIS-1.0 |
 | Schema URI | tbd later |
@@ -14,31 +14,31 @@
 
 
 ## Table of Content
-1. [Introduction](#introduction)
-    1.1 [Problem statement](#introduction-problem-statement)
-    1.2 [Solution overview](#introduction-solution-overview)
-    1.3 [Scope](#introduction-scope)
-    1.4 [Design principles](#introduction-design-principles)
-    1.5 [Terminology](#introduction-terminology)
+1. [Introduction](#1-introduction)
+    1.1 [Problem statement](#11-introduction-problem-statement)
+    1.2 [Solution overview](#12-introduction-solution-overview)
+    1.3 [Scope](#13-introduction-scope)
+    1.4 [Design principles](#14-introduction-design-principles)
+    1.5 [Terminology](#15-introduction-terminology)
 
-2. [Core concepts](#coreconcepts)
-	2.1 [Resources](#coreconcepts-resources)
-	2.2 [Connections](#coreconcepts-connections)
-	2.3 [Groups](#coreconcepts-groups)
-	2.4 [Metadata](#coreconcepts-metadata)
+2. [Core concepts](#2-coreconcepts)
+	2.1 [Resources](#21-coreconcepts-resources)
+	2.2 [Connections](#22-coreconcepts-connections)
+	2.3 [Groups](#23-coreconcepts-groups)
+	2.4 [Metadata](#24-coreconcepts-metadata)
 
-3. [Schema structure](#schemastructure)
-	3.1 [Top-Level object](#schemastructure-toplevelobj)
-	3.2 [Version](#schemastructure-version)
-	3.3 [Metadata object](#schemastructure-metadataobj)
-	3.4 [Topology object](#schemastructure-topologyobj)
+3. [Schema structure](#3-schemastructure)
+	3.1 [Top-Level object](#31-schemastructure-toplevelobj)
+	3.2 [Version](#32-schemastructure-version)
+	3.3 [Metadata object](#33-schemastructure-metadataobj)
+	3.4 [Topology object](#34-schemastructure-topologyobj)
 
-4. [Resource model](#schemastructure)
-	4.1 [Resource object structure](#schemastructure)
-	4.2 [Resource types](#schemastructure)
-	4.3 [Provider information](#schemastructure)
-	4.4 [Properties and extensions](#schemastructure)
-	4.5 [Status and state](#schemastructure)
+4. [Resource model](#4-resourcemodel)
+	4.1 [Resource object structure](#41-resourcemodel-resobjstructure)
+	4.2 [Resource types](#42-resourcemodel-restypes)
+	4.3 [Provider information](#43-resourcemodel-providerinfo)
+	4.4 [Properties and extensions](#44-resourcemodel-propertiesext)
+	4.5 [Status and state](#45-resourcemodel-statustate)
 
 
 ## Preface
@@ -59,7 +59,7 @@ This specification is intended for:
 
 ---
 
-# Introduction
+# 1 Introduction
 OSIRIS (Open Standard for Infrastructure Resource Interchange Schema) defines a vendor-neutral JSON format for describing infrastructure resources, their properties and their topological relationships across heterogeneous IT and OT environments.
 
 OSIRIS is designed to normalize infrastructure data exported from diverse domains, including public hyperscalers, cloud platforms, private Data Centers, network devices, virtualization platforms and where applicable Operational Technology (OT) assets. OSIRIS focuses on describing what exists and how it relates, enabling cross-platform visibility and portable consumption by tools without requiring consumers to implement vendor-specific parsers.
@@ -72,7 +72,7 @@ OSIRIS is an interchange schema. It is not intended to replace vendor APIs or in
 The modern infrastructure landscape span multiple technology stacks and providers, including hyperscalers and continuously evolving private and public cloud platforms, on-premises data centers featuring compute virtualization platforms, storage and network systems and continuously increasing OT integration. While many systems started offerin a comprehensible export format for resource inventories and configurations, the exported representations differ significantly across vendors and products, even when JSON is used. In OT environments the gap is even bigger due to legacy systems and vendor specific protocols.
 
 
-##### Heterogeneous exports and inconsistent semantics:
+### 1.1.1 Heterogeneous exports and inconsistent semantics:
 Infrastructure data is tipically exposed through vendor-specific formats and models with inconsistent semantics for similar concepts:
 
 - **Major hyperscalers:** Different providers expose fundamentally similar concepts (compute, storage, networking) using different export structures and naming conventions (e.g. differing resource identifiers, property models and relationship representations).
@@ -86,7 +86,7 @@ Infrastructure data is tipically exposed through vendor-specific formats and mod
 As a result, producing a comprehensible, cross-platform view of infrastructure typically requires bespoke translation layers that are costly to build and difficult to sustain.
 
 
-##### Consequences
+### 1.1.2 Consequences
 This fragmentation creates recurring challenges:
 
 - **Integration complexity:** Tools that consume infrastructure data must implement vendor-specific parsing and mapping logic and often maintain separate adapters for each source system and each consuming application’s internal model.
@@ -120,7 +120,7 @@ This decouples data sources from consuming applications, reducing integration co
 This decouples data sources from consuming applications. In environments with **S** source systems and **C** consumer applications, the number of required integrations is reduced from potentially **S×C** vendor-to-tool mappings to **S** producer mappings (source > OSIRIS) plus **C** consumer mappings (OSIRIS > application).
 
 
-#### Core capabilities
+### 1.2.1 Core capabilities
 OSIRIS provides:
 
 1. **Unified resource model:** A common structure for representing infrastructure resources (compute, network, storage, applications) with consistent field semantics regardless of origin.
@@ -134,7 +134,7 @@ OSIRIS provides:
 5. **Extensibility:** A defined mechanism for vendor-specific properties and custom resource types without breaking schema compatibility.
 
 
-#### Design Approach
+### 1.2.2 Design Approach
 OSIRIS is designed as a **static snapshot format** describing infrastructure state at a point in time.
 
 OSIRIS is not intended to be:
@@ -158,7 +158,7 @@ By providing a stable interchange schema, OSIRIS allows the ecosystem to develop
 OSIRIS defines an **Open Standard JSON schema** for describing infrastructure resources and their topological relationships across heterogeneous environments.
 
 
-#### In Scope
+### 1.3.1 In Scope
 **Infrastructure domains covered by OSIRIS v1.0 include:**
 
 - **Hyperscalers and public clouds:** Virtual networks, storage resources, compute instances and platform services exported from hyperscalers and public cloud providers.
@@ -182,7 +182,7 @@ OSIRIS defines an **Open Standard JSON schema** for describing infrastructure re
 - Status and state information
 
 
-#### Out of Scope
+### 1.3.2 Out of Scope
 The following are explicitly **out of scope** for OSIRIS v1.0:
 
 - **Real-time telemetry and monitoring:** OSIRIS **describes** topology and inventory state, not time-series metrics, logs or observability data. Projects like OpenTelemetry or Prometheus, Grafana address telemetry concerns.
