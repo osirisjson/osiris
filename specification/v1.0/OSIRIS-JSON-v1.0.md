@@ -5,7 +5,7 @@
 | Authors   | Tia Zanella [skhell](https://github.com/skhell) |
 | Revision  | 1.0.0-DRAFT |
 | Creation date      | 14 December 2025 |
-| Last revision date | 26 December 2025 |
+| Last revision date | 28 December 2025 |
 | Status    | Draft |
 | Specification ID | OSIRIS-1.0 |
 | Schema URI | tbd later |
@@ -14,31 +14,37 @@
 
 
 ## Table of Content
-1. [Introduction](#1-introduction)
-    1.1 [Problem statement](#11-introduction-problem-statement)
-    1.2 [Solution overview](#12-introduction-solution-overview)
-    1.3 [Scope](#13-introduction-scope)
-    1.4 [Design principles](#14-introduction-design-principles)
-    1.5 [Terminology](#15-introduction-terminology)
+1. [Introduction](#1-intro)
+    1.1 [Problem statement](#11-intro-problem-statement)
+    1.2 [Solution overview](#12-intro-solution-overview)
+    1.3 [Scope](#13-intro-scope)
+    1.4 [Design principles](#14-intro-design-principles)
+    1.5 [Terminology](#15-intro-terminology)
 
-2. [Core concepts](#2-coreconcepts)
-	2.1 [Resources](#21-coreconcepts-resources)
-	2.2 [Connections](#22-coreconcepts-connections)
-	2.3 [Groups](#23-coreconcepts-groups)
-	2.4 [Metadata](#24-coreconcepts-metadata)
+2. [Core concepts](#2-coreconc)
+	2.1 [Resources](#21-coreconc-resources)
+	2.2 [Connections](#22-coreconc-connections)
+	2.3 [Groups](#23-coreconc-groups)
+	2.4 [Metadata](#24-coreconc-metadata)
 
-3. [Schema structure](#3-schemastructure)
-	3.1 [Top-Level object](#31-schemastructure-toplevelobj)
-	3.2 [Version](#32-schemastructure-version)
-	3.3 [Metadata object](#33-schemastructure-metadataobj)
-	3.4 [Topology object](#34-schemastructure-topologyobj)
+3. [Schema structure](#3-schstr)
+	3.1 [Top-Level object](#31-schstr-toplevelobj)
+	3.2 [Version](#32-schstr-version)
+	3.3 [Metadata object](#33-schstr-metadataobj)
+	3.4 [Topology object](#34-schstr-topologyobj)
 
-4. [Resource model](#4-resourcemodel)
-	4.1 [Resource object structure](#41-resourcemodel-resobjstructure)
-	4.2 [Resource types](#42-resourcemodel-restypes)
-	4.3 [Provider information](#43-resourcemodel-providerinfo)
-	4.4 [Properties and extensions](#44-resourcemodel-propertiesext)
-	4.5 [Status and state](#45-resourcemodel-statustate)
+4. [Resource model](#4-resmod)
+	4.1 [Resource object structure](#41-resmod-resobjstructure)
+	4.2 [Resource types](#42-resmod-restypes)
+	4.3 [Provider information](#43-resmod-providerinfo)
+	4.4 [Properties and extensions](#44-resmod-propertiesext)
+	4.5 [Status and state](#45-resmod-statustate)
+
+5. [Connection model](#5-conmod)
+	5.1 [Connection object structure](#51-conmod-connobjstr)
+	5.2 [Connection types](#52-conmod-conntype)
+	5.3 [Directionality](#53-conmod-directionality)
+	5.4 [Connection properties](#54-conmod-connprop)
 
 
 ## Preface
@@ -287,7 +293,7 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**, **
 
 **Resource type:** A classification that defines what kind of infrastructure entity a resource represents (e.g. compute.vm, network.switch, storage.volume).
 
-**Connection type:** A classification that defines the semantic meaning of a relationship between resources (e.g. connected_to, attached_to, contains, depends_on, routes_through).
+**Connection type:** A classification that defines the semantic meaning of a relationship between resources (e.g. network, attached_to, contains, dependency, routes_through).
 
 **Extension:** Namespaced vendor-specific or custom properties and types that extend OSIRIS without modifying the core schema structure.
 
@@ -580,7 +586,7 @@ Groups and connections serve complementary purposes:
 
 Example (in hybrid environments):
 - A VM or server is a **member** of a subnet/VLAN group (structure).
-- A load balancer **depends_on** or **routes_to** backend instances via **connections** (behavior/interaction).
+- A load balancer **dependency** or **routes_to** backend instances via **connections** (behavior/interaction).
 
 Producers **SHOULD** choose the representation that most clearly expresses the intended semantics. Consumers **SHOULD** support both patterns and **MUST NOT** assume exclusive use of either mechanism.
 
@@ -987,7 +993,7 @@ Producers **SHOULD** validate referential integrity before emitting documents. C
       "id": "conn-001",
       "source": "vm-001",
       "target": "db-001",
-      "type": "depends_on"
+      "type": "dependency"
     }
   ],
   "groups": [
@@ -1029,13 +1035,13 @@ Producers **SHOULD** validate referential integrity before emitting documents. C
       "id": "MXP-F1-CONN-001",
       "source": "MXP-F1-R01-SW-001",
       "target": "MXP-F1-R98-SRV-001",
-      "type": "connected_to"
+      "type": "network"
     },
     {
       "id": "MXP-F1-R98-RUNS-001",
       "source": "MXP-F1-R98-HV-001",
       "target": "MXP-F1-R98-SRV-001",
-      "type": "runs_on"
+      "type": "dependency"
     }
   ],
   "groups": [
@@ -1516,7 +1522,7 @@ The provider object **MAY** include:
 
   Examples:
   - `DCS-7050SX3-48YC12` (Arista switch model)
-  - `PowerEdge R750` (Dell server model)
+  - `PowerEdge R770` (Dell server model)
   - `5132` (Ciena router model)
 
 - **`version`** (string): Software version, firmware version or platform version (e.g. `EOS-4.28.3F`, `ESXi 7.0.3`).
@@ -1694,7 +1700,7 @@ If present, `properties` **MUST** be a JSON object.
 }
 ```
 
-Properties **MAY** contain primitive values, arrays, and nested objects of arbitrary depth.
+Properties **MAY** contain primitive values, arrays and nested objects of arbitrary depth.
 
 
 ### 4.4.3 Naming conventions
@@ -1752,6 +1758,9 @@ Namespaces **SHOULD** be stable and collision resistant:
 - Well-known vendors **MAY** use simple namespaces (e.g. `osiris.aws`, `osiris.azure`, `osiris.gcp`, `osiris.arista`)
 - Organizations **SHOULD** use a stable identifier (e.g. `osiris.com.acme`)
 
+> [!NOTE]
+> Some data stores and document databases restrict `.` in object keys. Consumers storing OSIRIS documents in such systems may need to escape or transform extension keys (e.g. `osiris.<namespace>` > `osiris_<namespace>`) while preserving semantics.
+
 #### Consumer behavior
 Consumers **MUST** ignore unrecognized extension namespaces and fields.
 
@@ -1790,7 +1799,7 @@ If a platform has richer label/annotation concepts (e.g. Kubernetes), producers 
 #### Producers SHOULD:
 - Keep property keys stable across exports
 - Keep extension namespaces stable across exports
-- Avoid excessive redundancy between `metadata`, `provider`, `properties`, and `extensions`
+- Avoid excessive redundancy between `metadata`, `provider`, `properties` and `extensions`
 
 
 ### 4.4.10 Examples
@@ -1950,7 +1959,7 @@ These fields enable:
 - **Visual differentiation** in diagrams or dashboards
 
 > [!NOTE]
-> `status` and `state` represent point-in-time observations at the moment of export. They are **NOT** intended for real-time monitoring, alerting, or telemetry. For runtime observability, use dedicated monitoring systems (e.g. OpenTelemetry, Prometheus).
+> `status` and `state` represent point-in-time observations at the moment of export. They are **NOT** intended for real-time monitoring, alerting or telemetry. For runtime observability, use dedicated monitoring systems (e.g. OpenTelemetry, Prometheus).
 
 
 ### 4.5.2 Status field
@@ -2076,7 +2085,7 @@ Producers **MAY** omit both `status` and `state` when:
 - Source systems do not provide status information
 
 #### Sensitive information
-Producers **MUST NOT** include credentials, tokens, or secrets in `status` or `state`. Producers **SHOULD** avoid embedding verbose diagnostic logs or incident identifiers in these fields.
+Producers **MUST NOT** include credentials, tokens or secrets in `status` or `state`. Producers **SHOULD** avoid embedding verbose diagnostic logs or incident identifiers in these fields.
 
 
 ### 4.5.5 Consumer rules
@@ -2160,7 +2169,7 @@ Consumers **MAY**:
     "node": "worker-node-03"
   },
   "extensions": {
-    "osiris-k8s": {
+    "osiris.k8s": {
       "conditions": [
         {
           "type": "Ready",
@@ -2234,3 +2243,469 @@ Consumers **MAY**:
   }
 }
 ```
+
+---
+
+# 5. Connection model
+## Overview
+Connections in OSIRIS represent explicit relationships between resources. They form the edges of the topology graph and encode how infrastructure components interact, depend on each other or are linked physically or logically.
+
+This chapter defines:
+- The structure and required fields of connection objects
+- Standard connection types and their semantics
+- Directionality and how it models flows or dependencies
+- Connection metadata via properties, extensions, tags and status/state
+
+Connections complement resources (Chapter 4) and groups (Chapter 6) to form a complete, traversable topology graph.
+
+
+## 5.1 Connection object structure
+### 5.1.1 Overview
+A connection is a JSON object that links two resources within the same OSIRIS document. Connections are stored in the `topology.connections` array (see chapter 3, section 3.4).
+
+
+### 5.1.2 Required fields
+Every connection **MUST** include:
+
+- **`id`** (string): Unique identifier for this connection within the document
+- **`source`** (string): Resource ID of the source endpoint
+- **`target`** (string): Resource ID of the target endpoint
+- **`type`** (string): Connection type using dot notation (see Section 5.2)
+
+
+### 5.1.3 Optional fields
+Connections **MAY** include:
+
+- **`name`** (string): Human-readable label for the connection
+- **`description`** (string): Free-text description of the relationship
+- **`direction`** (string): Directionality indicator (see chapter 5, ection 5.3)
+- **`status`** (string): Normalized status category (see chapter 4, section 4.5 for vocabulary)
+- **`state`** (string): Vendor-specific granular state (analogous to resource `state`)
+- **`properties`** (object): Connection-specific attributes
+- **`extensions`** (object): Vendor-specific metadata using `osiris.<namespace>` keys (see Chapter 8)
+- **`tags`** (object): Key-value labels (`string` > `string`)
+
+
+### 5.1.4 Minimal connection example
+```json
+{
+  "id": "conn-001",
+  "source": "vm-001",
+  "target": "db-001",
+  "type": "dependency",
+  "direction": "forward"
+}
+```
+
+
+### 5.1.5 Referential integrity
+The `source` and `target` fields **MUST** reference resources that exist in the same document's `topology.resources` array.
+
+Connections **MUST NOT**:
+- Reference resources in different OSIRIS documents
+- Reference non-existent resource IDs
+- Create self-references where `source == target`
+
+Producers **SHOULD** validate referential integrity before exporting. Consumers **MUST** handle invalid references gracefully (e.g. emit warnings, skip invalid connections or reject the document in strict-validation mode).
+
+
+### 5.1.6 Connection identity and stability
+Connection IDs **MUST** be unique within the document. Connection IDs **SHOULD** remain stable across exports when feasible to enable change detection and correlation.
+
+Producers **MAY** generate connection IDs deterministically using a stable fingerprint derived from:
+- endpoint identities (`source`, `target`)
+- connection `type`
+- `direction`
+- (optionally) key endpoint metadata that materially distinguishes the link (e.g. `source_port`, `target_port`, VLAN, protocol)
+
+#### Deterministic fingerprint (recommended)
+Producers **SHOULD** build a canonical endpoint tuple:
+- `A = (resource_id, port)` and `B = (resource_id, port)` where `port` is optional (empty string if unknown)
+
+For `direction = "bidirectional"`, producers **SHOULD** canonicalize endpoint ordering by sorting `(A, B)` before generating the ID, to prevent ID flips between exports.
+
+For `direction = "forward"` and `direction = "reverse"`, producers **SHOULD NOT** reorder endpoints, as the orientation is semantically meaningful.
+
+Example fingerprint:
+```
+fingerprint = type + "|" + direction + "|" + A.resource_id + "|" + A.port + "|" + B.resource_id + "|" + B.port
+id = hash(fingerprint)
+```
+
+#### Human-readable IDs (optional)
+Instead of hashing, producers **MAY** use a human-readable ID encoding both endpoints, for example:
+```
+cn-<source_id>-<source_port>-to-<target_id>-<target_port>-<index>
+```
+
+When using human-readable IDs for `direction = "bidirectional"`, producers **SHOULD** apply the same canonical endpoint ordering described above (sort `(A, B)` first) to ensure stability across exports.
+
+> [!NOTE]
+> A single pair of resources may have multiple distinct connections (e.g. multiple ports or VLANs). If the chosen fingerprint is not sufficient to uniquely identify each connection, producers **MUST** include additional discriminators (such as ports, VLAN, protocol) or append a stable suffix.
+
+
+### 5.1.7 Multiple connections between the same resources
+Two resources **MAY** have multiple connections of different types or different properties. Each distinct relationship **MUST** be represented as a separate connection object with a unique `id`.
+
+
+### 5.1.8 Field extensibility
+Consumers **MUST** accept connections with unrecognized fields for forward compatibility. Producers **SHOULD** place non-standard data under `properties` or `extensions` rather than introducing new top-level fields in OSIRIS v1.0.
+
+
+## 5.2 Connection types
+### 5.2.1 Overview
+The `type` field classifies the semantic meaning of a relationship between resources. Connection types use hierarchical dot notation similar to resource types (see chapter 4, section 4.2).
+
+
+### 5.2.2 Type format rules
+Connection type values:
+
+- **MUST NOT** contain whitespace
+- **MUST** be lowercase
+- **MUST** use dot (`.`) as the segment separator when multiple segments are present
+- **MUST NOT** start or end with a dot
+- **MUST NOT** contain consecutive dots (`..`)
+
+Examples of valid connection types:
+- `network`
+- `dependency`
+- `contains`
+- `dataflow`
+- `physical.ethernet`
+- `network.bgp`
+
+
+### 5.2.3 Standard connection types (v1.0)
+OSIRIS defines the following standard connection types:
+
+#### network
+**Meaning**: Network-layer connectivity or reachability between resources (L2/L3 or higher-level network linkage)
+
+**Direction**: Typically bidirectional unless modeling asymmetric flows
+
+**Common subtypes** (optional):
+- `network.l2`
+- `network.l3`
+- `network.bgp`
+- `network.ospf`
+- `network.vpn`
+
+#### dependency
+**Meaning**: One resource requires another to function (application/service dependency, runtime requirement)
+
+**Direction**: Typically forward (source depends on target)
+
+**Common subtypes** (optional):
+- `dependency.api`
+- `dependency.database`
+- `dependency.storage`
+
+#### contains
+**Meaning**: Hierarchical containment (source contains target)
+
+**Direction**: Typically forward
+
+> [!NOTE]
+> Containment can be represented via `contains` connections or via groups (Chapter 6). Use whichever yields the clearest model; avoid duplicating the same containment semantics in both unless you have a specific consumer need.
+
+#### dataflow
+**Meaning**: Data transfer, message passing or write/read flow between resources
+
+**Direction**: Typically forward (data flows from source to target)
+
+**Common subtypes** (optional):
+- `dataflow.http`
+- `dataflow.kafka`
+- `dataflow.mqtt`
+
+#### physical.*
+**Meaning**: Physical connectivity (cables, fiber, power)
+
+**Direction**: Typically bidirectional
+
+**Common subtypes**:
+- `physical.ethernet`
+- `physical.fiber`
+- `physical.power`
+
+
+### 5.2.4 Vendor-specific and custom connection types
+Vendor-specific or organization-specific relationships **SHOULD** use the namespaced pattern:
+```
+osiris.<namespace>.<type>
+```
+
+Examples:
+- `osiris.aws.vpc-peering`
+- `osiris.k8s.service-selector`
+- `osiris.arista.mlag`
+- `osiris.com-acme.workflow`
+
+
+### 5.2.5 Unknown connection types
+Consumers **MUST** accept connections with unknown types. When encountering unknown types, consumers **SHOULD**:
+- Preserve the connection in the graph
+- Treat it as a generic relationship
+- Display the type string verbatim (useful for debugging)
+- Traverse it normally
+
+
+## 5.3 Directionality
+### 5.3.1 Overview
+The `direction` field indicates whether a connection represents a symmetric relationship or a directed relationship with a specific orientation.
+
+
+### 5.3.2 Direction values
+If present, `direction` **MUST** be one of:
+
+- **`bidirectional`**: Symmetric relationship (default if omitted)
+- **`forward`**: Flows from source to target
+- **`reverse`**: Flows from target to source
+
+
+### 5.3.3 Default behavior
+If `direction` is omitted, consumers **SHOULD** treat the connection as `bidirectional` unless the connection type definition explicitly states a directional default.
+
+
+### 5.3.4 Graph traversal semantics
+- **`bidirectional`**: edges in both directions
+- **`forward`**: edge source > target
+- **`reverse`**: edge target > source
+
+
+## 5.4 Connection properties
+### 5.4.1 Overview
+Connections use the same metadata pattern as resources:
+
+- **`properties`**: Portable, connection-specific attributes
+- **`extensions`**: Vendor/tool/org-specific structures using `osiris.<namespace>`
+- **`tags`**: Simple labels (`string`  > `string`)
+- **`status`**: Normalized high-level category (`active`|`inactive`|`degraded`|`retired`|`unknown`)
+- **`state`**: Optional granular vendor-defined state
+
+
+### 5.4.2 Common properties
+**Network connections:**
+- `protocol` (e.g. tcp, udp, icmp, bgp)
+- `ports` (array of numbers)
+- `vlan` (number)
+- `mtu` (number)
+- `bandwidth_mbps` / `speed_gbps`
+- `latency_ms`
+
+**Physical connections:**
+- `source_port` (string)
+- `target_port` (string)
+- `cable_type` (string; e.g. `cat6a`, `om4`, `os2`, `dac`)
+- `length_meters` (number)
+
+- `source_transceiver` (object; optional): transceiver/module installed on the source port
+- `target_transceiver` (object; optional): transceiver/module installed on the target port
+
+`source_transceiver` and `target_transceiver` are intended for pluggable modules (SFP/SFP+/SFP28/QSFP family, SFP-10G-T, etc.). For fixed copper ports (integrated BASE-T NIC ports), producers **SHOULD** omit `*_transceiver` and instead describe the port/NIC at the resource level (e.g. server NIC model in resource properties or `provider.model`). If producers still choose to represent fixed-port endpoints, they **MUST** not imply optical DOM availability.
+
+Each `*_transceiver` object **SHOULD** include when known:
+- `vendor` (string)
+- `model` (string; e.g. "SFP-10G-T", "QSFP-100G-SR4")
+- `part_number` (string; optional)
+- `serial_number` (string; optional)
+- `form_factor` (string; e.g. `sfp`, `sfp+`, `sfp28`, `qsfp28`, `qsfp-dd`)
+- `dom` (object; optional): Digital Optical Monitoring - Digital Diagnostic Monitoring (DOM/DDM) telemetry for transceivers that support diagnostics.
+  - DOM/DDM commonly includes module temperature, supply voltage, Tx/Rx optical power and often Tx bias current.
+  - Availability, precision and supported metrics are module/vendor dependent; producers **SHOULD** omit keys that are not supported (equivalent to "N/A" on many platforms).
+  - Consumers **SHOULD** treat DOM values as indicative operational telemetry, not metrology-grade measurements.
+
+  **Recommended DOM keys (portable core):**
+  - `module_temperature_c` (number)
+  - `supply_voltage_v` (number)
+  - `tx_power_dbm` (number)
+  - `rx_power_dbm` (number)
+  - `tx_bias_ma` (number; if supported)
+
+  **Lane-aware DOM (optional, for multi-lane optics):**
+  - `lanes` (array of objects): per-lane diagnostics when available
+    - `lane` (number; 1-based index)
+    - `tx_power_dbm` (number; optional)
+    - `rx_power_dbm` (number; optional)
+    - `tx_bias_ma` (number; optional)
+  - For multi-lane optics, producers **SHOULD** use `lanes`. For single-lane optics, producers **MAY** use only the top-level keys. If both are present, consumers **SHOULD** prefer `lanes`.
+
+  **Advanced diagnostics (optional, often vendor/platform dependent):**
+  - `pre_fec_ber` (number; optional)
+  - `uncorrected_ber` (number; optional)
+  - `snr_db` (number; optional)
+  - `laser_temperature_c` (number; optional)
+  - `laser_frequency_ghz` (number; optional)
+
+  Producers **SHOULD** place highly vendor-specific optics telemetry, proprietary counters or fields with vendor-dependent semantics in `extensions.osiris.<namespace>`.
+
+**Dependency connections:**
+- `required` (boolean)
+- `endpoint` (string; URL/host)
+- `timeout_seconds` (number)
+- `api_version` (string)
+
+**Containment connections:**
+- `allocation` (object; producer-defined)
+- `capacity` (object; producer-defined)
+
+
+### 5.4.3 Extensions
+Extensions follow the same `osiris.<namespace>` convention as resources:
+```json
+{
+  "extensions": {
+    "osiris.cisco": {
+      "neighbor_address": "192.0.2.1",
+      "soft_reconfiguration": true
+    }
+  }
+}
+```
+
+Consumers **MUST** ignore unknown extension namespaces and fields.
+
+
+### 5.4.4 Examples
+#### Network connection (bidirectional)
+```json
+{
+  "id": "conn-net-web-db",
+  "source": "vm-web-001",
+  "target": "vm-db-001",
+  "type": "network",
+  "direction": "bidirectional",
+  "status": "active",
+  "properties": {
+    "protocol": "tcp",
+    "ports": [5432],
+    "vlan": 100
+  },
+  "tags": {
+    "environment": "production"
+  }
+}
+```
+
+#### Dependency (forward)
+```json
+{
+  "id": "conn-dep-api-auth",
+  "source": "service-api-gateway",
+  "target": "service-auth",
+  "type": "dependency.api",
+  "direction": "forward",
+  "properties": {
+    "required": true,
+    "api_version": "v2",
+    "timeout_seconds": 5
+  }
+}
+```
+
+#### Physical copper ethernet link (bidirectional)
+```json
+{
+  "id": "cn-MXP-F1-R01-SW-001-48-to-MXP-F1-R01-SRV-042-eno1-1",
+  "source": "MXP-F1-R01-SW-001",
+  "target": "MXP-F1-R01-SRV-042",
+  "type": "physical.ethernet",
+  "direction": "bidirectional",
+  "status": "active",
+  "properties": {
+    "source_port": "Ethernet48",
+    "target_port": "eno1",
+    "speed_gbps": 10,
+    "cable_type": "cat6a",
+    "length_meters": 5,
+    "source_transceiver": {
+      "vendor": "arista",
+      "model": "SFP-10G-T",
+      "form_factor": "sfp+",
+      "serial_number": "SFP10GT-XXXXXXXX"
+    },
+    "target_transceiver": {
+      "vendor": "broadcom",
+      "model": "57412 Quad Port 10GbE BASE-T (OCP 3.0)",
+      "form_factor": "base-t",
+      "serial_number": "BCM57412-YYYYYYYY"
+    }
+  }
+}
+```
+
+#### Physical fiber ethernet link (bidirectional)
+```json
+{
+  "id": "cn-MXP-F1-R01-SW-001-49-1-to-MXP-F1-R01-SRV-042-ens2np0-1",
+  "source": "MXP-F1-R01-SW-001",
+  "target": "MXP-F1-R01-SRV-042",
+  "type": "physical.fiber",
+  "direction": "bidirectional",
+  "status": "active",
+  "properties": {
+    "source_port": "Ethernet49/1",
+    "target_port": "ens2np0",
+    "speed_gbps": 100,
+    "cable_type": "om4",
+    "length_meters": 30,
+    "source_transceiver": {
+      "vendor": "arista",
+      "model": "100GBASE-SR4",
+      "form_factor": "qsfp28",
+      "serial_number": "QSFP100SR4-XXXXXXXX",
+      "dom": {
+        "module_temperature_c": 42.1,
+        "supply_voltage_v": 3.28,
+        "lanes": [
+          { "lane": 1, "tx_power_dbm": -1.3, "rx_power_dbm": -2.1, "tx_bias_ma": 44.2 },
+          { "lane": 2, "tx_power_dbm": -1.2, "rx_power_dbm": -2.3, "tx_bias_ma": 44.0 },
+          { "lane": 3, "tx_power_dbm": -1.4, "rx_power_dbm": -2.2, "tx_bias_ma": 44.4 },
+          { "lane": 4, "tx_power_dbm": -1.1, "rx_power_dbm": -2.0, "tx_bias_ma": 43.8 }
+        ]
+      }
+    },
+    "target_transceiver": {
+      "vendor": "nvidia",
+      "model": "100GBASE-SR4",
+      "form_factor": "qsfp56",
+      "serial_number": "QSFP56SR4-YYYYYYYY",
+      "dom": {
+        "module_temperature_c": 39.7,
+        "supply_voltage_v": 3.30,
+        "lanes": [
+          { "lane": 1, "tx_power_dbm": -1.0, "rx_power_dbm": -2.4, "tx_bias_ma": 41.9 },
+          { "lane": 2, "tx_power_dbm": -1.1, "rx_power_dbm": -2.5, "tx_bias_ma": 42.1 },
+          { "lane": 3, "tx_power_dbm": -1.2, "rx_power_dbm": -2.6, "tx_bias_ma": 42.0 },
+          { "lane": 4, "tx_power_dbm": -1.0, "rx_power_dbm": -2.3, "tx_bias_ma": 41.8 }
+        ]
+      }
+    }
+  }
+}
+```
+
+#### Vendor-specific connection type
+```json
+{
+  "id": "conn-vpc-peer-prod-dev",
+  "source": "vpc-prod-001",
+  "target": "vpc-dev-001",
+  "type": "osiris.aws.vpc-peering",
+  "direction": "bidirectional",
+  "status": "active",
+  "properties": {
+    "cidr_blocks": ["10.0.0.0/16", "10.1.0.0/16"]
+  },
+  "extensions": {
+    "osiris.aws": {
+      "peering_connection_id": "pcx-0abc123def456"
+    }
+  }
+}
+```
+
+### 5.4.5 Validation
+If present, `properties` and `extensions` **MUST** be JSON objects. `tags` (if present) **MUST** be a JSON object mapping strings to strings.
+
+Consumers **MUST** accept connections with unrecognized property keys or extension namespaces and **MUST NOT** reject documents solely due to unknown connection metadata.
