@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 # [1.0.0-DRAFT] - 2025-12-30
 ### Updated
+- Table of contents and linking with Markdown All in One module
+
+# [1.0.0-DRAFT] - 2025-12-30
+### Updated
 - Dividers between sections on chapter 5 for improved readability.
 
 ### Added
