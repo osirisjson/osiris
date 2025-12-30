@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+# [1.0.0-DRAFT] - 2025-12-30
+### Updated
+- Dividers between sections on chapter 5 for improved readability.
+
+### Added
+- Chapter 6: (6.1–6.6)
+
 # [1.0.0-DRAFT] - 2025-12-28
 ### Updated
 - Chapter 4 DELL poweredge model to 770 model for making real examples with Arista DCS-7050SX3-48YC12 equipment and transceivers.

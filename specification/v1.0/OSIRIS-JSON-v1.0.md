@@ -5,7 +5,7 @@
 | Authors   | Tia Zanella [skhell](https://github.com/skhell) |
 | Revision  | 1.0.0-DRAFT |
 | Creation date      | 14 December 2025 |
-| Last revision date | 28 December 2025 |
+| Last revision date | 30 December 2025 |
 | Status    | Draft |
 | Specification ID | OSIRIS-1.0 |
 | Schema URI | tbd later |
@@ -45,6 +45,14 @@
 	5.2 [Connection types](#52-conmod-conntype)
 	5.3 [Directionality](#53-conmod-directionality)
 	5.4 [Connection properties](#54-conmod-connprop)
+
+6. [Group Model](#6-grpmod)
+	6.1 [Group Object Structure](#6-grpmod-grpobjstr)
+	6.2 [Group Types](#6-grpmod-grptypes)
+	6.3 [Membership](#6-grpmod-membership)
+    6.4 [Group vs contains connections](#6-grpmod-contconn)
+	6.5 [Group metadata](#6-grpmod-grpmeta)
+	6.6 [Validation](#6-grpmod-validation)
 
 
 ## Preface
@@ -114,7 +122,7 @@ The absence of a vendor-neutral interchange format means the infrastructure mana
 ---
 
 ## 1.2 Solution overview
-OSIRIS addresses the fragmentation described in Section 1.1 by defining a canonical JSON schema that serves as a neutral interchange format between infrastructure data sources and consuming applications.
+OSIRIS addresses the fragmentation described in section 1.1 by defining a canonical JSON schema that serves as a neutral interchange format between infrastructure data sources and consuming applications.
 
 Rather than requiring each consuming application to implement and maintain vendor-specific parsers, OSIRIS adopts a translation layer approach:
 
@@ -405,7 +413,7 @@ Resources **MAY** include high-level status and/or state information to support 
 - **Status** generally refers to lifecycle presence or availability within the snapshot context.
 - **State** generally refers to an operational condition (where applicable).
 
-The exact fields and allowed values are defined in the chapter 4 Resource model (see Section 4.5).
+The exact fields and allowed values are defined in the chapter 4 Resource model (see section 4.5).
 
 
 ### 2.1.7 Resource lifecycle considerations
@@ -448,7 +456,7 @@ Each connection **MUST** declare a type that classifies the nature of the relati
 
 The connection type system includes:
 
-- **Standard types:** common relationship types defined in chapter 5 Section 5.2 (Connection Types), such as `network`, `dependency`, `contains`, `dataflow`.
+- **Standard types:** common relationship types defined in chapter 5 section 5.2 (Connection Types), such as `network`, `dependency`, `contains`, `dataflow`.
 - **Vendor-specific types:** platform specific relationships using namespaced conventions (see Chapter 8).
 - **Custom types:** organization defined types for specialized relationships.
 
@@ -481,7 +489,7 @@ As with resources, the extension mechanism allows producers to include vendor sp
 ### 2.2.7 Connection status
 Connections **MAY** include status information indicating operational health or availability to support filtering and visualization.
 
-Common values include `active`, `inactive`, `degraded` and `unknown`. The exact field structure and allowed values are defined in chapter 5 Connection model (see Section 5.4 Connection properties).
+Common values include `active`, `inactive`, `degraded` and `unknown`. The exact field structure and allowed values are defined in chapter 5 Connection model (see section 5.4 Connection properties).
 
 
 ### 2.2.8 Implicit vs. explicit relationships
@@ -533,7 +541,7 @@ Each group **MUST** declare a type that classifies what kind of collection or bo
 
 The group type system includes:
 
-- **Standard types:** common grouping categories defined in Chapter 6 Group model, Section 6.2 (Group types).
+- **Standard types:** common grouping categories defined in Chapter 6 Group model, section 6.2 (Group types).
 - **Vendor-specific types:** platform specific grouping constructs using namespaced conventions (see Chapter 8 Extensive mechanism).
 - **Custom types:** organization defined types for specialized grouping needs.
 
@@ -637,7 +645,7 @@ OSIRIS metadata **MAY** include:
 - **Validation hints:** Advisory information to assist consumers in validating or interpreting the topology.
 
 > [!NOTE] 
-> The OSIRIS specification version is declared at the document level (see Section 3.2). Metadata **MAY** repeat this information for convenience, but any duplicated version information **MUST** be consistent.
+> The OSIRIS specification version is declared at the document level (see section 3.2). Metadata **MAY** repeat this information for convenience, but any duplicated version information **MUST** be consistent.
 
 
 ### 2.4.4 Metadata extensibility
@@ -695,11 +703,11 @@ An OSIRIS document **MUST** be a JSON object containing **at least** the followi
 ### 3.1.2 Required fields
 The following fields are **REQUIRED** at the top level:
 
-- **`version`** (string): The OSIRIS specification version to which this document conforms. See Section 3.2 for version string format and semantics.
+- **`version`** (string): The OSIRIS specification version to which this document conforms. See section 3.2 for version string format and semantics.
 
-- **`metadata`** (object): Contextual information about the document's origin, scope and generation. See Section 3.3 for metadata object structure.
+- **`metadata`** (object): Contextual information about the document's origin, scope and generation. See section 3.3 for metadata object structure.
 
-- **`topology`** (object): The infrastructure topology data, including resources, connections and groups. See Section 3.4 for topology object structure.
+- **`topology`** (object): The infrastructure topology data, including resources, connections and groups. See section 3.4 for topology object structure.
 
 
 ### 3.1.3 Additional top-level fields
@@ -774,7 +782,7 @@ Metadata **MAY** include generator or tool version information, but this is dist
 
 ## 3.3 Metadata Object
 ### 3.3.1 Structure
-The `metadata` field is a **REQUIRED** object at the top level of every OSIRIS document. It provides contextual information about the document's generation, scope and provenance as described in Section 2.4.
+The `metadata` field is a **REQUIRED** object at the top level of every OSIRIS document. It provides contextual information about the document's generation, scope and provenance as described in section 2.4.
 
 A minimal metadata object:
 ```json
@@ -876,7 +884,7 @@ Metadata objects **SHOULD** be concise. Large amounts of auxiliary data (e.g. fu
     "environments": ["production"]
   },
   "tags": {
-    "cost-center": "engineering",
+    "cost-center": "sw-development",
     "compliance": "sox"
   }
 }
@@ -963,7 +971,7 @@ Resources, connections and groups reference each other by identifier:
 
 All identifier references **MUST** point to objects that exist within the same OSIRIS document. Cross-document references are not supported in OSIRIS v1.0.
 
-Producers **SHOULD** validate referential integrity before emitting documents. Consumers **MUST** handle referential integrity violations gracefully (see chapter 9, Section 9.3 for validation rules). Consumers **MAY** ignore invalid connections or groups while still processing valid resources.
+Producers **SHOULD** validate referential integrity before emitting documents. Consumers **MUST** handle referential integrity violations gracefully (see chapter 9, section 9.3 for validation rules). Consumers **MAY** ignore invalid connections or groups while still processing valid resources.
 
 
 ### 3.4.7 Topology object example
@@ -1055,7 +1063,7 @@ Producers **SHOULD** validate referential integrity before emitting documents. C
 ```
 
 > [!NOTE]
-> Resource types and group types in this example (e.g. `storage.database`, `network.vpc`) are illustrative. The complete type taxonomy is defined in Chapter 7 (Resource type taxonomy) and Section 6.2 (Group types). Identifiers are opaque strings and producers **MAY** use structured IDs based on specific naming conventions.
+> Resource types and group types in this example (e.g. `storage.database`, `network.vpc`) are illustrative. The complete type taxonomy is defined in Chapter 7 (Resource type taxonomy) and section 6.2 (Group types). Identifiers are opaque strings and producers **MAY** use structured IDs based on specific naming conventions.
 
 
 ### 3.4.8 Empty topologies
@@ -1125,14 +1133,14 @@ Each resource object **MUST** include the following fields:
     - `MXP-F1-R01-SW-001` (structured datacenter naming convention)
     - `urn:uuid:f81a4bcd-7efg-11h0-a765-00a0c91e5fg7` (UUID-based)
 
-- **`type`** (string): The resource type classification using hierarchical dot notation (e.g. `compute.vm`, `network.switch`, `storage.volume`). Resource type conventions are defined in Section 4.2 and the complete taxonomy is specified in Chapter 7 (Resource type taxonomy).
+- **`type`** (string): The resource type classification using hierarchical dot notation (e.g. `compute.vm`, `network.switch`, `storage.volume`). Resource type conventions are defined in section 4.2 and the complete taxonomy is specified in Chapter 7 (Resource type taxonomy).
 
-- **`provider`** (object): Provider attribution describing the originating platform or system for this resource. The provider object structure is defined in Section 4.3 (Provider information).
+- **`provider`** (object): Provider attribution describing the originating platform or system for this resource. The provider object structure is defined in section 4.3 (Provider information).
 
 > [!NOTE]
 > The `provider` field is **REQUIRED** in OSIRIS v1.0 because origin and traceability are core to the interchange model. Resources without provider attribution lose critical context for validation, enrichment and correlation with source systems.
 >
-> For resources from unknown or offline sources, producers **MAY** use `provider.name = "unknown"` or `provider.name = "custom"` with additional context in `provider.source` or `provider.system` (see Section 4.3).
+> For resources from unknown or offline sources, producers **MAY** use `provider.name = "unknown"` or `provider.name = "custom"` with additional context in `provider.source` or `provider.system` (see section 4.3).
 
 
 ### 4.1.3 Optional fields
@@ -1142,7 +1150,7 @@ A resource object **MAY** include the following optional fields:
 
 - **`description`** (string): A free-text description of the resource's purpose, function or characteristics.
 
-- **`properties`** (object): An object containing resource-specific properties that describe characteristics, configuration and attributes. Properties are free-form and producer-defined. Property conventions and extensibility are detailed in Section 4.4 (Properties and extensions).
+- **`properties`** (object): An object containing resource-specific properties that describe characteristics, configuration and attributes. Properties are free-form and producer-defined. Property conventions and extensibility are detailed in section 4.4 (Properties and extensions).
 
   Example:
     ```json
@@ -1156,7 +1164,7 @@ A resource object **MAY** include the following optional fields:
     }
     ```
 
-- **`extensions`** (object): Namespaced extension data for vendor-specific or domain-specific fields that extend beyond core OSIRIS semantics. Extensions **MUST** use the `osiris.<namespace>` prefix convention (e.g. `osiris.aws`, `osiris.azure`, `osiris.custom`). Extension mechanisms are defined in Chapter 8 (Extension mechanism) and Section 4.4.
+- **`extensions`** (object): Namespaced extension data for vendor-specific or domain-specific fields that extend beyond core OSIRIS semantics. Extensions **MUST** use the `osiris.<namespace>` prefix convention (e.g. `osiris.aws`, `osiris.azure`, `osiris.custom`). Extension mechanisms are defined in Chapter 8 (Extension mechanism) and section 4.4.
 
   Example:
     ```json
@@ -1177,7 +1185,7 @@ A resource object **MAY** include the following optional fields:
 - **`state`** (string): Optional operational condition indicator. State provides **more specific operational detail** beyond status (e.g. running, stopped, starting, stopping).
 
 > [!NOTE]
-> The distinction between `status` and `state`, allowed values and usage semantics are defined in Section 4.5 (Status and state).
+> The distinction between `status` and `state`, allowed values and usage semantics are defined in section 4.5 (Status and state).
 
 - **`tags`** (object): Key-value labels used for organizational categorization, filtering or metadata annotation (e.g. environment, owner, cost-center, compliance requirements). Tags are general-purpose and cross-platform.
 
@@ -1186,8 +1194,8 @@ A resource object **MAY** include the following optional fields:
   {
     "tags": {
       "environment": "production",
-      "owner": "platform-team",
-      "cost-center": "engineering"
+      "owner": "software-development-team",
+      "cost-center": "sw-development"
     }
   }
 ```
@@ -1284,7 +1292,7 @@ Resource types use a hierarchical dot notation that balances human readability w
 
 
 ### 4.2.2 Type field definition
-The `type` field is a **REQUIRED** string (see Section 4.1). Type values:
+The `type` field is a **REQUIRED** string (see section 4.1). Type values:
 
 - **MUST NOT** contain whitespace
 - **MUST** be lowercase strings
@@ -1456,7 +1464,7 @@ Semantic validation (whether a type is defined in the standard taxonomy) is **OP
 
 ## 4.3 Provider information
 ### 4.3.1 Overview
-The `provider` object is a **REQUIRED** field in every resource (see Section 4.1). It describes the originating platform or system from which the resource was sourced, enabling traceability, correlation and enrichment.
+The `provider` object is a **REQUIRED** field in every resource (see section 4.1). It describes the originating platform or system from which the resource was sourced, enabling traceability, correlation and enrichment.
 
 The provider object answers: **"Where did this resource come from?"** rather than **"Where is this resource located?"** Regional placement **MAY** be recorded in `provider.region` or `provider.zone` for correlation with provider APIs; broader export boundaries belong in `metadata.scope`.
 
@@ -1669,7 +1677,7 @@ Consumers **MUST** accept provider objects with unrecognized fields and preserve
 
 ## 4.4 Properties and extensions
 ### 4.4.1 Overview
-Resources in OSIRIS use two complementary mechanisms to represent data beyond the standard fields defined in Section 4.1:
+Resources in OSIRIS use two complementary mechanisms to represent data beyond the standard fields defined in section 4.1:
 
 - **`properties`**: A free-form object for resource attributes and configuration details
 - **`extensions`**: A namespaced object for vendor-specific or organization-specific structures that must not collide with the core schema
@@ -1806,7 +1814,7 @@ If a platform has richer label/annotation concepts (e.g. Kubernetes), producers 
 #### Compute resource with portable properties + vendor extension
 ```json
 {
-  "id": "vm-web-001",
+  "id": "vm-aws-web-001",
   "name": "web-server-01",
   "type": "compute.vm",
   "provider": {
@@ -2114,7 +2122,7 @@ Consumers **MAY**:
 #### Cloud VM with status and state
 ```json
 {
-  "id": "vm-web-001",
+  "id": "vm-aws-web-001",
   "name": "web-server-01",
   "type": "compute.vm",
   "provider": {
@@ -2258,6 +2266,7 @@ This chapter defines:
 
 Connections complement resources (Chapter 4) and groups (Chapter 6) to form a complete, traversable topology graph.
 
+---
 
 ## 5.1 Connection object structure
 ### 5.1.1 Overview
@@ -2270,7 +2279,7 @@ Every connection **MUST** include:
 - **`id`** (string): Unique identifier for this connection within the document
 - **`source`** (string): Resource ID of the source endpoint
 - **`target`** (string): Resource ID of the target endpoint
-- **`type`** (string): Connection type using dot notation (see Section 5.2)
+- **`type`** (string): Connection type using dot notation (see section 5.2)
 
 
 ### 5.1.3 Optional fields
@@ -2351,6 +2360,7 @@ Two resources **MAY** have multiple connections of different types or different 
 ### 5.1.8 Field extensibility
 Consumers **MUST** accept connections with unrecognized fields for forward compatibility. Producers **SHOULD** place non-standard data under `properties` or `extensions` rather than introducing new top-level fields in OSIRIS v1.0.
 
+---
 
 ## 5.2 Connection types
 ### 5.2.1 Overview
@@ -2449,6 +2459,7 @@ Consumers **MUST** accept connections with unknown types. When encountering unkn
 - Display the type string verbatim (useful for debugging)
 - Traverse it normally
 
+---
 
 ## 5.3 Directionality
 ### 5.3.1 Overview
@@ -2472,6 +2483,7 @@ If `direction` is omitted, consumers **SHOULD** treat the connection as `bidirec
 - **`forward`**: edge source > target
 - **`reverse`**: edge target > source
 
+---
 
 ## 5.4 Connection properties
 ### 5.4.1 Overview
@@ -2571,8 +2583,8 @@ Consumers **MUST** ignore unknown extension namespaces and fields.
 ```json
 {
   "id": "conn-net-web-db",
-  "source": "vm-web-001",
-  "target": "vm-db-001",
+  "source": "vm-<provider>-web-001",
+  "target": "vm-<provider>-db-001",
   "type": "network",
   "direction": "bidirectional",
   "status": "active",
@@ -2709,3 +2721,995 @@ Consumers **MUST** ignore unknown extension namespaces and fields.
 If present, `properties` and `extensions` **MUST** be JSON objects. `tags` (if present) **MUST** be a JSON object mapping strings to strings.
 
 Consumers **MUST** accept connections with unrecognized property keys or extension namespaces and **MUST NOT** reject documents solely due to unknown connection metadata.
+
+---
+
+# 6. Group model
+## Overview
+Groups in OSIRIS provide a mechanism to organize and classify resources into meaningful collections without altering the underlying topology graph. Groups are primarily used for:
+
+- **Aggregation:** Collecting resources by shared attributes (e.g. "all production workloads", "all devices in on-premise Data Center DC-MXP", "all resources owned by Software Development Team")
+- **Presentation and navigation:** Building hierarchical trees, filtered views and organized inventories
+- **Boundary modeling:** Representing organizational, physical, logical, network or security boundaries
+
+Groups complement resources (nodes) and connections (edges) by providing *structure and categorization*. Groups do not create topological edges; they provide categorization and hierarchical organization. While connections represent explicit relationships between individual resources, groups provide organizational context and multi-dimensional classification.
+
+This chapter defines:
+- Group object structure and required fields
+- Standard group types and their semantics
+- Membership models including hierarchical nesting
+- When to use groups versus `contains` connections
+- Group metadata via properties, extensions, tags and status/state
+
+---
+
+## 6.1 Group object structure
+### 6.1.1 Overview
+A group is a JSON object stored in the `topology.groups` array (see chapter 3, section 3.4). A group may reference:
+- **Resources** via the `members` array
+- **Other groups** via the `children` array (hierarchical nesting)
+
+Groups enable multi-dimensional classification where a single resource can belong to multiple groups simultaneously (e.g. a VM can be in both "production environment" and "web tier" groups).
+
+
+### 6.1.2 Required fields
+Every group **MUST** include:
+
+- **`id`** (string): Unique identifier for this group within the document
+- **`type`** (string): Group type using dot notation (see section 6.2)
+
+
+### 6.1.3 Optional fields
+Groups **MAY** include:
+
+- **`name`** (string): Human-readable label for the group
+- **`description`** (string): Free-text description of the group's purpose or contents
+- **`members`** (array of strings): Resource IDs that belong to this group (see section 6.3.1)
+- **`children`** (array of strings): Group IDs nested under this group (see section 6.3.3)
+- **`status`** (string): Normalized operational status (`active`|`inactive`|`degraded`|`retired`|`unknown`)
+- **`state`** (string): Vendor-specific granular state
+- **`properties`** (object): Portable group attributes
+- **`extensions`** (object): Vendor-specific metadata using `osiris.<namespace>` keys
+- **`tags`** (object): Key-value labels (`string` > `string`)
+
+
+### 6.1.4 Minimal group example
+```json
+{
+  "id": "grp-prod",
+  "type": "logical.environment",
+  "name": "Production"
+}
+```
+
+
+### 6.1.5 Referential integrity
+Each entry in `members` **MUST** reference a resource ID present in `topology.resources`.
+Each entry in `children` **MUST** reference a group ID present in `topology.groups`.
+
+A group **MUST NOT**:
+- List itself in `children` (direct self-reference)
+- Create cycles in the group hierarchy (indirect self-reference through descendants)
+
+Producers **SHOULD** validate referential integrity and cycle detection before export.
+
+Consumers **MUST** handle invalid references gracefully by:
+- Emitting warnings for broken references
+- Skipping invalid members or children entries
+- Rejecting the document in strict validation mode (optional)
+
+
+### 6.1.6 Group identity and stability
+Group IDs **MUST** be unique within the document. Group IDs **SHOULD** remain stable across exports when feasible to enable:
+- Change detection when comparing snapshots
+- Correlation across multiple topology exports
+- Reliable external references from consuming systems
+
+Producers **MAY** use deterministic ID generation based on:
+- Group type
+- Group name
+- Stable contextual identifiers (e.g. datacenter code, environment name, VPC ID)
+
+**Example deterministic ID patterns:**
+- On-prem site: grp-<site_code> (e.g. grp-MXP)
+- Physical datacenter: `grp-MXP` (datacenter code)
+- Physical rack: `grp-MXP-F1-R01` (datacenter-floor-rack)
+- Logical environment: `grp-prod` or `grp-env-production`
+
+- Hyperscalers and Cloud provider netwrok groups: `grp-<provider.name>-net-<id>`
+  - AWS VPC: `grp-aws-net-vpc-0abc123def456`
+  - Azure VNet: `grp-az-net-vnet-prod-weu-01`
+  - GCP VPC: `grp-gcp-net-vpc-prod-eu-01`
+  - DigitalOcean VPC: `grp-digitalocean-net-vpc-<uuid>`
+  - Leaseweb Private Network: `grp-leaseweb-net-private-<id>`
+
+> [!NOTE]
+> Providers use different names for private networking constructs (e.g. VPC/VNet/Networks/Private Network). OSIRIS treats these uniformly as “Hyperscalers and Cloud provider network groups”; the concrete provider object IDs remain provider-specific.
+
+
+> [!NOTE]
+> Some producers embed a short provider code in deterministic IDs for readability (e.g. `grp-aws-net-...`).
+> OSIRIS does not require this. If used, the provider code SHOULD match `provider.name` where applicable.
+
+**Recommended provider codes (non-normative):**
+- `aws` (Amazon Web Services)
+- `az` (Microsoft Azure)
+- `gcp` (Google Cloud Platform)
+- `oci` (Oracle Cloud Infrastructure)
+- `ibm` (IBM Cloud)
+- `tc` (Tencent Cloud)
+- `ali` (Alibaba Cloud)
+
+Producers **MAY** use additional provider codes as needed. Consumers **MUST NOT** treat this list as exhaustive and **MUST** accept unknown provider codes.
+
+
+### 6.1.7 Field extensibility
+Consumers **MUST** accept groups with unrecognized fields for forward compatibility.
+
+Producers **SHOULD** place non-standard data under `properties` or `extensions` rather than introducing new top-level fields in OSIRIS v1.0.
+
+---
+
+## 6.2 Group types
+### 6.2.1 Overview
+The `type` field classifies what the group represents and how it should be interpreted by consumers. Group types use hierarchical dot notation to organize categories and subcategories.
+
+### 6.2.2 Type format rules
+Group type values:
+
+- **MUST NOT** contain whitespace
+- **MUST** be lowercase
+- **MUST** use dot (`.`) as the segment separator
+- **MUST** contain at least two segments
+- **MUST NOT** start or end with a dot
+- **MUST NOT** contain consecutive dots (`..`)
+
+**Examples of valid group types:**
+- `logical.environment`
+- `physical.datacenter`
+- `network.vpc`
+- `security.zone`
+- `org.team`
+
+**Examples of invalid group types:**
+- `Environment` (uppercase)
+- `datacenter` (single segment)
+- `data center` (space)
+- `.physical.room` (starts with dot)
+- `network..vpc` (consecutive dots)
+
+
+### 6.2.3 Standard group types
+OSIRIS defines the following standard group type families. Producers **SHOULD** use these standard types when applicable rather than creating custom types for common infrastructure concepts.
+
+#### logical.*
+**Purpose:** Conceptual groupings that reflect application architecture, deployment organization or operational intent.
+
+**Recommended types:**
+- **`logical.environment`**: Deployment environments (e.g. production, staging, development, QA)
+- **`logical.application`**: Application or system groupings (e.g. billing-system, crm, identity-platform)
+- **`logical.service`**: Individual services or microservices (e.g. api-gateway, auth-service, payments-processor)
+- **`logical.tier`**: Architectural tiers (e.g. web, application, database, cache)
+- **`logical.workload`**: Workload classifications (e.g. batch-processing, real-time, analytics)
+
+**Example use cases:**
+- Grouping all production resources for filtering and access control
+- Organizing resources by application for cost allocation
+- Separating frontend, backend and database tiers in diagrams
+
+#### physical.*
+**Purpose:** Location-based and facility-based grouping reflecting physical infrastructure organization.
+
+**Recommended types:**
+- **`physical.datacenter`**: Data center facilities
+- **`physical.building`**: Buildings within a campus or multi-building facility
+- **`physical.floor`**: Floors within a building
+- **`physical.room`**: Rooms or caged areas
+- **`physical.rack`**: Equipment racks
+- **`physical.pod`**: Modular datacenter pods or availability zones
+
+**Example use cases:**
+- Modeling datacenter physical topology
+- Organizing resources by geographic location
+- Planning capacity and power distribution by rack
+
+#### network.*
+**Purpose:** Network segmentation and network construct organization.
+
+**Recommended types:**
+- **`network.vpc`** or **`network.vnet`**: Virtual private clouds or virtual networks
+- **`network.subnet`**: Network subnets or segments
+- **`network.vlan`**: VLAN groupings
+- **`network.segment`**: Generic network segments or security zones
+- **`network.asn`**: Autonomous System Number groupings (for BGP topology)
+
+> [!NOTE]
+> Provider-specific terminology (e.g. AWS VPC vs Azure VNet) can be expressed as:
+> - Standard type `network.vpc` with provider details in `properties` or `extensions` (recommended)
+> - Namespaced type `osiris.aws.vpc` or `osiris.azure.vnet` (when provider-specific semantics are required)
+
+**Common properties for network.asn groups:**
+When using `network.asn` groups, producers **SHOULD** include these properties when available:
+
+- `asn_number` (integer): The AS number (e.g. 3356)
+- `organization_name` (string): Legal name of the ASN organization
+- `domain` (string): Organization's domain name
+- `asn_type` (string): ASN classification (`ISP`, `Hosting`, `Education`, `Government`, `Business`)
+- `country_code` (string): ISO 3166-1 alpha-2 country code from WHOIS records
+- `registry` (string): Regional Internet Registry (`ARIN`, `RIPE`, `APNIC`, `LACNIC`, `AFRINIC`)
+- `cidr_blocks` (array of strings): CIDR blocks announced by this ASN
+- `peering_policy` (string): BGP peering policy (`open`, `selective`, `restrictive`, `no`)
+
+**Example use cases:**
+- Organizing resources by network boundary
+- Modeling network segmentation for security analysis
+- Grouping resources within the same broadcast domain
+- Documenting BGP topology and AS path relationships
+
+#### security.*
+**Purpose:** Security boundaries, trust zones and compliance groupings.
+
+**Recommended types:**
+- **`security.zone`**: Security or trust zones (e.g. DMZ, trusted, untrusted, quarantine)
+- **`security.trust-boundary`**: Trust domain boundaries
+- **`security.compliance-scope`**: Compliance boundary groupings (e.g. PCI-DSS scope, HIPAA scope)
+
+**Example use cases:**
+- Modeling zero-trust network architecture
+- Documenting compliance boundaries for audit
+- Visualizing security zone transitions
+
+#### org.*
+**Purpose:** Organizational ownership, responsibility and business structure groupings.
+
+**Recommended types:**
+- **`org.team`**: Team ownership (e.g. platform-team, sme-team, security-team)
+- **`org.owner`**: Individual or group ownership
+- **`org.cost-center`**: Financial cost center allocations
+- **`org.business-unit`**: Business unit or department groupings
+- **`org.project`**: Project-based groupings
+
+**Example use cases:**
+- Allocating infrastructure costs by team or cost center
+- Identifying ownership for incident response
+- Organizing resources by business unit for governance
+
+
+### 6.2.4 Vendor-specific and custom group types
+Vendor-specific or organization-specific group types **SHOULD** use the namespaced pattern:
+```
+osiris.<namespace>.<type>
+```
+
+**Examples:**
+- `osiris.aws.account` (AWS account boundary)
+- `osiris.azure.subscription` (Azure subscription)
+- `osiris.gcp.project` (GCP project)
+- `osiris.k8s.namespace` (Kubernetes namespace)
+- `osiris.vmware.cluster` (VMware vSphere cluster)
+- `osiris.com-acme.product-line` (organization-specific product grouping)
+
+**Namespace selection guidance:**
+- Well-known vendors **MAY** use simple namespaces (e.g. `osiris.aws`, `osiris.arista`)
+- Organizations **SHOULD** use stable identifiers such as reverse domain notation (e.g. `osiris.com-acme`, `osiris.org-example`)
+
+
+### 6.2.5 Unknown group types
+Consumers **MUST** accept groups with unknown or unrecognized types. When encountering unknown group types, consumers **SHOULD**:
+
+- Preserve the group object when re-exporting or transforming documents
+- Display the type string verbatim for debugging and manual interpretation
+- Allow normal membership resolution and hierarchy traversal
+- Treat the group as a generic collection for filtering and presentation
+
+Consumers **MUST NOT** reject documents containing unknown group types.
+
+---
+
+## 6.3 Membership
+### 6.3.1 Members array
+The `members` field is an array of resource IDs:
+```json
+"members": ["vm-aws-web-001", "vm-aws-db-001", "lb-aws-pr-001"]
+```
+
+**Rules:**
+- `members` entries **MUST** be strings
+- Each entry **MUST** reference a valid resource ID from `topology.resources`
+- Producers **SHOULD** avoid duplicate entries
+- Consumers **SHOULD** treat duplicate entries as a single membership
+- Order of the `members` array **MUST NOT** be considered semantically meaningful
+- Empty `members` array is valid (group may have children but no direct members)
+- Omitting `members` field is equivalent to an empty array
+
+**Membership semantics:**
+Resources listed in `members` are considered **direct members** of the group. Membership does not imply any particular relationship between resources within the group (e.g. resources in the same group are not automatically connected).
+
+
+### 6.3.2 Multiple memberships
+A resource **MAY** belong to multiple groups simultaneously. This is expected and recommended for multi-dimensional classification.
+
+**Example: Multi-dimensional membership**
+Resource `vm-aws-web-001` can simultaneously belong to:
+- `grp-prod` (logical.environment)
+- `grp-web-tier` (logical.tier)
+- `grp-billing-app` (logical.application)
+- `grp-sw-development` (org.team)
+- `grp-MXP-F1-R01` (physical.rack)
+
+This enables flexible filtering and navigation:
+- "Show all production resources"
+- "Show all web tier resources"
+- "Show all resources owned by platform team"
+- "Show all resources in rack R01"
+
+
+### 6.3.3 Children array (hierarchical nesting)
+The `children` field is an array of group IDs that are nested under this group:
+```json
+"children": ["grp-MXP-F1", "grp-MXP-F2"]
+```
+
+**Rules:**
+- `children` entries **MUST** be strings
+- Each entry **MUST** reference a valid group ID from `topology.groups`
+- Producers **SHOULD** avoid duplicate entries
+- Consumers **SHOULD** treat duplicate entries as a single child relationship
+- Order of the `children` array **MUST NOT** be considered semantically meaningful
+- Empty `children` array is valid (leaf groups with no subgroups)
+- Omitting `children` field is equivalent to an empty array
+
+
+### 6.3.4 Nesting semantics
+Groups **MAY** form tree structures or directed acyclic graphs (DAGs):
+- **Tree:** Each group has at most one parent
+- **DAG:** Groups may have multiple parents (a rack might belong to both a physical room and a logical availability zone)
+
+A group **MAY** appear as a child of multiple parent groups (DAG). Consumers computing transitive membership **SHOULD** deduplicate resource IDs in the resulting effective membership set.
+
+Group nesting **MUST NOT** contain cycles (directly or indirectly). Producers **MUST** validate cycle-freedom before export.
+
+**Transitive membership:**
+Consumers **MAY** compute "expanded membership" (transitive closure) when useful:
+```
+effective_members(group) = union of members(group) and members(all_descendant_groups)
+```
+
+This enables queries like "all resources in datacenter MXP" to include resources in nested rooms and racks.
+
+**Depth guidance:**
+Producers **SHOULD** keep nesting depth reasonable for human comprehension:
+- Typical datacenter: datacenter > floor > room > rack (4 levels)
+- Typical cloud hierarchy (4–6 levels): tenant/account/project > region/zone > container/resource-group > network (VPC/VNet) > subnet
+- Excessive depth (>6-7 levels) may reduce usability in visualization tools
+
+---
+
+## 6.4 Groups vs contains connections
+Containment relationships can be represented either via groups or via `contains` connections (see chapter 5 section 5.2.3). Understanding when to use each mechanism is important for clear topology modeling.
+
+
+### 6.4.1 Prefer groups when
+Use groups when containment is primarily:
+- A **view or categorization** (e.g. "all resources in VPC X", "all production resources")
+- **Multi-dimensional** (resources belong to multiple "containers" such as team + environment + application)
+- **Not required as an explicit graph edge** for dependency analysis or path traversal
+- **Organizational or logical** rather than structural
+
+**Examples:**
+- "Production environment" > group
+- "Platform team ownership" > group
+- "Web tier" > group
+- Resources in a VPC > group (usually)
+
+
+### 6.4.2 Prefer contains connections when
+Use `contains` connections when containment is:
+- A **strict structural relationship** that must behave like a graph edge
+- Used for **topology traversals** such as "what runs on what", "what is physically inside what"
+- A **single-parent hierarchy** where each resource has exactly one container
+- **Physical or architectural** rather than organizational
+
+**Examples:**
+- "Chassis contains linecard" > connection
+- "Host contains VMs" > connection
+- "Kubernetes node contains pods" > connection
+- "Rack contains servers" > connection (may also use groups for inventory)
+
+
+### 6.4.3 Avoid duplication
+Producers **SHOULD** avoid representing the same containment relationship in both groups and `contains` connections unless there is a clear consumer requirement for both representations.
+
+If duplication is necessary (e.g. both graph-based and inventory-based consumers):
+- Groups should be treated as the **presentation layer** (for filtering, navigation, reporting)
+- `contains` connections should be treated as the **authoritative graph edge** (for topology analysis, dependency tracing)
+
+**Example: Hyperscaler or Cloud VPC containment**
+**Using groups (recommended for most VPC scenarios):**
+```json
+{
+  "id": "grp-aws-net-vpc-0abc123def456",
+  "type": "network.vpc",
+  "name": "Production VPC",
+  "members": ["subnet-aws-web-001", "subnet-aws-db-001", "vm-aws-web-001", "vm-aws-db-001"]
+}
+```
+
+**Using contains connections (if VPC is a topology node):**
+```json
+{
+  "id": "vpc-0abc123def456",
+  "type": "network.vpc",
+  "name": "Production VPC",
+  "provider": {
+    "name": "aws",
+    "native_id": "vpc-0abc123def456",
+    "region": "eu-west-1",
+    "account": "123456789012"
+  }
+}
+{
+  "id": "cn-vpc-0abc123def456-contains-subnet-web-001",
+  "source": "vpc-0abc123def456",
+  "target": "subnet-web-001",
+  "type": "contains",
+  "direction": "forward"
+}
+```
+
+IDs shown are human-readable and derived from stable provider identifiers; hashing is optional and not required by OSIRIS.
+Choose based on consumer needs: groups for inventory/presentation, connections for topology traversal.
+
+
+**Example: Host contains VMs (on-prem virtualization)**
+**Using groups (recommended for inventory or reporting):**
+```json
+{
+  "id": "grp-mxp-esxi-cluster-prod",
+  "type": "logical.cluster",
+  "name": "MXP Production ESXi Cluster",
+  "members": ["host-mxp-f1-r22-esxi-001", "host-mxp-f1-r50-esxi-002", "vm-mxp-pr-web-001", "vm-mxp-pr-db-001"],
+  "tags": {
+    "site": "MXP",
+    "environment": "prod",
+    "org": "acme"
+  }
+}
+```
+
+**Using contains connections (recommended when containment must be traversed as topology):**
+```json
+{
+  "id": "host-mxp-f1-r22-esxi-001",
+  "type": "compute.host",
+  "name": "mxp-esxi-001",
+  "provider": {
+    "name": "vmware",
+    "native_id": "host-mxp-12345",
+    "version": "ESXi 8.0"
+  }
+}
+```
+```json
+{
+  "id": "vm-mxp-pr-web-001",
+  "type": "compute.vm",
+  "name": "vm-mxp-pr-web-001",
+  "provider": {
+    "name": "vmware",
+    "native_id": "vm-67890"
+  }
+}
+```
+```json
+{
+  "id": "cn-host-mxp-f1-r22-esxi-001-contains-vm-mxp-pr-web-001",
+  "source": "host-mxp-f1-r22-esxi-001",
+  "target": "vm-mxp-pr-web-001",
+  "type": "contains",
+  "direction": "forward"
+}
+```
+
+> [!NOTE]
+> Groups can classify VMs or pods by cluster, environment or ownership, while `contains` edges model the runtime placement relationship required for topology traversal (e.g. impact analysis).
+
+---
+
+## 6.5 Group metadata
+Groups use the same metadata pattern as resources and connections:
+
+- **`properties`**: Portable attributes specific to the group (e.g. capacity, quota, region_code, cost_center)
+- **`extensions`**: Vendor/tool/org-specific metadata using `osiris.<namespace>` keys
+- **`tags`**: Simple key-value labels (`string` > `string`)
+- **`status`**: Normalized operational status (`active`|`inactive`|`degraded`|`retired`|`unknown`)
+- **`state`**: Optional vendor-specific granular state
+
+**Common group properties (non-exhaustive):**
+- Capacity or quota information (e.g. `max_members`, `allocated_capacity`)
+- Geographic or regional metadata (e.g. `region`, `availability_zone`, `geo_location`)
+- Ownership or responsibility (e.g. `owner_email`, `oncall_team`, `budget_code`)
+- Configuration (e.g. `maintenance_window`, `backup_policy`)
+
+> [!NOTE]
+> `properties` **SHOULD** remain portable across producers. Vendor or platform-derived fields with non-portable semantics **SHOULD** be placed under `extensions.osiris.<namespace>`.
+
+
+### 6.5.1 Examples
+
+> [!NOTE]
+> **Members vs children:**
+> - `members` = Direct resource membership (flat set for inventory, filtering, reporting)
+> - `children` = Hierarchical nesting (tree/DAG structure for navigation and containment traversal)
+> A group may have both `members` (leaf resources) and `children` (nested subgroups).
+
+> [!NOTE]
+> **Resource IDs:** Resource and group IDs in these examples are producer-defined and may follow different conventions (human-readable names, provider native IDs, deterministic hashes). OSIRIS does not mandate a specific ID format; producers **SHOUL** prioritize stability and uniqueness within each document.
+
+
+#### 6.5.1.1 On-premise infrastructure groups
+##### Physical datacenter hierarchy
+```json
+{
+  "id": "grp-MXP",
+  "type": "physical.datacenter",
+  "name": "Datacenter MXP",
+  "description": "Primary datacenter facility of Acme Corp. located in Milan.",
+  "children": ["grp-MXP-F1", "grp-MXP-F2"],
+  "properties": {
+    "total_racks": 120,
+    "power_capacity_kw": 3200,
+    "geo_location": {
+      "latitude": null,
+      "longitude": null
+    }
+  },
+  "tags": {
+    "site": "MXP",
+    "tier": "tier-3",
+    "region": "emea"
+  }
+}
+```
+
+> [!NOTE]
+> Geographic coordinates are optional and may be omitted for privacy or security considerations. If included, coordinates should use WGS84 decimal degrees format. Producers **MAY** apply precision reduction (e.g. rounding to 2-3 decimal places) or geographic jitter to avoid exposing exact facility locations while maintaining sufficient accuracy for regional grouping and visualization.
+
+```json
+{
+  "id": "grp-MXP-F1",
+  "type": "physical.floor",
+  "name": "Floor 1",
+  "description": "Main floor housing production infrastructure",
+  "children": ["grp-MXP-F1-R01", "grp-MXP-F1-R02", "grp-MXP-F1-R03"],
+  "properties": {
+    "floor_number": 1,
+    "total_racks": 40
+  }
+}
+```
+```json
+{
+  "id": "grp-MXP-F1-R01",
+  "type": "physical.rack",
+  "name": "Rack 01",
+  "description": "Network fabric and compute rack",
+  "members": ["MXP-F1-R01-SW-001", "MXP-F1-R01-SRV-042"],
+  "properties": {
+    "rack_units": 42,
+    "power_capacity_watts": 5000,
+    "cooling_type": "hot-aisle"
+  },
+  "tags": {
+    "site": "MXP",
+    "floor": "1",
+    "row": "A"
+  }
+}
+```
+
+##### VMware vSphere cluster grouping
+```json
+{
+  "id": "grp-vmware-cluster-mxp-prod",
+  "type": "compute.cluster",
+  "name": "MXP Production Cluster",
+  "description": "VMware vSphere production cluster in datacenter MXP",
+  "members": [
+    "MXP-F1-R01-SRV-042",
+    "MXP-F1-R22-SRV-002",
+    "MXP-F1-R50-SRV-003",
+    "vm-mxp-pr-web-001",
+    "vm-mxp-pr-db-001"
+  ],
+  "properties": {
+    "cluster_name": "MXP-PROD-CLUSTER-01",
+    "hypervisor_version": "ESXi 8.0 U3",
+    "ha_enabled": true,
+    "drs_enabled": true,
+    "total_hosts": 3,
+    "total_cpu_ghz": 96,
+    "total_memory_gb": 768
+  },
+  "tags": {
+    "site": "MXP",
+    "environment": "prod",
+    "hypervisor": "vmware"
+  },
+  "extensions": {
+    "osiris.vmware": {
+      "vcenter_instance": "vcenter-mxp.acmecorp.internal",
+      "cluster_moref": "domain-c7",
+      "ha_admission_control": "failover-hosts",
+      "drs_automation_level": "fullyAutomated",
+      "evc_mode": "intel-cascadelake"
+    }
+  }
+}
+```
+
+##### Proxmox VE cluster grouping
+```json
+{
+  "id": "grp-proxmox-cluster-mxp-dev",
+  "type": "compute.cluster",
+  "name": "MXP Development Cluster",
+  "description": "Proxmox VE development cluster in datacenter MXP",
+  "members": [
+    "MXP-F2-R05-SRV-001",
+    "MXP-F2-R05-SRV-002",
+    "MXP-F2-R06-SRV-003",
+    "vm-mxp-dev-web-001",
+    "vm-mxp-dev-db-001",
+    "ct-mxp-dev-cache-001"
+  ],
+  "properties": {
+    "cluster_name": "mxp-dev-pve",
+    "hypervisor_version": "Proxmox VE 9.1",
+    "quorum_expected_votes": 3,
+    "total_nodes": 3,
+    "total_cpu_cores": 72,
+    "total_memory_gb": 384,
+    "ha_enabled": true,
+    "shared_storage": ["ceph-mxp-dev", "nfs-mxp-dev-backup"]
+  },
+  "tags": {
+    "site": "MXP",
+    "environment": "dev",
+    "hypervisor": "proxmox"
+  },
+  "extensions": {
+    "osiris.proxmox": {
+      "cluster_id": "pve-cluster-mxp-dev",
+      "corosync_version": "3.1.7",
+      "ceph_version": "17.2.7",
+      "backup_retention": {
+        "daily": 7,
+        "weekly": 4,
+        "monthly": 3
+      },
+      "migration_network": "10.100.50.0/24"
+    }
+  }
+}
+```
+
+> [!NOTE]
+> Both VMware vSphere and Proxmox VE clusters use the generic `compute.cluster` type. Vendor-specific details (vCenter instance, Corosync configuration, Ceph integration) are placed in `extensions.osiris.<vendor>`. Proxmox VE supports both KVM virtual machines and LXC containers; the `members` array can include both `compute.vm` and `compute.container` resources.
+
+
+##### On-premise network VLAN grouping
+```json
+{
+  "id": "grp-mxp-vlan-100-prod",
+  "type": "network.vlan",
+  "name": "VLAN 100 - Production",
+  "description": "Production VLAN spanning MXP datacenter fabric",
+  "members": [
+    "MXP-F1-R01-SW-001",
+    "MXP-F1-R01-SRV-042",
+    "vm-mxp-pr-web-001",
+    "vm-mxp-pr-db-001"
+  ],
+  "properties": {
+    "vlan_id": 100,
+    "subnet": "10.100.0.0/24",
+    "gateway": "10.100.0.1"
+  },
+  "tags": {
+    "site": "MXP",
+    "environment": "prod",
+    "segment": "application"
+  },
+  "extensions": {
+    "osiris.network": {
+      "spanning_tree_priority": 4096,
+      "spanning_tree_mode": "rapid-pvst"
+    }
+  }
+}
+```
+
+---
+
+#### 6.5.1.2 Hyperscalers and cloud provider hybrid groups
+##### VPC Network group (AWS)
+```json
+{
+  "id": "grp-aws-vpc-prod-use1",
+  "type": "network.vpc",
+  "name": "Production VPC",
+  "description": "Primary production VPC in us-east-1",
+  "members": ["subnet-aws-web-001", "subnet-aws-db-001", "vm-aws-web-001", "vm-aws-db-001"],
+  "properties": {
+    "cidr_block": "10.0.0.0/16",
+    "region": "us-east-1"
+  },
+  "tags": {
+    "environment": "prod",
+    "managed_by": "terraform"
+  },
+  "extensions": {
+    "osiris.aws": {
+      "vpc_id": "vpc-0abc123def456",
+      "dhcp_options_set": "dopt-0123456789abcdef",
+      "default_security_group": "sg-0abc123def456"
+    }
+  }
+}
+```
+
+##### VPC Network group (GCP)
+```json
+{
+  "id": "grp-gcp-vpc-prod-euw1",
+  "type": "network.vpc",
+  "name": "Production VPC Network",
+  "description": "Primary production VPC in europe-west1",
+  "members": ["subnet-gcp-web-002", "subnet-gcp-db-002", "vm-gcp-web-002", "vm-gcp-db-002"],
+  "properties": {
+    "cidr_block": "10.1.0.0/16",
+    "region": "europe-west1"
+  },
+  "tags": {
+    "environment": "prod",
+    "managed_by": "terraform"
+  },
+  "extensions": {
+    "osiris.gcp": {
+      "vpc_network_id": "projects/acme-prod/global/networks/vpc-prod-euw1",
+      "auto_create_subnetworks": false,
+      "routing_mode": "REGIONAL"
+    }
+  }
+}
+```
+
+##### VNET group (Azure)
+```json
+{
+  "id": "grp-az-vnet-prod-weu",
+  "type": "network.vnet",
+  "name": "Production VNet",
+  "description": "Primary production virtual network in West Europe",
+  "members": ["subnet-az-web-003", "subnet-az-db-003", "vm-az-web-003", "vm-az-db-003"],
+  "properties": {
+    "cidr_block": "10.2.0.0/16",
+    "region": "westeurope"
+  },
+  "tags": {
+    "environment": "prod",
+    "managed_by": "terraform"
+  },
+  "extensions": {
+    "osiris.azure": {
+      "vnet_id": "/subscriptions/12345678-1234-1234-1234-123456789012/resourceGroups/rg-prod-weu/providers/Microsoft.Network/virtualNetworks/vnet-prod-weu",
+      "provisioning_state": "Succeeded",
+      "enable_ddos_protection": false
+    }
+  }
+}
+```
+
+##### Resource group (Azure)
+```json
+{
+  "id": "grp-az-rg-prod-weu-01",
+  "type": "cloud.resource_group",
+  "name": "rg-prod-weu-01",
+  "description": "Production resource group in West Europe",
+  "members": [
+    "vm-az-web-003",
+    "vm-az-db-003",
+    "storage-prod-001"
+  ],
+  "children": [
+    "grp-az-vnet-prod-weu"
+  ],
+  "properties": {
+    "region": "westeurope"
+  },
+  "tags": {
+    "environment": "prod",
+    "cost_center": "CC-1234",
+    "managed_by": "terraform"
+  },
+  "extensions": {
+    "osiris.azure": {
+      "subscription_id": "12345678-1234-1234-1234-123456789012",
+      "resource_group_id": "/subscriptions/12345678-1234-1234-1234-123456789012/resourceGroups/rg-prod-weu-01",
+      "provisioning_state": "Succeeded"
+    }
+  }
+}
+```
+
+> [!NOTE]
+> Cloud network constructs (AWS VPC, GCP VPC Network, Azure VNet) use generic types (`network.vpc`, `network.vnet`) with provider-specific details in `extensions.osiris.<provider>`. This approach enables consistent cross-cloud querying while preserving vendor-specific metadata for specialized tooling.
+
+##### Hybrid environment grouping
+```json
+{
+  "id": "grp-prod-global",
+  "type": "logical.environment",
+  "name": "Production - Global Hybrid",
+  "description": "Production resources across AWS, Azure, GCP and on-premise datacenter MXP",
+  "members": [
+    "vm-mxp-pr-web-001",
+    "MXP-F1-R01-SW-001",
+    "MXP-F1-R01-SRV-042",
+    "vm-aws-web-001",
+    "vm-gcp-web-002",
+    "vm-az-web-003",
+    "vm-aws-db-001",
+    "vm-gcp-db-002",
+    "vm-az-db-003"
+  ],
+  "children": [
+    "grp-aws-vpc-prod-use1",
+    "grp-gcp-vpc-prod-euw1",
+    "grp-az-vnet-prod-weu",
+    "grp-MXP-F1-R01"
+  ],
+  "properties": {
+    "oncall_team": "platform-sme",
+    "maintenance_window": "Sun 02:00-04:00 UTC",
+    "backup_retention_days": 90,
+    "deployment_strategy": "multi-cloud"
+  },
+  "tags": {
+    "environment": "prod",
+    "scope": "global",
+    "criticality": "high"
+  }
+}
+```
+
+> [!NOTE]
+> Multi-cloud groups enable unified filtering and reporting across heterogeneous infrastructure. Members can include resources from AWS, Azure, GCP and on-premise simultaneously. The `children` array references both cloud network groups and on-premise physical groups, demonstrating hierarchical organization across infrastructure domains.
+
+---
+
+#### 6.5.1.3 Generic organizational and security groups
+##### Logical environment with multi-dimensional membership
+```json
+{
+  "id": "grp-prod",
+  "type": "logical.environment",
+  "name": "Production",
+  "description": "All production workloads and infrastructure",
+  "members": ["vm-mxp-pr-web-001", "vm-mxp-pr-db-001", "MXP-F1-R01-SW-001"],
+  "properties": {
+    "oncall_team": "platform-sme",
+    "maintenance_window": "Sun 02:00-04:00 UTC",
+    "backup_retention_days": 90
+  },
+  "tags": {
+    "environment": "prod",
+    "criticality": "high",
+    "compliance": "soc2"
+  },
+  "extensions": {
+    "osiris.com-acme": {
+      "service_tier": "tier-1",
+      "pagerduty_schedule": "PD-PROD-PRIMARY",
+      "cost_center": "CC-PLATFORM-001"
+    }
+  }
+}
+```
+
+##### Organizational team ownership
+```json
+{
+  "id": "grp-sw-development",
+  "type": "org.team",
+  "name": "Software Development Team",
+  "description": "Infrastructure and platform services development ownership",
+  "members": ["vm-mxp-pr-web-001", "vm-mxp-pr-db-001", "MXP-F1-R01-SW-001", "MXP-F1-R01-SRV-042"],
+  "properties": {
+    "team_email": "sw-development@acmecorp.com",
+    "oncall_rotation": "follow-the-sun",
+    "slack_channel": "#sw-development",
+    "teams_channel": "#sw-development"
+  },
+  "tags": {
+    "department": "sw-development",
+    "cost_center": "CC-1234"
+  }
+}
+```
+
+##### DMZ Security zone grouping
+```json
+{
+  "id": "grp-mxp-pr-dmz",
+  "type": "security.zone",
+  "name": "DMZ",
+  "description": "Demilitarized zone for public-facing services",
+  "members": ["vm-mxp-pr-web-001", "lb-mxp-pr-web-001"],
+  "properties": {
+    "trust_level": "untrusted",
+    "allowed_protocols": ["http", "https"],
+    "egress_restricted": true
+  },
+  "tags": {
+    "security_zone": "dmz",
+    "compliance_scope": "pci-dss"
+  }
+}
+```
+
+##### Vendor-specific group type (Kubernetes namespace)
+```json
+{
+  "id": "grp-k8s-production",
+  "type": "osiris.k8s.namespace",
+  "name": "production",
+  "description": "Kubernetes production namespace",
+  "members": ["pod-nginx-abc123", "service-nginx", "deployment-nginx"],
+  "properties": {
+    "cluster": "prod-cluster-1"
+  },
+  "extensions": {
+    "osiris.k8s": {
+      "resource_quotas": {
+        "cpu": "100",
+        "memory": "200Gi",
+        "pods": "100"
+      },
+      "limit_ranges": {
+        "max_cpu_per_pod": "4",
+        "max_memory_per_pod": "8Gi"
+      }
+    }
+  },
+  "tags": {
+    "environment": "prod",
+    "team": "platform"
+  }
+}
+```
+
+---
+
+## 6.6 Validation
+If present, the following fields **MUST** conform to their specified types:
+
+- `properties` **MUST** be a JSON object
+- `extensions` **MUST** be a JSON object
+- `tags` **MUST** be a JSON object mapping strings to strings
+- `members` **MUST** be an array of strings
+- `children` **MUST** be an array of strings
+- `status` **MUST** be one of the defined status values (if present)
+
+Consumers **MUST**:
+- Accept groups with unknown fields and preserve them when re-exporting (when feasible)
+- Accept groups with unknown types
+- Accept groups with unknown extension namespaces
+- Handle invalid member or children references gracefully
+
+Consumers **MUST NOT**:
+- Reject documents solely due to unrecognized group types
+- Reject documents solely due to unknown group metadata fields
+- Reject documents solely due to unknown extension namespaces
