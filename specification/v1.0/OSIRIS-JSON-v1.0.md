@@ -4,7 +4,7 @@
 | Authors   | Tia Zanella [skhell](https://github.com/skhell) |
 | Revision  | 1.0.0-DRAFT |
 | Creation date      | 14 December 2025 |
-| Last revision date | 30 December 2025 |
+| Last revision date | 31 December 2025 |
 | Status    | Draft |
 | Specification ID | OSIRIS-1.0 |
 | Schema URI | tbd later |
@@ -154,7 +154,7 @@
     - [5.1.1 Overview](#511-overview)
     - [5.1.2 Required fields](#512-required-fields)
     - [5.1.3 Optional fields](#513-optional-fields)
-    - [5.1.4 Minimal connection example](#514-minimal-connection-example)
+    - [5.1.4 Minimal connection examples](#514-minimal-connection-examples)
     - [5.1.5 Referential integrity](#515-referential-integrity)
     - [5.1.6 Connection identity and stability](#516-connection-identity-and-stability)
     - [5.1.7 Multiple connections between the same resources](#517-multiple-connections-between-the-same-resources)
@@ -204,6 +204,18 @@
   - [6.5 Group metadata](#65-group-metadata)
     - [6.5.1 Examples](#651-examples)
   - [6.6 Validation](#66-validation)
+- [7 Resource type taxonomy](#7-resource-type-taxonomy)
+  - [7.1 Overview](#71-overview)
+    - [7.1.1 Purpose and scope](#711-purpose-and-scope)
+    - [7.1.2 Type naming conventions](#712-type-naming-conventions)
+    - [7.1.3 Standard types vs custom types](#713-standard-types-vs-custom-types)
+    - [7.1.4 Taxonomy evolution](#714-taxonomy-evolution)
+  - [7.2 Application resources](#72-application-resources)
+    - [7.2.1 Databases](#721-databases)
+    - [7.2.2 Message queues and event streams](#722-message-queues-and-event-streams)
+    - [7.2.3 Caching services](#723-caching-services)
+    - [7.2.4 Code repositories](#724-code-repositories)
+    - [7.2.5 Application services](#725-application-services)
 
 
 ## Preface
@@ -515,9 +527,55 @@ A **Resource** represents a discrete infrastructure component with identity, pro
 ### 2.1.2 Resource identity
 Every resource **MUST** have a unique identifier within an OSIRIS document. Resource identifiers enable references from connections, group memberships and other objects.
 
-Resource identity in OSIRIS is **document-scoped**: identifiers **MUST** be unique within a single OSIRIS document but need not be globally unique across other documents or systems. This simplifies producer implementation while preserving referential integrity within each snapshot.
+Resource identity in OSI
+RIS is **document-scoped**: identifiers **MUST** be unique within a single OSIRIS document but need not be globally unique across other documents or systems. This simplifies producer implementation while preserving referential integrity within each snapshot.
 
 Resources **SHOULD** retain stable identifiers across multiple exports of the same infrastructure when feasible. Stable identifiers enable consumers to correlate resources over time, detect changes and compare snapshots.
+
+The `id` field uniquely identifies a resource within the topology.
+
+**ID Construction:**
+
+Producers **SHOULD** construct IDs using one of these strategies:
+
+1. **Native ID `<id>` (preferred for unique native identifiers):**
+```json
+   "id": "i-0abc123def456"
+```
+
+2. **Namespaced native ID `<provider>::<id>` (preferred for multi-provider topologies):**
+```json
+   "id": "aws::i-0abc123def456"
+   "id": "vmware::vm-1234"
+   "id": "cisco::FOC1234ABCD"
+   "id": "dellemc::MXP-SRV-001"
+```
+
+3. **Full resource identifier (for providers that support structured resource IDs):**
+```json
+   "id": "arn:aws:ec2:us-east-1:123456789012:instance/i-0abc123def456"
+   "id": "/subscriptions/.../resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm-01"
+```
+
+4. **Generated ID (only when native ID unavailable or not globally unique):**
+```json
+   "id": "postgres-prod-01.mxp.internal.example.com"
+```
+
+**Rationale:** 
+Using native provider IDs maintains traceability to source systems, enables change tracking, and reflects actual infrastructure state.
+
+**ID separator (`::`):**
+The double-colon separator distinguishes the provider namespace from the native identifier. This separator was chosen because:
+- Does not conflict with AWS ARNs (which use single colons: `arn:aws:ec2:...`)
+- Does not conflict with Azure resource IDs (which use slashes: `/subscriptions/...`)
+- Provides clear visual distinction between provider and identifier
+- Easy to parse programmatically: `id.split('::')` works in all languages
+
+The provider name (left of `::`) follows canonical naming rules from section 4.3.3: lowercase, no hyphens or spaces (e.g., `arista`, `paloalto`). The native identifier (right of `::`) preserves the original vendor format.
+
+**Uniqueness:** 
+IDs **MUST** be unique within a topology. When combining resources from multiple providers, use namespaced IDs (approach 2) or full resource identifiers (approach 3).
 
 
 ### 2.1.3 Resource types
@@ -658,7 +716,7 @@ Producers **MAY** emit both property based references and explicit connections f
 ### 2.2.9 Multiple connections between resources
 Two resources **MAY** have multiple connections of different types or with different properties.
 
-For example:
+**Example:**
 
 - A virtual machine and a storage volume may have both a **contains** relationship and a **dataflow** relationship.
 - Two switches may have multiple **network** connections representing distinct physical links.
@@ -917,7 +975,7 @@ Consumers **SHOULD** implement the following compatibility logic:
   - If the document has a **higher MINOR** version than the consumer supports, the consumer **MUST** ignore unknown fields and **MAY** emit informational warnings.
   - If the document has the **same MINOR** version and a **higher PATCH** version, the consumer **MUST** accept the document.
 
-Example:
+**Example:**
 - Consumer supports OSIRIS `1.0.0`
 - Document version `1.0.5` > **Accept** (same major.minor, higher patch)
 - Document version `1.2.0` > **Accept, ignore unknown fields, MAY warn** (same major, higher minor)
@@ -968,7 +1026,7 @@ The following fields are **OPTIONAL** but **RECOMMENDED**:
   - `version` (string): Version of the generating tool
   - `url` (string, optional): Reference URL for the generator
 
-Example:
+**Example:**
 ```json
   {
     "name": "osiris-aws-exporter",
@@ -991,7 +1049,7 @@ Example:
 > [!NOTE] 
 > Detailed physical hierarchy (building/floor/room/row/rack) **SHOULD** be represented using **groups** in the topology.
 
-Hyperscaler example:
+**Hyperscaler example:**
 ```json
   {
     "name": "Production Infrastructure - US East",
@@ -1131,84 +1189,169 @@ Producers **SHOULD** validate referential integrity before emitting documents. C
 {
   "resources": [
     {
-      "id": "vm-001",
-      "name": "web-server-1",
+      "id": "aws::i-0abc123def4567890",
+      "name": "production-web-server-01",
       "type": "compute.vm",
       "provider": {
-        "name": "aws"
-      }
+        "name": "aws",
+        "type": "AWS::EC2::Instance",
+        "native_id": "i-0abc123def4567890",
+        "region": "us-east-1",
+        "account_id": "123456789012"
+      },
+      "status": "active"
     },
     {
-      "id": "db-001",
-      "name": "database-1",
-      "type": "storage.database",
+      "id": "aws::myapp-prod-db",
+      "name": "production-postgresql-primary",
+      "type": "application.database",
       "provider": {
-        "name": "aws"
-      }
+        "name": "aws",
+        "type": "AWS::RDS::DBInstance",
+        "native_id": "myapp-prod-db",
+        "region": "us-east-1",
+        "account_id": "123456789012"
+      },
+      "status": "active"
     }
   ],
   "connections": [
     {
-      "id": "conn-001",
-      "source": "vm-001",
-      "target": "db-001",
-      "type": "dependency"
+      "id": "conn-web-to-db",
+      "source": "aws::i-0abc123def4567890",
+      "target": "aws::myapp-prod-db",
+      "type": "dependency",
+      "direction": "forward"
     }
   ],
   "groups": [
     {
-      "id": "vpc-prod",
+      "id": "aws::vpc-0abc123def4567890",
       "type": "network.vpc",
-      "members": ["vm-001", "db-001"]
+      "members": ["aws::i-0abc123def4567890", "aws::myapp-prod-db"]
     }
   ]
 }
 ```
+
 #### On-premise example
 ```json
 {
   "resources": [
     {
-      "id": "MXP-F1-R01-SW-001",
-      "name": "mxp-sw-leaf-01",
+      "id": "arista::MXP-SW-LEAF-01",
+      "name": "mxp-leaf-switch-01",
       "type": "network.switch",
-      "provider": { "name": "arista" },
-      "properties": { "rack_unit_start": 12, "rack_unit_height": 1, "face": "front" }
+      "provider": {
+        "name": "arista",
+        "type": "DCS-7050SX3-48YC12",
+        "native_id": "MXP-SW-LEAF-01"
+      },
+      "properties": {
+        "rack_unit_start": 12,
+        "rack_unit_height": 1,
+        "face": "front"
+      },
+      "location": {
+        "datacenter": "MXP",
+        "building": "01",
+        "floor": "F1",
+        "room": "105",
+        "rack": "R01",
+        "unit": 12
+      },
+      "status": "active"
     },
     {
-      "id": "MXP-F1-R98-SRV-001",
-      "name": "mxp-f1-srv-r98-001",
+      "id": "dell::MXP-SRV-R98-001",
+      "name": "mxp-proxmox-host-01",
       "type": "compute.server",
-      "provider": { "name": "dell" },
-      "properties": { "rack_unit_start": 30, "rack_unit_height": 2, "face": "front" }
+      "provider": {
+        "name": "dell",
+        "type": "PowerEdge R750",
+        "native_id": "MXP-SRV-R98-001"
+      },
+      "properties": {
+        "rack_unit_start": 30,
+        "rack_unit_height": 2,
+        "face": "front",
+        "service_tag": "ABC1234"
+      },
+      "location": {
+        "datacenter": "MXP",
+        "building": "01",
+        "floor": "F1",
+        "room": "105",
+        "rack": "R98",
+        "unit": 30
+      },
+      "status": "active"
     },
     {
-      "id": "MXP-F1-R98-HV-001",
-      "name": "mxp-srv-proxmox-01",
-      "type": "compute.hypervisor",
-      "provider": { "name": "proxmox" }
+      "id": "proxmox::vm-100",
+      "name": "mxp-production-web-01",
+      "type": "compute.vm",
+      "provider": {
+        "name": "proxmox",
+        "type": "VirtualMachine",
+        "native_id": "vm-100",
+        "cluster": "proxmox-prod-cluster"
+      },
+      "location": {
+        "datacenter": "MXP"
+      },
+      "status": "active"
     }
   ],
   "connections": [
     {
-      "id": "MXP-F1-CONN-001",
-      "source": "MXP-F1-R01-SW-001",
-      "target": "MXP-F1-R98-SRV-001",
-      "type": "network"
+      "id": "conn-switch-to-server",
+      "source": "arista::MXP-SW-LEAF-01",
+      "target": "dell::MXP-SRV-R98-001",
+      "type": "network",
+      "properties": {
+        "source_interface": "Ethernet48",
+        "target_interface": "eno1",
+        "speed_gbps": 25
+      }
     },
     {
-      "id": "MXP-F1-R98-RUNS-001",
-      "source": "MXP-F1-R98-HV-001",
-      "target": "MXP-F1-R98-SRV-001",
-      "type": "dependency"
+      "id": "conn-vm-runs-on-host",
+      "source": "proxmox::vm-100",
+      "target": "dell::MXP-SRV-R98-001",
+      "type": "runs_on",
+      "direction": "forward"
     }
   ],
   "groups": [
-    { "id": "MXP-DC-1", "type": "facility.datacenter", "members": [], "children": ["MXP-F1"] },
-    { "id": "MXP-F1", "type": "facility.floor", "members": [], "children": ["MXP-F1-ROW-A"] },
-    { "id": "MXP-F1-ROW-A", "type": "facility.row", "members": [], "children": ["MXP-F1-R01", "MXP-F1-R98"] },
-    { "id": "MXP-F1-R01", "type": "facility.rack", "members": ["MXP-F1-R01-SW-001"] },
-    { "id": "MXP-F1-R98", "type": "facility.rack", "members": ["MXP-F1-R98-SRV-001"] }
+    {
+      "id": "grp-mxp-dc1",
+      "type": "physical.datacenter",
+      "members": [],
+      "children": ["grp-mxp-f1"]
+    },
+    {
+      "id": "grp-mxp-f1",
+      "type": "physical.floor",
+      "members": [],
+      "children": ["grp-mxp-f1-row-a"]
+    },
+    {
+      "id": "grp-mxp-f1-row-a",
+      "type": "physical.row",
+      "members": [],
+      "children": ["grp-mxp-r01", "grp-mxp-r98"]
+    },
+    {
+      "id": "grp-mxp-r01",
+      "type": "physical.rack",
+      "members": ["arista::MXP-SW-LEAF-01"]
+    },
+    {
+      "id": "grp-mxp-r98",
+      "type": "physical.rack",
+      "members": ["dell::MXP-SRV-R98-001", "proxmox::vm-100"]
+    }
   ]
 }
 ```
@@ -1278,9 +1421,7 @@ Each resource object **MUST** include the following fields:
 - **`id`** (string): A document scoped unique identifier for the resource. Resource identifiers **MUST** be unique within a single OSIRIS document but need not be globally unique across documents. Identifiers are **case-sensitive** and opaque to consumers. Consumers **MUST NOT** infer semantic meaning from identifier structure or formatting.
 
     Examples of valid resource IDs:
-
-    - `vm-001`
-    - `i-0abc123def456` (an example of AWS instance ID style)
+    - `i-0abc123def4567890` (an example of AWS instance ID style)
     - `MXP-F1-R01-SW-001` (structured datacenter naming convention)
     - `urn:uuid:f81a4bcd-7efg-11h0-a765-00a0c91e5fg7` (UUID-based)
 
@@ -1303,33 +1444,36 @@ A resource object **MAY** include the following optional fields:
 
 - **`properties`** (object): An object containing resource-specific properties that describe characteristics, configuration and attributes. Properties are free-form and producer-defined. Property conventions and extensibility are detailed in section 4.4 (Properties and extensions).
 
-  Example:
-    ```json
-    {
-        "properties": {
-        "instance_type": "t3.medium",
-        "vcpus": 2,
-        "memory_gb": 4,
-        "private_ip": "10.0.1.2"
-        }
+**Example:**
+```json
+{
+    "properties": {
+    "instance_type": "t3.medium",
+    "vcpus": 2,
+    "memory_gb": 4,
+    "ip_addresses": {
+        "private_ip": ["10.0.1.10", "10.0.1.11"],
+        "public_ip": "203.0.113.10"
+        },
     }
-    ```
+}
+```
 
 - **`extensions`** (object): Namespaced extension data for vendor-specific or domain-specific fields that extend beyond core OSIRIS semantics. Extensions **MUST** use the `osiris.<namespace>` prefix convention (e.g. `osiris.aws`, `osiris.azure`, `osiris.custom`). Extension mechanisms are defined in Chapter 8 (Extension mechanism) and section 4.4.
 
-  Example:
-    ```json
-    {
-        "extensions": {
-        "osiris.aws": {
-            "placement": {
-            "tenancy": "default",
-            "partition_number": 1
-            }
-        }
+**Example:**
+```json
+{
+    "extensions": {
+    "osiris.aws": {
+        "placement": {
+        "tenancy": "default",
+        "partition_number": 1
         }
     }
-    ```
+    }
+}
+```
 
 - **`status`** (string): Optional high-level lifecycle or availability indicator. Status represents a **coarse lifecycle or availability category** (e.g. whether a resource is operational, degraded or offline).
 
@@ -1340,7 +1484,7 @@ A resource object **MAY** include the following optional fields:
 
 - **`tags`** (object): Key-value labels used for organizational categorization, filtering or metadata annotation (e.g. environment, owner, cost-center, compliance requirements). Tags are general-purpose and cross-platform.
 
-  Example:
+**Example:**
 ```json
   {
     "tags": {
@@ -1373,20 +1517,24 @@ Additional semantic validation rules (ID uniqueness, type validity, referential 
 #### Hyperscaler compute resource
 ```json
 {
-  "id": "i-0abc123def456",
+  "id": "aws::i-0abc123def4567890",
   "type": "compute.vm",
   "name": "web-server-prod-01",
   "provider": {
     "name": "aws",
+    "type": "AWS::EC2::Instance",
+    "native_id": "i-0abc123def4567890",
     "region": "us-east-1",
-    "account": "123456789012"
+    "account_id": "123456789012"
   },
   "properties": {
     "instance_type": "t3.medium",
     "vcpus": 2,
     "memory_gb": 4,
-    "private_ip": "10.0.1.22",
-    "public_ip": "203.0.113.1",
+    "ip_addresses": {
+      "private_ip": ["10.0.1.10", "10.0.1.11"],
+      "public_ip": "203.0.113.10"
+    }
     "ami_id": "ami-0abcdef1234567890"
   },
   "status": "active",
@@ -1401,27 +1549,33 @@ Additional semantic validation rules (ID uniqueness, type validity, referential 
 #### On-premise network device
 ```json
 {
-  "id": "MXP-F1-R01-SW-001",
+  "id": "arista::MXP-SW-LEAF-01",
   "type": "network.switch",
-  "name": "mxp-sw-leaf-01",
+  "name": "mxp-leaf-switch-01",
   "provider": {
     "name": "arista",
-    "model": "7050X4-48Y-4DF"
+    "type": "DCS-7050SX3-48YC12",
+    "native_id": "MXP-SW-LEAF-01"
   },
   "properties": {
     "management_ip": "10.130.100.12",
-    "serial_number": "XXXXXXXXXXXXXX",
+    "serial_number": "JPE12345678",
     "rack_unit_start": 12,
     "rack_unit_height": 1,
     "face": "front",
     "ports": 48,
     "uplink_ports": ["Ethernet49/1", "Ethernet50/1"]
   },
+  "location": {
+    "datacenter": "MXP",
+    "building": "01",
+    "floor": "F1",
+    "room": "105",
+    "rack": "R01",
+    "unit": 12
+  },
   "status": "active",
   "tags": {
-    "site": "MXP-DC-1",
-    "floor": "F1",
-    "rack": "R01",
     "role": "leaf",
     "platform": "arista-eos"
   }
@@ -1450,7 +1604,7 @@ The `type` field is a **REQUIRED** string (see section 4.1). Type values:
 - **MUST** use dot (`.`) as the segment separator
 - **MUST** contain at least two segments (see Dot notation structure below)
 - **MAY** contain alphanumeric characters (`a-z`, `0-9`) within segments
-- **SHOULD** use dots for hierarchy rather than hyphens (e.g. `compute.vm.template` rather than `compute.vm-template`)
+- **MUST** use lowercase letters, digits and dots only (no hyphens, underscores or spaces) (e.g. `compute.vm.template` rather than `compute.vm-template`)
 - **MUST NOT** start or end with a dot
 - **MUST NOT** contain consecutive dots (`..`)
 - **SHOULD** be stable across OSIRIS versions for standard types
@@ -1523,39 +1677,73 @@ Resources representing vendor-specific or organization-specific components that 
 
 **Namespace convention:** Custom types **MUST** use the `osiris.<namespace>.<type>` pattern, where:
 - `osiris.` prefix indicates an extension type
-- `<namespace>` identifies the vendor organization or domain
-- `<type>` follows standard dot notation rules
+- `<namespace>` identifies the vendor, organization or domain
+- `<type>` follows standard dot notation rules (lowercase, dots only, no hyphens, no spaces)
 
 Examples of namespaced types:
-- `osiris.aws.lambda` (AWS Lambda function)
-- `osiris.azure.app.service` (Azure App Service)
-- `osiris.arista.vrf` (Arista VRF instance)
-- `osiris.proxmox.vm` (Proxmox VM)
-- `osiris.acme.custom.device` (organization-specific device type)
+- `osiris.aws.lambda.edge` (AWS Lambda @Edge - distinct from standard Lambda)
+- `osiris.azure.cosmosdb` (Azure Cosmos DB with multi-model API)
+- `osiris.vmware.vsan` (VMware vSAN - specific storage technology)
+- `osiris.cisco.aci` (Cisco ACI fabric - vendor-specific SDN)
+- `osiris.acme.widget` (organization-specific device type)
 
-**Namespace selection:** There is no central namespace registry for OSIRIS v1.0. To reduce collision risk:
+**Namespace selection:**
+There is no central namespace registry for OSIRIS v1.0. To reduce collision risk:
 
-- Well-known vendor namespaces **SHOULD** use simple vendor names (e.g. `osiris.aws`, `osiris.cisco`, `osiris.proxmox`)
-- Organization-specific namespaces **SHOULD** use stable identifiers such as reverse domain notation (e.g. `osiris.com-acme`, `osiris.org-example`)
+- Well-known vendor namespaces **SHOULD** use simple vendor names (e.g. `osiris.aws`, `osiris.cisco`, `osiris.vmware`)
+- Organization-specific namespaces **SHOULD** use stable identifiers such as reverse domain notation (e.g. `osiris.com.acme`, `osiris.org.example`)
 
 Namespace consistency within a producer or organization improves interoperability and maintainability.
 
-**Fallback behavior:** When vendor-specific types are necessary but a close standard equivalent exists, producers **SHOULD** consider:
-- Using the standard type with vendor details in `properties` or `extensions`
+**Fallback behavior:**
+When vendor-specific types are necessary but a close standard equivalent exists, producers **SHOULD** consider:
+- Using the standard type with vendor details in `properties` or `extensions` (preferred)
 - Using the namespaced type only when semantics differ significantly from standard types
 
-Example:
+**Example (standard type preferred):**
 ```json
 {
-  "id": "lambda-001",
-  "type": "osiris.aws.lambda",
-  "provider": { "name": "aws" },
+  "id": "aws::payment-processor-function",
+  "type": "compute.function.serverless",
+  "name": "payment-processing-lambda",
+  "provider": {
+    "name": "aws",
+    "type": "AWS::Lambda::Function",
+    "native_id": "payment-processor-function",
+    "region": "us-east-1"
+  },
   "properties": {
     "runtime": "python3.11",
-    "memory_mb": 512
-  }
+    "memory_mb": 512,
+    "timeout_seconds": 30
+  },
+  "status": "active"
 }
 ```
+
+**Example (custom type when semantics differ):**
+```json
+{
+  "id": "aws::cdn-edge-function",
+  "type": "osiris.aws.lambda.edge",
+  "name": "cloudfront-edge-auth",
+  "provider": {
+    "name": "aws",
+    "type": "AWS::Lambda::Function",
+    "native_id": "cdn-edge-function",
+    "region": "us-east-1"
+  },
+  "properties": {
+    "runtime": "nodejs18.x",
+    "memory_mb": 128,
+    "cloudfront_distribution": "E1ABCDEFGHIJK"
+  },
+  "status": "active"
+}
+```
+
+> **Note:** The first example uses the standard type `compute.function.serverless` (defined in Chapter 7) because AWS Lambda is a standard serverless function. The second example uses a custom type `osiris.aws.lambda.edge` because Lambda @Edge has distinct execution semantics (runs at CloudFront edge locations) that differ from standard serverless functions.
+
 
 ### 4.2.7 Unknown type handling
 Consumers **MUST** accept resources with unknown or unrecognized types. This ensures forward compatibility and allows incremental adoption of new types.
@@ -1599,9 +1787,10 @@ When producing OSIRIS documents, use this decision tree for type selection:
 4. **Is the resource highly organization-specific?**  
    - Use namespaced custom type: `osiris.<org>.<type>`
 
-Examples:
+**Examples:**
 - AWS EC2 instance > `compute.vm` (standard type)
-- AWS Lambda function > `osiris.aws.lambda` (no standard equivalent)
+- AWS Lambda function > `compute.function.serverless` (standard type from Chapter 7.1)
+- AWS Lambda@Edge > `osiris.aws.lambda.edge` (edge semantics differ from standard)
 - Cisco Nexus leaf switch > `network.switch.leaf` or `network.switch` with `properties.role = "leaf"`
 - Custom monitoring appliance > `osiris.acme.monitor` (organization-specific)
 
@@ -1633,23 +1822,49 @@ Provider attribution serves several critical functions:
 ### 4.3.3 Required fields
 The provider object **MUST** include:
 
-- **`name`** (string): The vendor, platform or system name (e.g. `aws`, `azure`, `gcp`, `arista`, `proxmox`, `cisco`, `dell`).
+- **`name` (string, required)**
+  The provider name identifies the vendor, platform or system that manages the resource.
 
     `provider.name` identifies the originating system/vendor for that resource type (e.g. cloud platform for cloud resources; hardware vendor for physical assets; virtualization platform for hypervisors).
 
-  Provider names **SHOULD** be:
+  Provider names **MUST** be:
   - Lowercase
   - Short and recognizable (vendor name or product name)
   - Consistent across exports from the same producer
+  - No hyphens, underscores or spaces
 
-  Examples:
-  - `aws` (Amazon Web Services)
-  - `azure` (Microsoft Azure)
-  - `gcp` (Google Cloud Platform)
-  - `arista` (Arista Networks)
-  - `proxmox` (Proxmox Virtual Environment)
-  - `vmware` (VMware vSphere)
-  - `cisco` (Cisco systems)
+**Canonical provider names:**
+
+Producers **MUST** use canonical lowercase identifiers for well-known providers:
+
+| Provider | OSIRIS Canonical name | Examples to avoid |
+|----------|----------------------|-------------------|
+| Amazon Web Services | `aws` | `AWS`, `Amazon`, `amazon-web-services` |
+| Microsoft Azure | `azure` | `Azure`, `Microsoft Azure`, `msazure` |
+| Google Cloud Platform | `gcp` | `GCP`, `Google`, `googlecloud` |
+| Oracle Cloud | `oci` | `OCI`, `Oracle`, `oraclecloud` |
+| IBM Cloud | `ibm` | `IBM`, `ibmcloud` |
+| Tencent Cloud | `tencent` | `Tencent`, `tencentcloud` |
+| Alibaba Cloud | `alibaba` | `Alibaba`, `alibabacloud`, `aliyun` |
+| VMware | `vmware` | `VMware`, `vmwareesxi` |
+| Proxmox | `proxmox` | `Proxmox`, `proxmoxve` |
+| Cisco | `cisco` | `Cisco Systems`, `CiscoSystems` |
+| Arista | `arista` | `Arista Networks`, `aristanetworks` |
+| Juniper | `juniper` | `Juniper Networks`, `junipernetworks` |
+| Dell | `dell` | `Dell EMC`, `dellemc`, `DellEMC` |
+| HPE | `hpe` | `HPE`, `Hewlett Packard Enterprise`, `hewlettpackard` |
+| Palo Alto | `paloalto` | `Palo Alto Networks`, `palo-alto`, `PaloAlto` |
+| GitHub | `github` | `GitHub`, `git-hub` |
+| GitLab | `gitlab` | `GitLab`, `git-lab` |
+| Kubernetes | `kubernetes` | `k8s`, `K8s`, `Kubernetes` |
+| Redis | `redis` | `Redis Labs`, `redislabs` |
+| PostgreSQL | `postgresql` | `Postgres`, `postgres`, `PostgreSQL` |
+| MongoDB | `mongodb` | `Mongo`, `MongoDB` |
+| Kafka | `kafka` | `Apache Kafka`, `apachekafka` |
+
+For unlisted providers, use lowercase, no hyphens, underscores or spaces (e.g. `arista`, `ciena`, `paloalto`, `checkpoint`, `f5networks`).
+
+**Rationale:** Canonical names enable reliable provider-based filtering and matching across tools.
 
 
 ### 4.3.4 Optional fields
@@ -1658,7 +1873,7 @@ The provider object **MAY** include:
 - **`native_id`** (string): The resource's native identifier in the source system. This enables correlation with vendor APIs, reconciliation across exports and deduplication.
 
   Examples:
-  - AWS ARN: `arn:aws:ec2:us-east-1:123456789012:instance/i-0abc123def456`
+  - AWS ARN: `arn:aws:ec2:us-east-1:123456789012:instance/i-0abc123def4567890`
   - Azure Resource ID: `/subscriptions/{sub}/resourceGroups/{rg}/providers/Microsoft.Compute/virtualMachines/{vm}`
   - GCP full resource name: `//compute.googleapis.com/projects/{project}/zones/{zone}/instances/{instance}`
   - Device serial number: `JPE19350123`
@@ -1700,17 +1915,48 @@ For resources from unknown, offline or organization-specific sources, producers 
 
 - **`provider.name = "custom"`** with **`provider.namespace`**: For organization-specific or internal systems that do not map to recognized vendors.
 
-  When `provider.name` is set to `"custom"`, the `namespace` field **MUST** be provided to uniquely identify the organization or system.
+When `provider.name` is set to `"custom"`, the `namespace` field **MUST** be provided to uniquely identify the organization or system.
 
-  Example:
+#### Unknown provider example
 ```json
-  {
-    "provider": {
-      "name": "custom",
-      "namespace": "acme-internal-cmdb",
-      "system": "legacy-inventory-v2"
-    }
-  }
+{
+  "id": "unknown::device-basement-rack2-u15",
+  "type": "network.switch",
+  "name": "unidentified-switch",
+  "provider": {
+    "name": "unknown"
+  },
+  "properties": {
+    "management_ip": "192.168.1.47",
+    "discovered_via": "network-scan"
+  },
+  "status": "active"
+}
+```
+
+#### Custom provider example
+```json
+{
+  "id": "custom::legacy-app-server-03",
+  "type": "compute.physical.server",
+  "name": "legacy-payroll-server",
+  "provider": {
+    "name": "custom",
+    "namespace": "acme-internal-cmdb",
+    "system": "legacy-inventory-v2",
+    "native_id": "legacy-app-server-03"
+  },
+  "properties": {
+    "serial_number": "JDX0001",
+    "install_date": "2020-03-12"
+  },
+  "location": {
+    "datacenter": "MXP",
+    "building": "01",
+    "room": "server-legacy"
+  },
+  "status": "active"
+}
 ```
 
 Consumers **MUST** accept resources with `provider.name = "unknown"` or `provider.name = "custom"` and **SHOULD** treat them as generic resources while preserving all provider metadata.
@@ -1747,13 +1993,18 @@ Metadata scope (document-wide):
 Resource provider (per-resource):
 ```json
 {
-  "id": "vm-001",
+  "id": "aws::i-0abc123def4567890",
+  "type": "compute.vm",
+  "name": "web-server-prod-01",
   "provider": {
     "name": "aws",
+    "type": "AWS::EC2::Instance",
+    "native_id": "i-0abc123def4567890",
     "region": "us-east-1",
-    "account": "123456789012",
-    "native_id": "arn:aws:ec2:us-east-1:123456789012:instance/i-0abc123"
-  }
+    "account_id": "123456789012",
+    "arn": "arn:aws:ec2:us-east-1:123456789012:instance/i-0abc123def4567890"
+  },
+  "status": "active"
 }
 ```
 
@@ -1771,50 +2022,94 @@ Producers **SHOULD** preserve `provider.native_id` when available, as it provide
 `native_id` **MAY** be the provider’s primary identifier (e.g. instance ID) or a fully-qualified identifier (e.g. ARN/Azure resource ID).
 
 ### 4.3.8 Provider object examples
-#### Hyperscaler resource
+#### Hyperscaler resource (AWS EC2)
 ```json
 {
+  "id": "aws::i-0abc123def4567890",
+  "type": "compute.vm",
+  "name": "web-server-prod-01",
   "provider": {
     "name": "aws",
+    "type": "AWS::EC2::Instance",
+    "native_id": "i-0abc123def4567890",
     "region": "us-east-1",
-    "account": "123456789012",
-    "native_id": "arn:aws:ec2:us-east-1:123456789012:instance/i-0abc123def456"
-  }
+    "account_id": "123456789012",
+    "arn": "arn:aws:ec2:us-east-1:123456789012:instance/i-0abc123def4567890"
+  },
+  "status": "active"
 }
 ```
 
-#### Network device
+#### Network device (Arista switch)
 ```json
 {
+  "id": "arista::MXP-SW-LEAF-01",
+  "type": "network.switch",
+  "name": "mxp-leaf-switch-01",
   "provider": {
     "name": "arista",
-    "model": "DCS-7050SX3-48YC12",
-    "version": "EOS-4.28.3F",
-    "native_id": "JPEXXXXXXXX"
-  }
+    "type": "DCS-7050SX3-48YC12",
+    "native_id": "MXP-SW-LEAF-01",
+    "serial_number": "JPE19350287",
+    "software_version": "EOS-4.28.3F"
+  },
+  "location": {
+    "datacenter": "MXP",
+    "building": "01",
+    "floor": "F1",
+    "room": "105",
+    "rack": "R01",
+    "unit": 12
+  },
+  "status": "active"
 }
 ```
 
-#### Virtualization platform
+#### Virtualization platform (Proxmox VM)
 ```json
 {
+  "id": "proxmox::vm-101",
+  "type": "compute.vm",
+  "name": "database-server",
   "provider": {
     "name": "proxmox",
-    "version": "8.1.3",
-    "native_id": "qemu/101"
-  }
+    "type": "QEMU",
+    "native_id": "vm-101",
+    "cluster": "pve-cluster-01",
+    "node": "pve-node-02",
+    "version": "8.1.3"
+  },
+  "properties": {
+    "vmid": 101,
+    "vcpus": 4,
+    "memory_gb": 8
+  },
+  "status": "active"
 }
 ```
 
 #### Custom internal system
 ```json
 {
+  "id": "custom::ASSET-EU-04567",
+  "type": "compute.physical.server",
+  "name": "legacy-app-server",
   "provider": {
     "name": "custom",
     "namespace": "acme-corp",
     "system": "asset-management-db",
     "native_id": "ASSET-EU-04567"
-  }
+  },
+  "properties": {
+    "purchase_date": "2018-06-15",
+    "warranty_expires": "2023-06-15"
+  },
+  "location": {
+    "datacenter": "MXP",
+    "building": "01",
+    "room": "legacy-storage"
+  },
+  "status": "active"
 }
 ```
 
@@ -1859,6 +2154,25 @@ If present, `properties` **MUST** be a JSON object.
 }
 ```
 
+**Example Hyperscaler resource (AWS EC2):**
+```json
+{
+  "properties": {
+    "instance_type": "t3.medium",
+    "memory_gb": 8,
+    "cpu_cores": 4,
+    "ip_addresses": {
+      "private_ip": ["10.0.1.10", "10.0.1.11"],
+      "public_ip": "203.0.113.10"
+    },
+    "storage": {
+      "disk_size_gb": 100,
+      "disk_type": "gp3"
+    }
+  }
+}
+```
+
 Properties **MAY** contain primitive values, arrays and nested objects of arbitrary depth.
 
 
@@ -1866,6 +2180,7 @@ Properties **MAY** contain primitive values, arrays and nested objects of arbitr
 Property keys **SHOULD** follow these conventions:
 
 - Lowercase with underscores for multi-word keys (e.g. `instance_type`, `private_ip`, `disk_size_gb`)
+  - Underscores enable direct property access in most programming languages (unlike hyphens which are operators)
 - Include units in the key name where applicable (e.g. `memory_gb`, `throughput_mbps`)
 - Remain stable across exports from the same producer
 
@@ -1902,13 +2217,66 @@ osiris.<namespace>
 
 The value associated with each `osiris.<namespace>` key **MUST** be a JSON object.
 
-Example:
+**Generic example:**
 ```json
 {
   "extensions": {
-    "osiris.aws": { "security_groups": ["sg-123"] },
-    "osiris.acme": { "owner_team": "platform" }
+    "osiris.aws": { "security_groups": ["sg-0abc123"] },
+    "osiris.acme": { "owner_team": "software-development" }
   }
+}
+```
+
+#### Complete resource example
+```json
+{
+  "id": "aws::i-0abc123def4567890",
+  "type": "compute.vm",
+  "name": "web-server-prod-01",
+  "provider": {
+    "name": "aws",
+    "type": "AWS::EC2::Instance",
+    "native_id": "i-0abc123def4567890",
+    "region": "us-east-1",
+    "account_id": "123456789012"
+  },
+  "properties": {
+    "instance_type": "t3.medium",
+    "memory_gb": 4,
+    "ip_addresses": {
+        "private_ip": ["10.0.1.10", "10.0.1.11"],
+        "public_ip": "203.0.113.10"
+    }
+  },
+  "extensions": {
+    "osiris.aws": {
+      "security_groups": [
+        {
+          "id": "sg-0abc123",
+          "name": "web-tier"
+        }
+      ],
+      "iam_role": "arn:aws:iam::123456789012:role/web-server-role",
+      "placement": {
+        "availability_zone": "us-east-1a",
+        "tenancy": "default"
+      }
+    },
+    "osiris.terraform": {
+      "workspace": "production",
+      "module": "web_servers",
+      "resource_address": "module.web_servers.aws_instance.main[0]"
+    },
+    "osiris.acme": {
+      "owner_team": "software-development",
+      "cost_center": "informationtechnology",
+      "compliance_tags": {
+        "pci_scope": false,
+        "data_classification": "internal"
+      }
+    }
+  },
+  "status": "active"
 }
 ```
 
@@ -1924,6 +2292,20 @@ Namespaces **SHOULD** be stable and collision resistant:
 Consumers **MUST** ignore unrecognized extension namespaces and fields.
 
 Consumers that transform or re-export OSIRIS documents **SHOULD** preserve extensions data when feasible (some consumers are intentionally lossy).
+
+
+#### Properties vs extensions guidance
+Use `properties` for attributes intrinsic to the resource (configuration, capacity, addressing).
+
+Use `extensions` for contextual metadata specific to a vendor, tool or organization:
+- **Vendor extensions** (`osiris.aws`, `osiris.cisco`): Provider-native structures not in core OSIRIS model
+- **Tool extensions** (`osiris.terraform`, `osiris.ansible`): Automation/management tool metadata
+- **Organization extensions** (`osiris.acme`): Internal tracking, ownership, compliance data
+
+**Example decision:**
+- `properties.instance_type` - intrinsic AWS attribute
+- `extensions.osiris.aws.iam_role` - AWS-specific IAM construct
+- `extensions.osiris.acme.owner_team` - organization-specific tracking
 
 
 ### 4.4.7 Properties vs extensions
@@ -1965,21 +2347,25 @@ If a platform has richer label/annotation concepts (e.g. Kubernetes), producers 
 #### Compute resource with portable properties + vendor extension
 ```json
 {
-  "id": "vm-aws-web-001",
-  "name": "web-server-01",
+  "id": "aws::i-0abc123def4567890",
   "type": "compute.vm",
+  "name": "web-server-prod-01",
   "provider": {
     "name": "aws",
+    "type": "AWS::EC2::Instance",
+    "native_id": "i-0abc123def4567890",
     "region": "us-east-1",
-    "account": "123456789012",
-    "native_id": "arn:aws:ec2:us-east-1:123456789012:instance/i-0abc123def456"
+    "account_id": "123456789012",
+    "arn": "arn:aws:ec2:us-east-1:123456789012:instance/i-0abc123def4567890"
   },
   "properties": {
     "instance_type": "t3.large",
     "vcpus": 2,
     "memory_gb": 8,
-    "private_ip": "10.0.1.10",
-    "public_ip": "203.0.113.10",
+    "ip_addresses": {
+      "private_ip": ["10.0.1.10", "10.0.1.11"],
+      "public_ip": "203.0.113.10"
+    },
     "root_volume_size_gb": 100
   },
   "extensions": {
@@ -1991,61 +2377,75 @@ If a platform has richer label/annotation concepts (e.g. Kubernetes), producers 
   "tags": {
     "environment": "production",
     "managed_by": "terraform"
-  }
+  },
+  "status": "active"
 }
 ```
 
 #### Network device with properties + vendor and org extensions
 ```json
 {
-  "id": "switch-dc1-leaf-01",
-  "name": "dc1-leaf-01",
+  "id": "arista::MXP-SW-LEAF-01",
   "type": "network.switch.leaf",
+  "name": "mxp-leaf-switch-01",
   "provider": {
     "name": "arista",
-    "model": "DCS-7050SX3-48YC12",
-    "version": "EOS-4.28.3F",
-    "native_id": "SERIAL:JPE19350123"
+    "type": "DCS-7050SX3-48YC12",
+    "native_id": "MXP-SW-LEAF-01",
+    "serial_number": "JPE19350123",
+    "software_version": "EOS-4.28.3F"
   },
   "properties": {
-    "management_ip": "10.0.0.101",
+    "management_ip": "10.130.100.101",
     "port_count": 48,
     "uplink_ports": ["Ethernet49/1", "Ethernet50/1"],
     "rack_unit_start": 42,
     "rack_unit_height": 1,
     "face": "front"
   },
+  "location": {
+    "datacenter": "MXP",
+    "building": "01",
+    "floor": "F1",
+    "room": "105",
+    "rack": "R01",
+    "unit": 42
+  },
   "extensions": {
     "osiris.arista": {
       "system_mac": "00:1c:73:aa:bb:cc",
-      "mlag": { 
-        "domain_id": "MLAG1", 
-        "peer_link": "Port-Channel1" 
+      "mlag": {
+        "domain_id": "MLAG1",
+        "peer_link": "Port-Channel1"
       }
     },
     "osiris.acme": {
-      "maintenance_window": "sunday-02:00-04:00"
+      "maintenance_window": "sunday-02:00-04:00",
+      "owner_team": "network-infrastructure"
     }
-  }
+  },
+  "status": "active"
 }
 ```
 
 #### Kubernetes pod with platform-native labels/annotations in extensions
 ```json
 {
-  "id": "pod-nginx-7d8f9c",
-  "name": "nginx-7d8f9c-abcde",
+  "id": "k8s::nginx-7d8f9c-abcde",
   "type": "compute.container",
+  "name": "nginx-7d8f9c-abcde",
   "provider": {
     "name": "k8s",
-    "system": "prod-cluster-1",
-    "native_id": "pod/nginx-7d8f9c-abcde"
+    "type": "Pod",
+    "native_id": "nginx-7d8f9c-abcde",
+    "cluster": "prod-cluster-1",
+    "namespace": "production"
   },
   "properties": {
-    "namespace": "production",
     "image": "nginx:1.21",
     "restart_count": 0,
-    "node": "worker-03"
+    "node": "worker-03",
+    "phase": "Running"
   },
   "extensions": {
     "osiris.k8s": {
@@ -2059,27 +2459,28 @@ If a platform has richer label/annotation concepts (e.g. Kubernetes), producers 
         "prometheus.io/port": "9113"
       },
       "owner_references": [
-        { 
-          "kind": "ReplicaSet", 
-          "name": "nginx-7d8f9c" 
+        {
+          "kind": "ReplicaSet",
+          "name": "nginx-7d8f9c"
         }
       ]
     }
-  }
+  },
+  "status": "active"
 }
 ```
 
 #### Custom resource with organization extensions (namespaced type)
 ```json
 {
-  "id": "custom-monitor-01",
-  "name": "APM-Monitor-NYC",
+  "id": "custom::monitor-01",
   "type": "osiris.acme.apm.monitor",
+  "name": "apm-monitor-mxp",
   "provider": {
     "name": "custom",
     "namespace": "acme-monitoring",
     "system": "observability-platform",
-    "native_id": "monitor/01"
+    "native_id": "monitor-01"
   },
   "properties": {
     "monitoring_url": "https://apm.acme.com/monitor/01",
@@ -2089,10 +2490,11 @@ If a platform has richer label/annotation concepts (e.g. Kubernetes), producers 
   "extensions": {
     "osiris.acme": {
       "owner_team": "sre-observability",
-      "cost_center": "CC-1234",
+      "cost_center": "informationtechnology",
       "compliance_required": true
     }
-  }
+  },
+  "status": "active"
 }
 ```
 
@@ -2270,42 +2672,106 @@ Consumers **MAY**:
 
 
 ### 4.5.6 Examples
-#### Cloud VM with status and state
+#### Hyperscaler (AWS) VM with status and state
 ```json
 {
-  "id": "vm-aws-web-001",
-  "name": "web-server-01",
+  "id": "aws::i-0abc123def4567890",
   "type": "compute.vm",
+  "name": "web-server-prod-01",
   "provider": {
     "name": "aws",
+    "type": "AWS::EC2::Instance",
+    "native_id": "i-0abc123def4567890",
     "region": "us-east-1",
-    "native_id": "i-0abc123def456"
+    "account_id": "123456789012"
   },
   "status": "active",
   "state": "running",
   "properties": {
     "instance_type": "t3.medium",
-    "private_ip": "10.0.1.10"
+    "ip_addresses": {
+      "private_ip": "10.0.1.10",
+      "public_ip": "203.0.113.50"
+    }
   }
 }
 ```
 
-#### Network switch with degraded status
+#### Hyperscaler (Azure) Stopped VM (inactive status)
 ```json
 {
-  "id": "switch-dc1-leaf-01",
-  "name": "dc1-leaf-01",
+  "id": "azure::staging-app-02",
+  "type": "compute.vm",
+  "name": "staging-app-server",
+  "provider": {
+    "name": "azure",
+    "type": "Microsoft.Compute/virtualMachines",
+    "native_id": "staging-app-02",
+    "region": "eastus",
+    "subscription_id": "12345678-1234-1234-1234-123456789012",
+    "resource_id": "/subscriptions/12345678-1234-1234-1234-123456789012/resourceGroups/staging/providers/Microsoft.Compute/virtualMachines/staging-app-02"
+  },
+  "status": "inactive",
+  "state": "stopped",
+  "properties": {
+    "vm_size": "Standard_B2s",
+    "os_type": "Linux",
+    "ip_addresses": {
+      "private_ip": "10.1.0.20"
+    }
+  }
+}
+```
+
+#### Hyperscaler (AWS) Terminated VM (retired status)
+```json
+{
+  "id": "aws::i-0xyz789abc123def",
+  "type": "compute.vm",
+  "name": "legacy-web-server",
+  "provider": {
+    "name": "aws",
+    "type": "AWS::EC2::Instance",
+    "native_id": "i-0xyz789abc123def",
+    "region": "us-west-2",
+    "account_id": "123456789012"
+  },
+  "status": "retired",
+  "state": "terminated",
+  "properties": {
+    "instance_type": "t2.micro",
+    "termination_time": "2025-12-15T10:30:00Z"
+  }
+}
+```
+
+#### On-premise Network switch with degraded status
+```json
+{
+  "id": "arista::MXP-SW-LEAF-01",
   "type": "network.switch.leaf",
+  "name": "mxp-leaf-switch-01",
   "provider": {
     "name": "arista",
-    "model": "DCS-7050SX3-48YC12",
-    "native_id": "JPEXXXXXXXX"
+    "type": "DCS-7050SX3-48YC12",
+    "native_id": "MXP-SW-LEAF-01",
+    "serial_number": "JPE19350287",
+    "software_version": "EOS-4.28.3F"
   },
   "status": "degraded",
   "state": "fan-failure-detected",
   "properties": {
-    "management_ip": "10.0.0.101",
-    "port_count": 48
+    "management_ip": "10.130.100.101",
+    "port_count": 48,
+    "uplink_ports": ["Ethernet49/1", "Ethernet50/1"]
+  },
+  "location": {
+    "datacenter": "MXP",
+    "building": "01",
+    "floor": "F1",
+    "room": "105",
+    "rack": "R01",
+    "unit": 42
   }
 }
 ```
@@ -2313,19 +2779,22 @@ Consumers **MAY**:
 #### Kubernetes pod with vendor-specific state
 ```json
 {
-  "id": "pod-nginx-abc123",
-  "name": "nginx-deployment-abc123",
+  "id": "k8s::nginx-deployment-abc123",
   "type": "compute.container",
+  "name": "nginx-deployment-abc123",
   "provider": {
     "name": "k8s",
-    "native_id": "pod/nginx-deployment-abc123"
+    "type": "Pod",
+    "native_id": "nginx-deployment-abc123",
+    "cluster": "prod-cluster-1",
+    "namespace": "production"
   },
   "status": "active",
   "state": "Running",
   "properties": {
-    "namespace": "production",
     "image": "nginx:1.21",
-    "node": "worker-node-03"
+    "node": "worker-node-03",
+    "restart_count": 0
   },
   "extensions": {
     "osiris.k8s": {
@@ -2344,52 +2813,12 @@ Consumers **MAY**:
 }
 ```
 
-#### Stopped VM (inactive status)
-```json
-{
-  "id": "vm-staging-002",
-  "name": "staging-app-server",
-  "type": "compute.vm",
-  "provider": {
-    "name": "azure",
-    "region": "eastus",
-    "native_id": "/subscriptions/.../virtualMachines/staging-app-02"
-  },
-  "status": "inactive",
-  "state": "stopped",
-  "properties": {
-    "vm_size": "Standard_B2s",
-    "os_type": "Linux"
-  }
-}
-```
-
-#### Terminated VM (retired status)
-```json
-{
-  "id": "vm-legacy-001",
-  "name": "legacy-web-server",
-  "type": "compute.vm",
-  "provider": {
-    "name": "aws",
-    "region": "us-west-2",
-    "native_id": "i-0xyz789abc123"
-  },
-  "status": "retired",
-  "state": "terminated",
-  "properties": {
-    "instance_type": "t2.micro",
-    "termination_time": "2025-12-15T10:30:00Z"
-  }
-}
-```
-
 #### Resource with unknown status (source unavailable)
 ```json
 {
-  "id": "legacy-db-001",
-  "name": "legacy-database",
+  "id": "custom::DB-001",
   "type": "storage.database",
+  "name": "legacy-database",
   "provider": {
     "name": "custom",
     "namespace": "legacy-systems",
@@ -2425,12 +2854,53 @@ A connection is a JSON object that links two resources within the same OSIRIS do
 
 
 ### 5.1.2 Required fields
+Every connection **MUST** have a unique identifier within an OSIRIS document via the `id` field.
+
+Connection identifiers are **document-scoped**: they **MUST** be unique within a single OSIRIS document but need not be globally unique across other documents or systems.
+
+Unlike resources which represent vendor-managed objects with native identifiers, connections represent relationships discovered or inferred by parsers. Therefore, connection IDs do not reference external vendor systems and do not use the `provider::native-id` namespace pattern.
+
 Every connection **MUST** include:
 
 - **`id`** (string): Unique identifier for this connection within the document
 - **`source`** (string): Resource ID of the source endpoint
 - **`target`** (string): Resource ID of the target endpoint
 - **`type`** (string): Connection type using dot notation (see section 5.2)
+
+**ID Construction:**
+Producers **SHOULD** construct connection IDs using one of these strategies:
+
+1. **Sequential numbering:**
+```json
+   "id": "conn-001"
+   "id": "conn-002"
+   "id": "conn-003"
+```
+
+2. **Descriptive naming (recommended):**
+```json
+   "id": "conn-aws-vpc-subnet-001"
+   "id": "conn-aws-web-db-dependency"
+   "id": "conn-mxp-leaf-spine-uplink"
+   "id": "conn-mxp-app-to-cache"
+```
+
+3. **Type-prefixed descriptive:**
+```json
+   "id": "network-vpc-to-subnet-001"
+   "id": "dependency-web-to-db"
+   "id": "contains-subnet-vm-001"
+```
+
+4. **Hash-based (for reproducibility):**
+```json
+   "id": "conn-a1b2c3d4e5f6"
+```
+
+5. **UUID (for guaranteed uniqueness on large infrastructures):**
+```json
+   "id": "550e8400-e29b-41d4-a716-446655440000"
+```
 
 
 ### 5.1.3 Optional fields
@@ -2446,14 +2916,82 @@ Connections **MAY** include:
 - **`tags`** (object): Key-value labels (`string` > `string`)
 
 
-### 5.1.4 Minimal connection example
+### 5.1.4 Minimal connection examples
+Following examples show how OSIRIS can at minimum allow you to represent objects within the infrastructure.
+
+Hyperscaler (AWS) EC2 dependency to Postgres DB:
 ```json
 {
-  "id": "conn-001",
-  "source": "vm-001",
-  "target": "db-001",
+  "id": "conn-aws-web-db-dependency",
+  "source": "aws::i-0abc123def4567890",
+  "target": "aws::db-prod-postgres-01",
   "type": "dependency",
   "direction": "forward"
+}
+```
+
+**Additional examples:**
+
+Hyperscaler (AWS) network containment:
+```json
+{
+  "id": "conn-aws-ec2-subnet-001",
+  "source": "aws::subnet-0abc123",
+  "target": "aws::i-0abc123def4567890",
+  "type": "contains",
+  "direction": "forward"
+}
+```
+
+Multi-vendor hybrid network connection:
+```json
+{
+  "id": "conn-aws-vpc-subnet-001",
+  "source": "aws::vpc-0abc123",
+  "target": "vmware::vm-1234",
+  "type": "network",
+  "direction": "bidirectional"
+}
+```
+
+On-premise Physical network link between datacenter switches:
+```json
+{
+  "id": "conn-mxp-leaf-spine-uplink-r01-u42",
+  "source": "arista::MXP-SW-LEAF-01",
+  "target": "arista::MXP-SW-SPINE-01",
+  "type": "network",
+  "direction": "bidirectional",
+  "properties": {
+    "link_type": "uplink",
+    "protocol": "ethernet",
+    "bandwidth_gbps": 100,
+    "mtu": 9214,
+    "vlan_mode": "trunk",
+    "interfaces": {
+      "source": {
+        "port": "Ethernet49/1",
+        "port_type": "uplink",
+        "speed_gbps": 100
+      },
+      "target": {
+        "port": "Ethernet1/1",
+        "port_type": "downlink",
+        "speed_gbps": 100
+      }
+    },
+    "management": {
+      "source_ip": "10.130.100.101",
+      "target_ip": "10.130.100.1"
+    }
+  },
+  "status": "active",
+  "extensions": {
+    "osiris.arista": {
+      "lacp_mode": "active",
+      "port_channel_id": "Port-Channel49"
+    }
+  }
 }
 ```
 
@@ -2600,7 +3138,7 @@ Examples:
 - `osiris.aws.vpc-peering`
 - `osiris.k8s.service-selector`
 - `osiris.arista.mlag`
-- `osiris.com-acme.workflow`
+- `osiris.com.acme.workflow`
 
 
 ### 5.2.5 Unknown connection types
@@ -2730,140 +3268,261 @@ Consumers **MUST** ignore unknown extension namespaces and fields.
 
 
 ### 5.4.4 Examples
-#### Network connection (bidirectional)
+#### Hyperscaler (AWS) network connection (bidirectional)
 ```json
 {
-  "id": "conn-net-web-db",
-  "source": "vm-<provider>-web-001",
-  "target": "vm-<provider>-db-001",
+  "id": "conn-aws-web-db-network",
+  "source": "aws::i-0abc123def4567890",
+  "target": "aws::db-prod-postgres-01",
   "type": "network",
   "direction": "bidirectional",
   "status": "active",
   "properties": {
     "protocol": "tcp",
     "ports": [5432],
-    "vlan": 100
+    "vlan_id": 100,
+    "interfaces": {
+      "source": {
+        "ip": "10.0.1.10",
+        "port": "eth0"
+      },
+      "target": {
+        "ip": "10.0.2.20",
+        "port": "eth0"
+      }
+    }
   },
   "tags": {
-    "environment": "production"
+    "environment": "production",
+    "application": "web-tier"
   }
 }
 ```
 
-#### Dependency (forward)
+#### Application dependency (forward)
 ```json
 {
-  "id": "conn-dep-api-auth",
-  "source": "service-api-gateway",
-  "target": "service-auth",
+  "id": "conn-app-api-auth-dependency",
+  "source": "k8s::api-gateway-7d8f9c-abcde",
+  "target": "k8s::auth-service-5a6b7c-fghij",
   "type": "dependency.api",
   "direction": "forward",
+  "status": "active",
   "properties": {
     "required": true,
     "api_version": "v2",
-    "timeout_seconds": 5
+    "timeout_seconds": 5,
+    "retry_policy": {
+      "max_retries": 3,
+      "backoff_seconds": 2
+    }
+  },
+  "tags": {
+    "criticality": "high"
   }
 }
 ```
 
-#### Physical copper ethernet link (bidirectional)
+#### On-premise physical copper ethernet link (bidirectional)
 ```json
 {
-  "id": "cn-MXP-F1-R01-SW-001-48-to-MXP-F1-R01-SRV-042-eno1-1",
-  "source": "MXP-F1-R01-SW-001",
-  "target": "MXP-F1-R01-SRV-042",
+  "id": "conn-mxp-sw-to-srv-042-port48",
+  "source": "arista::MXP-SW-LEAF-01",
+  "target": "dell::MXP-SRV-042",
   "type": "physical.ethernet",
   "direction": "bidirectional",
   "status": "active",
   "properties": {
-    "source_port": "Ethernet48",
-    "target_port": "eno1",
+    "link_type": "server-access",
     "speed_gbps": 10,
-    "cable_type": "cat6a",
-    "length_meters": 5,
-    "source_transceiver": {
-      "vendor": "arista",
-      "model": "SFP-10G-T",
-      "form_factor": "sfp+",
-      "serial_number": "SFP10GT-XXXXXXXX"
+    "cable": {
+      "type": "cat6a",
+      "length_meters": 5
     },
-    "target_transceiver": {
-      "vendor": "broadcom",
-      "model": "57412 Quad Port 10GbE BASE-T (OCP 3.0)",
-      "form_factor": "base-t",
-      "serial_number": "BCM57412-YYYYYYYY"
+    "interfaces": {
+      "source": {
+        "port": "Ethernet48",
+        "port_type": "access",
+        "transceiver": {
+          "vendor": "arista",
+          "model": "SFP-10G-T",
+          "form_factor": "sfp+",
+          "serial_number": "SFP10GT-AR12345"
+        }
+      },
+      "target": {
+        "port": "eno1",
+        "port_type": "onboard",
+        "transceiver": {
+          "vendor": "broadcom",
+          "model": "57412 Quad Port 10GbE",
+          "form_factor": "base-t",
+          "serial_number": "BCM57412-DL98765"
+        }
+      }
     }
+  },
+  "tags": {
+    "rack": "R01",
+    "cable_id": "MXP-CAB-048-042"
   }
 }
 ```
 
-#### Physical fiber ethernet link (bidirectional)
+#### On-premise physical fiber ethernet lin (bidirectional)
 ```json
 {
-  "id": "cn-MXP-F1-R01-SW-001-49-1-to-MXP-F1-R01-SRV-042-ens2np0-1",
-  "source": "MXP-F1-R01-SW-001",
-  "target": "MXP-F1-R01-SRV-042",
+  "id": "conn-mxp-leaf-spine-uplink-r01",
+  "source": "arista::MXP-SW-LEAF-01",
+  "target": "arista::MXP-SW-SPINE-01",
   "type": "physical.fiber",
   "direction": "bidirectional",
   "status": "active",
   "properties": {
-    "source_port": "Ethernet49/1",
-    "target_port": "ens2np0",
+    "link_type": "uplink",
     "speed_gbps": 100,
-    "cable_type": "om4",
-    "length_meters": 30,
-    "source_transceiver": {
-      "vendor": "arista",
-      "model": "100GBASE-SR4",
-      "form_factor": "qsfp28",
-      "serial_number": "QSFP100SR4-XXXXXXXX",
-      "dom": {
-        "module_temperature_c": 42.1,
-        "supply_voltage_v": 3.28,
-        "lanes": [
-          { "lane": 1, "tx_power_dbm": -1.3, "rx_power_dbm": -2.1, "tx_bias_ma": 44.2 },
-          { "lane": 2, "tx_power_dbm": -1.2, "rx_power_dbm": -2.3, "tx_bias_ma": 44.0 },
-          { "lane": 3, "tx_power_dbm": -1.4, "rx_power_dbm": -2.2, "tx_bias_ma": 44.4 },
-          { "lane": 4, "tx_power_dbm": -1.1, "rx_power_dbm": -2.0, "tx_bias_ma": 43.8 }
-        ]
-      }
+    "cable": {
+      "type": "om4",
+      "length_meters": 30
     },
-    "target_transceiver": {
-      "vendor": "nvidia",
-      "model": "100GBASE-SR4",
-      "form_factor": "qsfp56",
-      "serial_number": "QSFP56SR4-YYYYYYYY",
-      "dom": {
-        "module_temperature_c": 39.7,
-        "supply_voltage_v": 3.30,
-        "lanes": [
-          { "lane": 1, "tx_power_dbm": -1.0, "rx_power_dbm": -2.4, "tx_bias_ma": 41.9 },
-          { "lane": 2, "tx_power_dbm": -1.1, "rx_power_dbm": -2.5, "tx_bias_ma": 42.1 },
-          { "lane": 3, "tx_power_dbm": -1.2, "rx_power_dbm": -2.6, "tx_bias_ma": 42.0 },
-          { "lane": 4, "tx_power_dbm": -1.0, "rx_power_dbm": -2.3, "tx_bias_ma": 41.8 }
-        ]
+    "interfaces": {
+      "source": {
+        "port": "Ethernet49/1",
+        "port_type": "uplink",
+        "admin_status": "up",
+        "oper_status": "up",
+        "transceiver": {
+          "vendor": "arista",
+          "model": "100GBASE-SR4",
+          "form_factor": "qsfp28",
+          "serial_number": "QSFP100SR4-AR12345",
+          "wavelength_nm": 850,
+          "digital_optical_monitoring": {
+            "module_temperature_c": 42.1,
+            "supply_voltage_v": 3.28,
+            "lanes": [
+              {
+                "lane": 1,
+                "tx_power_dbm": -1.3,
+                "rx_power_dbm": -2.1,
+                "tx_bias_ma": 44.2
+              },
+              {
+                "lane": 2,
+                "tx_power_dbm": -1.2,
+                "rx_power_dbm": -2.3,
+                "tx_bias_ma": 44.0
+              },
+              {
+                "lane": 3,
+                "tx_power_dbm": -1.4,
+                "rx_power_dbm": -2.2,
+                "tx_bias_ma": 44.4
+              },
+              {
+                "lane": 4,
+                "tx_power_dbm": -1.1,
+                "rx_power_dbm": -2.0,
+                "tx_bias_ma": 43.8
+              }
+            ]
+          }
+        }
+      },
+      "target": {
+        "port": "Ethernet1/1",
+        "port_type": "downlink",
+        "admin_status": "up",
+        "oper_status": "up",
+        "transceiver": {
+          "vendor": "arista",
+          "model": "100GBASE-SR4",
+          "form_factor": "qsfp28",
+          "serial_number": "QSFP100SR4-AR67890",
+          "wavelength_nm": 850,
+          "digital_optical_monitoring": {
+            "module_temperature_c": 39.7,
+            "supply_voltage_v": 3.30,
+            "lanes": [
+              {
+                "lane": 1,
+                "tx_power_dbm": -1.0,
+                "rx_power_dbm": -2.4,
+                "tx_bias_ma": 41.9
+              },
+              {
+                "lane": 2,
+                "tx_power_dbm": -1.1,
+                "rx_power_dbm": -2.5,
+                "tx_bias_ma": 42.1
+              },
+              {
+                "lane": 3,
+                "tx_power_dbm": -1.2,
+                "rx_power_dbm": -2.6,
+                "tx_bias_ma": 42.0
+              },
+              {
+                "lane": 4,
+                "tx_power_dbm": -1.0,
+                "rx_power_dbm": -2.3,
+                "tx_bias_ma": 41.8
+              }
+            ]
+          }
+        }
       }
+    }
+  },
+  "tags": {
+    "rack": "R01",
+    "layer": "leaf-spine"
+  },
+  "extensions": {
+    "osiris.arista": {
+      "lacp_mode": "active",
+      "port_channel_id": "Port-Channel49"
     }
   }
 }
 ```
 
-#### Vendor-specific connection type
+#### Hyperscaler (AWS) vendor-specific connection type (VPC peering)
 ```json
 {
-  "id": "conn-vpc-peer-prod-dev",
-  "source": "vpc-prod-001",
-  "target": "vpc-dev-001",
-  "type": "osiris.aws.vpc-peering",
+  "id": "conn-aws-vpc-peering-prod-dev",
+  "source": "aws::vpc-0abc123def456",
+  "target": "aws::vpc-0def789ghi012",
+  "type": "osiris.aws.vpc_peering",
   "direction": "bidirectional",
   "status": "active",
   "properties": {
-    "cidr_blocks": ["10.0.0.0/16", "10.1.0.0/16"]
+    "peering_status": "active",
+    "cidr_blocks": {
+      "source": ["10.0.0.0/16"],
+      "target": ["10.1.0.0/16"]
+    },
+    "dns_resolution": {
+      "source_to_target": true,
+      "target_to_source": true
+    }
   },
   "extensions": {
     "osiris.aws": {
-      "peering_connection_id": "pcx-0abc123def456"
+      "peering_connection_id": "pcx-0abc123def4567890",
+      "accepter_vpc_info": {
+        "owner_id": "123456789012",
+        "region": "us-east-1"
+      },
+      "requester_vpc_info": {
+        "owner_id": "123456789012",
+        "region": "us-east-1"
+      }
     }
+  },
+  "tags": {
+    "purpose": "cross-environment-access",
+    "cost_center": "networking"
   }
 }
 ```
@@ -2909,6 +3568,47 @@ Every group **MUST** include:
 - **`id`** (string): Unique identifier for this group within the document
 - **`type`** (string): Group type using dot notation (see section 6.2)
 
+**ID Construction:**
+
+Group identifiers are **document-scoped**: they **MUST** be unique within a single OSIRIS document but need not be globally unique across other documents or systems.
+
+Groups do not have vendor-assigned "native IDs" since they represent logical or physical collections defined by parsers or infrastructure operators. Producers **SHOULD** construct group IDs using one of these strategies:
+
+1. **Sequential numbering:**
+```json
+   "id": "group-001"
+   "id": "group-002"
+```
+
+2. **Descriptive naming (recommended):**
+```json
+   "id": "group-aws-vpc-production"
+   "id": "group-mxp-datacenter"
+   "id": "group-web-tier"
+   "id": "group-k8s-prod-cluster"
+```
+
+3. **Type-prefixed descriptive:**
+```json
+   "id": "environment-production"
+   "id": "datacenter-mxp"
+   "id": "vnet-azure-prod"
+```
+
+4. **Hash-based (for reproducibility):**
+```json
+   "id": "group-a1b2c3d4e5f6"
+```
+
+5. **UUID (for guaranteed uniqueness on large infrastructures):**
+```json
+   "id": "550e8400-e29b-41d4-a716-446655440000"
+```
+
+Descriptive naming (strategies 2-3) is **RECOMMENDED** as it improves human readability and debugging while maintaining uniqueness within the document scope.
+
+**Note:** Unlike resource IDs which use `provider::native-id` format to reference vendor systems, group IDs do not require namespace prefixes since groups represent logical or physical collections rather than vendor-managed objects.
+
 
 ### 6.1.3 Optional fields
 Groups **MAY** include:
@@ -2925,11 +3625,47 @@ Groups **MAY** include:
 
 
 ### 6.1.4 Minimal group example
+Logical environment grouping:
 ```json
 {
-  "id": "grp-prod",
+  "id": "group-aws-production-web-app",
   "type": "logical.environment",
-  "name": "Production"
+  "name": "Production environment",
+  "members": [
+    "aws::i-0abc123def4567890",
+    "aws::db-prod-postgres-01",
+    "aws::vpc-0abc123"
+  ]
+}
+```
+
+**Additional examples:**
+
+Physical datacenter grouping:
+```json
+{
+  "id": "group-mxp-datacenter",
+  "type": "physical.datacenter",
+  "name": "Milan Datacenter",
+  "members": [
+    "arista::MXP-SW-LEAF-01",
+    "arista::MXP-SW-SPINE-01",
+    "dell::MXP-SRV-042"
+  ]
+}
+```
+
+Hyperscaler (AWS) Network VPC grouping:
+```json
+{
+  "id": "group-aws-vpc-prod",
+  "type": "network.vpc",
+  "name": "Production VPC",
+  "members": [
+    "aws::vpc-0abc123",
+    "aws::subnet-0abc123",
+    "aws::i-0abc123def4567890"
+  ]
 }
 ```
 
@@ -2968,7 +3704,7 @@ Producers **MAY** use deterministic ID generation based on:
 - Logical environment: `grp-prod` or `grp-env-production`
 
 - Hyperscalers and Cloud provider netwrok groups: `grp-<provider.name>-net-<id>`
-  - AWS VPC: `grp-aws-net-vpc-0abc123def456`
+  - AWS VPC: `grp-aws-net-vpc-0abc123def4567890`
   - Azure VNet: `grp-az-net-vnet-prod-weu-01`
   - GCP VPC: `grp-gcp-net-vpc-prod-eu-01`
   - DigitalOcean VPC: `grp-digitalocean-net-vpc-<uuid>`
@@ -3026,7 +3762,7 @@ Group type values:
 - `Environment` (uppercase)
 - `datacenter` (single segment)
 - `data center` (space)
-- `.physical.room` (starts with dot)
+- `.datacenter` (starts with dot)
 - `network..vpc` (consecutive dots)
 
 
@@ -3138,11 +3874,11 @@ osiris.<namespace>.<type>
 - `osiris.gcp.project` (GCP project)
 - `osiris.k8s.namespace` (Kubernetes namespace)
 - `osiris.vmware.cluster` (VMware vSphere cluster)
-- `osiris.com-acme.product-line` (organization-specific product grouping)
+- `osiris.com.acme.product-line` (organization-specific product grouping)
 
 **Namespace selection guidance:**
 - Well-known vendors **MAY** use simple namespaces (e.g. `osiris.aws`, `osiris.arista`)
-- Organizations **SHOULD** use stable identifiers such as reverse domain notation (e.g. `osiris.com-acme`, `osiris.org-example`)
+- Organizations **SHOULD** use stable identifiers such as reverse domain notation without hyphens, underscores or spaces (e.g. `osiris.com.acme`, `osiris.org.example`)
 
 
 ### 6.2.5 Unknown group types
@@ -3161,7 +3897,32 @@ Consumers **MUST NOT** reject documents containing unknown group types.
 ### 6.3.1 Members array
 The `members` field is an array of resource IDs:
 ```json
-"members": ["vm-aws-web-001", "vm-aws-db-001", "lb-aws-pr-001"]
+"members": [
+  "aws::i-0abc123def4567890",
+  "aws::db-prod-postgres-01",
+  "aws::lb-prod-web-001"
+]
+```
+
+All member IDs **MUST** reference valid resource IDs defined elsewhere in the document. Member IDs **SHOULD** use the same format as resource IDs (typically `provider::native-id` for resources from vendor systems).
+
+**Example in context:**
+```json
+{
+  "id": "group-aws-production-web-app",
+  "type": "logical.application",
+  "name": "Production Web APP Lollipop of Acme Corp",
+  "members": [
+    "aws::i-0abc123def4567890",
+    "aws::i-0def456ghi7890ab",
+    "aws::lb-prod-web-001",
+    "aws::db-prod-postgres-01"
+  ],
+  "properties": {
+    "tier": "web",
+    "availability_zones": ["us-east-1a", "us-east-1b"]
+  }
+}
 ```
 
 **Rules:**
@@ -3181,25 +3942,153 @@ Resources listed in `members` are considered **direct members** of the group. Me
 A resource **MAY** belong to multiple groups simultaneously. This is expected and recommended for multi-dimensional classification.
 
 **Example: Multi-dimensional membership**
-Resource `vm-aws-web-001` can simultaneously belong to:
-- `grp-prod` (logical.environment)
-- `grp-web-tier` (logical.tier)
-- `grp-billing-app` (logical.application)
-- `grp-sw-development` (org.team)
-- `grp-MXP-F1-R01` (physical.rack)
+
+Resource `aws::i-0abc123def4567890` can simultaneously belong to:
+- `group-aws-production-web-app` (logical.environment)
+- `group-web-tier` (logical.tier)
+- `group-billing-application` (logical.application)
+- `group-team-software-development` (org.team)
+- `group-mxp-rack-r01` (physical.rack)
 
 This enables flexible filtering and navigation:
-- "Show all production resources"
-- "Show all web tier resources"
-- "Show all resources owned by platform team"
-- "Show all resources in rack R01"
+- "Show all production resources" > Filter by `group-aws-production-web-app`
+- "Show all web tier resources" > Filter by `group-web-tier`
+- "Show all resources owned by software development team" > Filter by `group-team-software-development`
+- "Show all resources in rack R01" > Filter by `group-mxp-rack-r01`
+
+**Complete example:**
+```json
+{
+  "resources": [
+    {
+      "id": "aws::i-0abc123def4567890",
+      "type": "compute.vm",
+      "name": "billing-api-prod-01"
+    }
+  ],
+  "groups": [
+    {
+      "id": "group-aws-production-web-app",
+      "type": "logical.environment",
+      "name": "Production Environment",
+      "members": ["aws::i-0abc123def4567890", "..."]
+    },
+    {
+      "id": "group-web-tier",
+      "type": "logical.tier",
+      "name": "Web Tier",
+      "members": ["aws::i-0abc123def4567890", "..."]
+    },
+    {
+      "id": "group-billing-application",
+      "type": "logical.application",
+      "name": "Billing Application",
+      "members": ["aws::i-0abc123def4567890", "..."]
+    },
+    {
+      "id": "group-team-software-development",
+      "type": "org.team",
+      "name": "Software Development Team",
+      "members": ["aws::i-0abc123def4567890", "..."]
+    },
+    {
+      "id": "group-mxp-rack-r01",
+      "type": "physical.rack",
+      "name": "MXP Datacenter Rack R01",
+      "members": ["aws::i-0abc123def4567890", "..."]
+    }
+  ]
+}
+```
 
 
 ### 6.3.3 Children array (hierarchical nesting)
-The `children` field is an array of group IDs that are nested under this group:
+The `children` field is an array of group IDs that are nested under this group, enabling hierarchical organization:
 ```json
-"children": ["grp-MXP-F1", "grp-MXP-F2"]
+"children": ["group-mxp-building-01", "group-mxp-building-02"]
 ```
+
+**Hierarchical nesting example:**
+
+Complete physical datacenter hierarchy:
+```json
+{
+  "groups": [
+    {
+      "id": "group-mxp-datacenter",
+      "type": "physical.datacenter",
+      "name": "Milan Datacenter",
+      "children": [
+        "group-mxp-building-01"
+      ]
+    },
+    {
+      "id": "group-mxp-building-01",
+      "type": "physical.building",
+      "name": "MXP Building 01",
+      "children": [
+        "group-mxp-floor-f1",
+        "group-mxp-floor-f2"
+      ]
+    },
+    {
+      "id": "group-mxp-floor-f1",
+      "type": "physical.floor",
+      "name": "MXP Floor F1",
+      "children": [
+        "group-mxp-room-105",
+        "group-mxp-room-106"
+      ]
+    },
+    {
+      "id": "group-mxp-room-105",
+      "type": "physical.room",
+      "name": "MXP Server Room 105",
+      "children": [
+        "group-mxp-rack-r01",
+        "group-mxp-rack-r02"
+      ]
+    },
+    {
+      "id": "group-mxp-rack-r01",
+      "type": "physical.rack",
+      "name": "MXP Rack R01",
+      "members": [
+        "arista::MXP-SW-LEAF-01",
+        "dell::MXP-SRV-042",
+        "dell::MXP-SRV-043"
+      ]
+    }
+  ]
+}
+```
+
+**Hierarchy visualization:**
+```
+group-mxp-datacenter (physical.datacenter)
+|   +-- group-mxp-building-01 (physical.building)
+|       +-- group-mxp-floor-f1 (physical.floor)
+|           +-- group-mxp-room-105 (physical.room)
+|               +-- group-mxp-rack-r01 (physical.rack)
+|                   +-- arista::MXP-SW-LEAF-01
+|                   +-- dell::MXP-SRV-042
+|                   +-- dell::MXP-SRV-043
+|               +-- group-mxp-rack-r02 (physical.rack)
+|                   +-- arista::MXP-SW-LEAF-02
+|                   +-- dell::MXP-SRV-044
+|           +-- group-mxp-room-106 (physical.room)
+|               +-- group-mxp-rack-r03 (physical.rack)
+|                   +-- arista::MXP-SW-SPINE-01
+|       +-- group-mxp-floor-f2 (physical.floor)
+|           +-- group-mxp-room-201 (physical.room)
+|               +-- group-mxp-rack-f2-r01 (physical.rack)
+|                   +-- dell::MXP-SRV-201
+```
+
+This hierarchical structure enables queries like:
+- "Show all resources in datacenter MXP" > Traverse from `group-mxp-datacenter`
+- "Show all resources on floor F1" > Traverse from `group-mxp-floor-f1`
+- "Show all resources in rack R01" > Direct members of `group-mxp-rack-r01`
 
 **Rules:**
 - `children` entries **MUST** be strings
@@ -3279,29 +4168,29 @@ If duplication is necessary (e.g. both graph-based and inventory-based consumers
 **Using groups (recommended for most VPC scenarios):**
 ```json
 {
-  "id": "grp-aws-net-vpc-0abc123def456",
+  "id": "grp-aws-net-vpc-0abc123def4567890",
   "type": "network.vpc",
   "name": "Production VPC",
-  "members": ["subnet-aws-web-001", "subnet-aws-db-001", "vm-aws-web-001", "vm-aws-db-001"]
+  "members": ["subnet-aws-web-001", "subnet-aws-db-001", "aws::i-0abc123def4567890", "vm-aws-db-001"]
 }
 ```
 
 **Using contains connections (if VPC is a topology node):**
 ```json
 {
-  "id": "vpc-0abc123def456",
+  "id": "vpc-0abc123def4567890",
   "type": "network.vpc",
   "name": "Production VPC",
   "provider": {
     "name": "aws",
-    "native_id": "vpc-0abc123def456",
+    "native_id": "vpc-0abc123def4567890",
     "region": "eu-west-1",
     "account": "123456789012"
   }
 }
 {
-  "id": "cn-vpc-0abc123def456-contains-subnet-web-001",
-  "source": "vpc-0abc123def456",
+  "id": "cn-vpc-0abc123def4567890-contains-subnet-web-001",
+  "source": "vpc-0abc123def4567890",
   "target": "subnet-web-001",
   "type": "contains",
   "direction": "forward"
@@ -3591,7 +4480,7 @@ Groups use the same metadata pattern as resources and connections:
   "type": "network.vpc",
   "name": "Production VPC",
   "description": "Primary production VPC in us-east-1",
-  "members": ["subnet-aws-web-001", "subnet-aws-db-001", "vm-aws-web-001", "vm-aws-db-001"],
+  "members": ["subnet-aws-web-001", "subnet-aws-db-001", "aws::i-0abc123def4567890", "vm-aws-db-001"],
   "properties": {
     "cidr_block": "10.0.0.0/16",
     "region": "us-east-1"
@@ -3602,9 +4491,9 @@ Groups use the same metadata pattern as resources and connections:
   },
   "extensions": {
     "osiris.aws": {
-      "vpc_id": "vpc-0abc123def456",
+      "vpc_id": "vpc-0abc123def4567890",
       "dhcp_options_set": "dopt-0123456789abcdef",
-      "default_security_group": "sg-0abc123def456"
+      "default_security_group": "sg-0abc123def4567890"
     }
   }
 }
@@ -3709,7 +4598,7 @@ Groups use the same metadata pattern as resources and connections:
     "vm-mxp-pr-web-001",
     "MXP-F1-R01-SW-001",
     "MXP-F1-R01-SRV-042",
-    "vm-aws-web-001",
+    "aws::i-0abc123def4567890",
     "vm-gcp-web-002",
     "vm-az-web-003",
     "vm-aws-db-001",
@@ -3761,7 +4650,7 @@ Groups use the same metadata pattern as resources and connections:
     "compliance": "soc2"
   },
   "extensions": {
-    "osiris.com-acme": {
+    "osiris.com.acme": {
       "service_tier": "tier-1",
       "pagerduty_schedule": "PD-PROD-PRIMARY",
       "cost_center": "CC-PLATFORM-001"
@@ -3864,3 +4753,530 @@ Consumers **MUST NOT**:
 - Reject documents solely due to unrecognized group types
 - Reject documents solely due to unknown group metadata fields
 - Reject documents solely due to unknown extension namespaces
+
+---
+
+# 7 Resource type taxonomy
+This chapter defines the **standard resource types** for OSIRIS v1.0.
+Resource types categorize infrastructure components using a hierarchical dot-notation taxonomy (see Chapter 4, section 4.2.2 Type field definition).
+
+## 7.1 Overview
+### 7.1.1 Purpose and scope
+ The taxonomy provides:
+
+- **Common vocabulary** for infrastructure resources across IT and OT domains
+- **Semantic consistency** enabling tools to recognize and process standard resource categories
+- **Extensibility** through namespaced custom types when standard types do not apply
+- **Interoperability** by establishing shared type strings that producers and consumers understand
+
+The taxonomy is **descriptive, not prescriptive**: OSIRIS does not mandate that producers use only standard types. Producers **MAY** define custom types for vendor-specific or domain-specific resources. However, producers **SHOULD** use standard types when applicable to maximize interoperability.
+
+**Scope of this chapter:**
+- **Standard types** defined by OSIRIS v1.0 (sections 7.2–7.6)
+- **Type naming conventions** and hierarchy rules (section 7.1.2)
+- **Selection guidance** for choosing appropriate types (section 7.7)
+
+This chapter does **not** define:
+- Connection types (see Chapter 8)
+- Group types (see Chapter 6, section 6.2)
+- Validation rules (see Chapter 9)
+
+**Coverage:**
+The taxonomy spans both **IT infrastructure** (network, compute, storage, application) and **Operational Technology** (building automation, physical security, power distribution, industrial control). This unified approach reflects the convergence of IT and OT systems in modern infrastructure, particularly in data centers, smart buildings and industrial IoT environments.
+
+
+### 7.1.2 Type naming conventions
+Resource types follow the dot-notation hierarchy rules defined in Chapter 4, section 4.2.3. This section provides additional guidance specific to the standard taxonomy.
+
+
+**General conventions:**
+- Types **MUST** use lowercase letters, digits and dots only (no hyphens, underscores or spaces)
+- Types **SHOULD** use dots to separate hierarchy levels (e.g. `compute.vm.template`)
+- Types **SHOULD** use singular nouns (e.g. `storage.volume`, not `storage.volumes`)
+- Types **SHOULD** be concise yet descriptive (e.g. `network.firewall` rather than `network.security.firewall.device`)
+
+
+**Hierarchy depth:**
+Standard types in this taxonomy use **2-3 segments** for most resources to avoid overloading the schema:
+
+Two segments:
+```
+compute.vm
+```
+
+Three segments:
+```
+compute.vm.template
+```
+
+Producers **MAY** use deeper hierarchies only when necessary to increase the level of details (e.g. `building.hvac.ahu` or `power.datacenter.pdu`) but **SHOULD** consider whether additional specificity belongs in `properties` rather than the type string itself.
+
+
+**Standard type families:**
+This taxonomy organizes resources into **five top-level families**:
+
+| Family | Prefix | Coverage |
+|--------|--------|----------|
+| Application | `application.*` | Databases, message queues, event streams, caches, code repositories, services |
+| Compute | `compute.*` | Virtual machines, physical servers, containers, serverless functions, clusters |
+| Storage | `storage.*` | Block volumes, object buckets, file systems, storage arrays |
+| Network | `network.*` | VPCs, subnets, VLANs, routers, switches, firewalls, load balancers, security groups |
+| Operational Technology | `building.*`, `security.*`, `power.*`, `industrial.*` | HVAC (AHU, VAV, chillers), access control, cameras, UPS, PDU, PLCs, SCADA, racks |
+
+
+**Namespace reservation:**
+As defined in Chapter 4, section 4.2.4, the `osiris.*` namespace is **reserved** for vendor-specific and organization-specific extensions. Standard types in this chapter do **not** use the `osiris.*` prefix.
+
+
+### 7.1.3 Standard types vs custom types
+
+**Standard types** are defined in this chapter and recognized across the OSIRIS ecosystem. Producers **SHOULD** use standard types when:
+
+- The resource maps clearly to a standard type definition
+- Semantic alignment exists (the standard type accurately describes the resource's role)
+- Interoperability is desired (consumers can apply special handling for standard types)
+
+Extension (namespaced) types (`osiris.*`) are defined by producers for vendor-specific or domain-specific resources. 
+
+Producers **SHOULD** use custom types when:
+- No standard type exists that accurately describes the resource
+- Vendor-specific semantics are critical to preserve
+- The resource is organization-specific and not applicable to other environments
+
+**Coexistence:**
+Standard and custom types coexist within the same OSIRIS document.
+
+A topology **MAY** contain:
+```json
+{
+  "topology": {
+    "resources": [
+      {
+        "id": "aws::i-0abc123def4567890",
+        "type": "compute.vm",
+        "provider": {"name": "aws"}
+      },
+      {
+        "id": "custom-aws-widget-001",
+        "type": "osiris.aws.lambda.edge",
+        "provider": {"name": "aws"}
+      }
+    ]
+  }
+}
+```
+
+Consumers **MUST** accept resources with both standard and custom types. Consumers **SHOULD** apply special handling (rendering, filtering, behavioral logic) for recognized standard types while treating custom types as generic resources.
+
+**Fallback behavior:**
+When a vendor-specific resource has a close standard equivalent, producers **SHOULD** consider:
+
+1. Using the standard type with vendor details in `provider` or `properties`
+2. Using a namespaced custom type if semantics differ significantly
+3. Documenting the mapping decision for parser consumers
+
+
+### 7.1.4 Taxonomy evolution
+**Stability:**
+Standard types defined in this chapter are **stable** for OSIRIS v1.x. Additions, modifications or deprecations follow semantic versioning principles:
+
+- **Minor versions** (e.g. v1.1, v1.2) **MAY** add new standard types without breaking compatibility
+- **Minor versions** **SHOULD NOT** remove or change the semantics of existing standard types
+- **Major versions** (e.g. v2.0) **MAY** remove deprecated types or change type semantics with migration guidance
+
+**Type deprecation:**
+If a standard type becomes obsolete or is replaced by a better alternative, OSIRIS will:
+
+1. Mark the type as **deprecated** in a minor release
+2. Document the recommended replacement type
+3. Maintain the deprecated type for at least one major version cycle
+4. Remove the type in a subsequent major release
+
+**Community contributions:**
+Proposals for new standard types **MAY** be submitted to the OSIRIS governance process. Accepted proposals will be incorporated in minor releases.
+
+Criteria for inclusion include:
+- Clear, unambiguous definition
+- Broad applicability across multiple providers or environments
+- Avoidance of vendor-specific semantics
+- Alignment with existing taxonomy structure
+
+**Extension types:**
+Types in the `osiris.*` namespace are **not governed by OSIRIS** and may evolve independently. Producers using extension types **SHOULD** version their generator tools to help consumers track compatibility.
+
+---
+
+## 7.2 Application resources
+Application resources represent software services, databases, message queues, caches and code repositories that support application workloads.
+
+
+### 7.2.1 Databases
+
+**Type:** `application.database`
+
+**Definition:**
+A database is a managed service or self-hosted system that stores, organizes and provides access to structured or semi-structured data. Databases support various data models (relational, document, key-value, graph) and query interfaces.
+
+**When to use:**
+Use `application.database` for but not limited to:
+- Managed cloud databases (CockroachDB, Neon DB, AWS RDS, Azure SQL Database, GCP Cloud SQL)
+- NoSQL databases (DynamoDB, CosmosDB, MongoDB)
+- Self-hosted databases (PostgreSQL, MySQL, MariaDB, SQL Server instances)
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `engine` | string | Database engine | `"postgres"`, `"mysql"`, `"mongodb"` |
+| `engine_version` | string | Engine version | `"15.4"` |
+| `database_type` | string | Data model | `"relational"`, `"document"`, `"key-value"` |
+| `size_gb` | integer | Storage allocation | `100` |
+| `multi_az` | boolean | Multi-AZ deployment | `true` |
+
+**Provider mappings:**
+| Provider | Native Type | Maps to OSIRIS |
+|----------|-------------|----------------|
+| AWS | RDS Instance / DynamoDB Table | `application.database` |
+| Azure | SQL Database / CosmosDB | `application.database` |
+| GCP | Cloud SQL / Firestore | `application.database` |
+| Self-hosted | PostgreSQL / MySQL | `application.database` |
+
+**Example (AWS RDS):**
+```json
+{
+  "id": "aws::myapp-prod-db",
+  "type": "application.database",
+  "name": "production-postgresql-primary",
+  "provider": {
+    "name": "aws",
+    "type": "AWS::RDS::DBInstance",
+    "native_id": "myapp-prod-db",
+    "region": "us-east-1",
+    "account_id": "123456789012"
+  },
+  "properties": {
+    "engine": "postgres",
+    "engine_version": "15.4",
+    "database_type": "relational",
+    "instance_class": "db.r6g.xlarge",
+    "size_gb": 500,
+    "multi_az": true,
+    "encrypted": true,
+    "endpoint": "myapp-prod-db.abc123.us-east-1.rds.amazonaws.com"
+  },
+  "status": "active"
+}
+```
+
+**Example (Self-hosted PostgreSQL):**
+```json
+{
+  "id": "postgres-mxp-prod-01.internal.example.com",
+  "type": "application.database",
+  "name": "production-postgresql-primary",
+  "provider": {
+    "name": "postgresql",
+    "type": "PostgreSQL",
+    "native_id": "postgres-mxp-prod-01.internal.example.com"
+  },
+  "properties": {
+    "engine": "postgres",
+    "engine_version": "15.4",
+    "database_type": "relational",
+    "hostname": "postgres-mxp-prod-01.internal.example.com",
+    "port": 5432,
+    "size_gb": 2000,
+    "replication_mode": "synchronous",
+    "replica_count": 2
+  },
+  "location": {
+    "datacenter": "MXP",
+    "rack": "R15-A",
+    "unit": 12
+  },
+  "status": "active"
+}
+```
+
+
+### 7.2.2 Message queues and event streams
+
+**Type:** `application.queue`
+
+**Definition:**
+A message queue is a service that enables asynchronous communication between application components by storing messages in a queue until they are processed. Queues decouple producers and consumers and provide buffering for variable processing rates.
+
+**When to use:**
+Use `application.queue` for but not limited to:
+- AWS SQS
+- Azure Service Bus Queues
+- RabbitMQ queues
+- Apache Kafka topics (when modeled as message queues)
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `queue_type` | string | Queue model | `"standard"`, `"fifo"`, `"stream"` |
+| `retention_hours` | integer | Message retention | `168` |
+| `max_message_size` | integer | Size limit in bytes | `262144` |
+
+**Example (AWS SQS):**
+```json
+{
+  "id": "aws::order-processing-queue",
+  "type": "application.queue",
+  "name": "order-processing-fifo-queue",
+  "provider": {
+    "name": "aws",
+    "type": "AWS::SQS::Queue",
+    "native_id": "https://sqs.us-east-1.amazonaws.com/123456789012/order-processing-queue.fifo",
+    "region": "us-east-1",
+    "account_id": "123456789012"
+  },
+  "properties": {
+    "queue_type": "fifo",
+    "retention_hours": 336,
+    "max_message_size": 262144,
+    "encrypted": true
+  },
+  "status": "active"
+}
+```
+
+
+**Type:** `application.eventstream`
+
+**Definition:**
+An event stream is a distributed, partitioned log of events that enables publish-subscribe messaging and event replay. Streams support high-throughput data pipelines and real-time processing.
+
+**When to use:**
+Use `application.eventstream` for but not limited to:
+- Apache Kafka topics
+- AWS Kinesis streams
+- Azure Event Hubs
+- Pub/Sub topics (when emphasizing streaming characteristics)
+
+**Example (AWS Kinesis):**
+```json
+{
+  "id": "aws::user-clickstream-prod",
+  "type": "application.eventstream",
+  "name": "user-clickstream-analytics",
+  "provider": {
+    "name": "aws",
+    "type": "AWS::Kinesis::Stream",
+    "native_id": "user-clickstream-prod",
+    "region": "us-east-1",
+    "account_id": "123456789012"
+  },
+  "properties": {
+    "shard_count": 4,
+    "retention_hours": 168,
+    "encrypted": true,
+    "enhanced_monitoring": true
+  },
+  "status": "active"
+}
+```
+
+**Example (Apache Kafka - on-premise):**
+```json
+{
+  "id": "kafka::order-events-topic",
+  "type": "application.eventstream",
+  "name": "order-events-stream",
+  "provider": {
+    "name": "kafka",
+    "type": "KafkaTopic",
+    "native_id": "order-events-topic"
+  },
+  "properties": {
+    "partition_count": 12,
+    "replication_factor": 3,
+    "retention_hours": 168,
+    "cluster": "kafka-mxp-prod-cluster",
+    "compression_type": "lz4"
+  },
+  "location": {
+    "datacenter": "MXP"
+  },
+  "status": "active"
+}
+```
+
+
+### 7.2.3 Caching services
+
+**Type:** `application.cache`
+
+**Definition:**
+A caching service provides in-memory data storage for fast retrieval of frequently accessed data. Caches reduce latency and database load by storing hot data in RAM.
+
+**When to use:**
+Use `application.cache` for but not limited to:
+- AWS ElastiCache (Redis, Memcached)
+- Azure Cache for Redis
+- GCP Memorystore
+- Self-hosted Redis/Memcached instances
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `engine` | string | Cache engine | `"redis"`, `"memcached"` |
+| `engine_version` | string | Engine version | `"7.0"` |
+| `memory_gb` | integer | Cache size | `16` |
+| `node_count` | integer | Number of nodes | `2` |
+
+**Example (AWS ElastiCache):**
+```json
+{
+  "id": "aws::session-cache-prod",
+  "type": "application.cache",
+  "name": "session-cache-cluster",
+  "provider": {
+    "name": "aws",
+    "type": "AWS::ElastiCache::ReplicationGroup",
+    "native_id": "session-cache-prod",
+    "region": "us-east-1",
+    "account_id": "123456789012"
+  },
+  "properties": {
+    "engine": "redis",
+    "engine_version": "7.0",
+    "memory_gb": 32,
+    "node_count": 3,
+    "encrypted_in_transit": true,
+    "encrypted_at_rest": true,
+    "automatic_failover": true
+  },
+  "status": "active"
+}
+```
+
+**Example (Self-hosted Redis):**
+```json
+{
+  "id": "redis::mxp-session-cluster",
+  "type": "application.cache",
+  "name": "session-cache-cluster",
+  "provider": {
+    "name": "redis",
+    "type": "RedisCluster",
+    "native_id": "mxp-session-cluster"
+  },
+  "properties": {
+    "engine": "redis",
+    "engine_version": "7.2.3",
+    "memory_gb": 64,
+    "node_count": 6,
+    "cluster_mode": true,
+    "persistence": "aof",
+    "nodes": [
+      "redis-mxp-01.internal.example.com:6379",
+      "redis-mxp-02.internal.example.com:6379",
+      "redis-mxp-03.internal.example.com:6379"
+    ]
+  },
+  "location": {
+    "datacenter": "MXP"
+  },
+  "status": "active"
+}
+```
+
+
+### 7.2.4 Code repositories
+
+**Type:** `application.repository`
+
+**Definition:**
+A code repository is a version control system that stores source code, tracks changes and enables collaboration. Repositories use version control systems (Git, SVN) to manage codebase history.
+
+**When to use:**
+Use `application.repository` for but not limited to:
+- GitHub repositories
+- GitLab projects
+- Bitbucket repositories
+- AWS CodeCommit repositories
+- Azure Repos
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `vcs_type` | string | Version control system | `"git"`, `"svn"` |
+| `default_branch` | string | Main branch name | `"main"`, `"master"` |
+| `visibility` | string | Access level | `"private"`, `"public"` |
+| `url` | string | Repository URL | `"https://github.com/org/repo"` |
+
+**Example:**
+```json
+{
+  "id": "github::12345678",
+  "type": "application.repository",
+  "name": "web-application-frontend",
+  "provider": {
+    "name": "github",
+    "type": "Repository",
+    "native_id": "12345678"
+  },
+  "properties": {
+    "vcs_type": "git",
+    "default_branch": "main",
+    "visibility": "private",
+    "url": "https://github.com/myorg/web-app-frontend",
+    "language": "TypeScript",
+    "size_kb": 45632
+  },
+  "status": "active"
+}
+```
+
+
+### 7.2.5 Application services
+
+**Type:** `application.service`
+
+**Definition:**
+An application service is a generic deployed application or microservice that does not fit more specific application resource types. Services represent running applications, APIs or workloads.
+
+**When to use:**
+Use `application.service` for but not limited to:
+- Microservices
+- Web applications
+- API services
+- Background workers
+- Any application component not covered by specific types (database, cache, queue, etc.)
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `service_type` | string | Service category | `"api"`, `"web"`, `"worker"` |
+| `language` | string | Programming language | `"python"`, `"java"` |
+| `framework` | string | Application framework | `"fastapi"`, `"spring-boot"` |
+| `endpoints` | array | Service endpoints | `["https://api.example.com"]` |
+
+**Example:**
+```json
+{
+  "id": "kubernetes::payment-api-deployment",
+  "type": "application.service",
+  "name": "payment-processing-api",
+  "provider": {
+    "name": "kubernetes",
+    "type": "Deployment",
+    "native_id": "payment-api-deployment",
+    "namespace": "production"
+  },
+  "properties": {
+    "service_type": "api",
+    "language": "python",
+    "framework": "fastapi",
+    "version": "2.5.1",
+    "endpoints": ["https://api.example.com/payments"],
+    "replicas": 3,
+    "container_image": "registry.example.com/payment-api:2.5.1"
+  },
+  "status": "active"
+}
+```
+
+---
