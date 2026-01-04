@@ -4,7 +4,7 @@
 | Authors   | Tia Zanella [skhell](https://github.com/skhell) |
 | Revision  | 1.0.0-DRAFT |
 | Creation date      | 14 December 2025 |
-| Last revision date | 31 December 2025 |
+| Last revision date | 04 January 2026 |
 | Status    | Draft |
 | Specification ID | OSIRIS-1.0 |
 | Schema URI | tbd later |
@@ -148,7 +148,7 @@
     - [4.5.4 Producer rules](#454-producer-rules)
     - [4.5.5 Consumer rules](#455-consumer-rules)
     - [4.5.6 Examples](#456-examples)
-- [5. Connection model](#5-connection-model)
+- [5 Connection model](#5-connection-model)
   - [Overview](#overview)
   - [5.1 Connection object structure](#51-connection-object-structure)
     - [5.1.1 Overview](#511-overview)
@@ -216,6 +216,33 @@
     - [7.2.3 Caching services](#723-caching-services)
     - [7.2.4 Code repositories](#724-code-repositories)
     - [7.2.5 Application services](#725-application-services)
+  - [7.3 Compute resources](#73-compute-resources)
+    - [7.3.1 Physical servers](#731-physical-servers)
+    - [7.3.2 Virtual machines](#732-virtual-machines)
+    - [7.3.3 Containers](#733-containers)
+    - [7.3.4 Compute clusters](#734-compute-clusters)
+    - [7.3.5 Serverless functions](#735-serverless-functions)
+  - [7.4 Storage resources](#74-storage-resources)
+    - [7.4.1 Block storage](#741-block-storage)
+    - [7.4.2 Object storage](#742-object-storage)
+    - [7.4.3 File storage](#743-file-storage)
+    - [7.4.4 Storage systems](#744-storage-systems)
+  - [7.5 Network resources](#75-network-resources)
+    - [7.5.1 Virtual networks and subnets](#751-virtual-networks-and-subnets)
+    - [7.5.2 Network devices](#752-network-devices)
+    - [7.5.3 Network interfaces and endpoints](#753-network-interfaces-and-endpoints)
+    - [7.5.4 Network Load balancing](#754-network-load-balancing)
+    - [7.5.5 Network security](#755-network-security)
+  - [7.6 Operational Technology resources](#76-operational-technology-resources)
+    - [7.6.1 Building automation](#761-building-automation)
+    - [7.6.2 Physical security](#762-physical-security)
+    - [7.6.3 Power and environmental](#763-power-and-environmental)
+    - [7.6.4 Industrial control systems](#764-industrial-control-systems)
+    - [7.6.5 Physical infrastructure](#765-physical-infrastructure)
+  - [7.7 Type selection guidance](#77-type-selection-guidance)
+    - [7.7.1 Choosing appropriate types](#771-choosing-appropriate-types)
+    - [7.7.2 When to use custom types](#772-when-to-use-custom-types)
+    - [7.7.3 Type mapping examples from well-known providers](#773-type-mapping-examples-from-well-known-providers)
 
 
 ## Preface
@@ -539,26 +566,26 @@ The `id` field uniquely identifies a resource within the topology.
 Producers **SHOULD** construct IDs using one of these strategies:
 
 1. **Native ID `<id>` (preferred for unique native identifiers):**
-```json
+```text
    "id": "i-0abc123def456"
 ```
 
 2. **Namespaced native ID `<provider>::<id>` (preferred for multi-provider topologies):**
-```json
+```text
    "id": "aws::i-0abc123def456"
    "id": "vmware::vm-1234"
    "id": "cisco::FOC1234ABCD"
-   "id": "dellemc::MXP-SRV-001"
+   "id": "dell::MXP-SRV-001"
 ```
 
 3. **Full resource identifier (for providers that support structured resource IDs):**
-```json
+```text
    "id": "arn:aws:ec2:us-east-1:123456789012:instance/i-0abc123def456"
    "id": "/subscriptions/.../resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm-01"
 ```
 
 4. **Generated ID (only when native ID unavailable or not globally unique):**
-```json
+```text
    "id": "postgres-prod-01.mxp.internal.example.com"
 ```
 
@@ -572,7 +599,7 @@ The double-colon separator distinguishes the provider namespace from the native 
 - Provides clear visual distinction between provider and identifier
 - Easy to parse programmatically: `id.split('::')` works in all languages
 
-The provider name (left of `::`) follows canonical naming rules from section 4.3.3: lowercase, no hyphens or spaces (e.g., `arista`, `paloalto`). The native identifier (right of `::`) preserves the original vendor format.
+The provider name (left of `::`) follows canonical naming rules from section 4.3.3: use `segments: [a-z0-9]` lowercase letters, digits and dots separator only (no hyphens, underscores or spaces) (e.g. `arista`, `paloalto`). The native identifier (right of `::`) preserves the original vendor format.
 
 **Uniqueness:** 
 IDs **MUST** be unique within a topology. When combining resources from multiple providers, use namespaced IDs (approach 2) or full resource identifiers (approach 3).
@@ -1093,7 +1120,7 @@ Metadata objects **SHOULD** be concise. Large amounts of auxiliary data (e.g. fu
     "environments": ["production"]
   },
   "tags": {
-    "cost-center": "sw-development",
+    "cost_center": "sw-development",
     "compliance": "sox"
   }
 }
@@ -1197,7 +1224,7 @@ Producers **SHOULD** validate referential integrity before emitting documents. C
         "type": "AWS::EC2::Instance",
         "native_id": "i-0abc123def4567890",
         "region": "us-east-1",
-        "account_id": "123456789012"
+        "account": "123456789012"
       },
       "status": "active"
     },
@@ -1210,7 +1237,7 @@ Producers **SHOULD** validate referential integrity before emitting documents. C
         "type": "AWS::RDS::DBInstance",
         "native_id": "myapp-prod-db",
         "region": "us-east-1",
-        "account_id": "123456789012"
+        "account": "123456789012"
       },
       "status": "active"
     }
@@ -1268,7 +1295,7 @@ Producers **SHOULD** validate referential integrity before emitting documents. C
       "type": "compute.server",
       "provider": {
         "name": "dell",
-        "type": "PowerEdge R750",
+        "type": "PowerEdge R770",
         "native_id": "MXP-SRV-R98-001"
       },
       "properties": {
@@ -1357,7 +1384,7 @@ Producers **SHOULD** validate referential integrity before emitting documents. C
 ```
 
 > [!NOTE]
-> Resource types and group types in this example (e.g. `storage.database`, `network.vpc`) are illustrative. The complete type taxonomy is defined in Chapter 7 (Resource type taxonomy) and section 6.2 (Group types). Identifiers are opaque strings and producers **MAY** use structured IDs based on specific naming conventions.
+> Resource types and group types in this example (e.g. `application.database`, `network.vpc`) are illustrative. The complete type taxonomy is defined in Chapter 7 (Resource type taxonomy) and section 6.2 (Group types). Identifiers are opaque strings and producers **MAY** use structured IDs based on specific naming conventions.
 
 
 ### 3.4.8 Empty topologies
@@ -1454,7 +1481,7 @@ A resource object **MAY** include the following optional fields:
     "ip_addresses": {
         "private_ip": ["10.0.1.10", "10.0.1.11"],
         "public_ip": "203.0.113.10"
-        },
+        }
     }
 }
 ```
@@ -1482,7 +1509,7 @@ A resource object **MAY** include the following optional fields:
 > [!NOTE]
 > The distinction between `status` and `state`, allowed values and usage semantics are defined in section 4.5 (Status and state).
 
-- **`tags`** (object): Key-value labels used for organizational categorization, filtering or metadata annotation (e.g. environment, owner, cost-center, compliance requirements). Tags are general-purpose and cross-platform.
+- **`tags`** (object): Key-value labels used for organizational categorization, filtering or metadata annotation (e.g. environment, owner, cost_center, compliance requirements). Tags are general-purpose and cross-platform.
 
 **Example:**
 ```json
@@ -1490,13 +1517,13 @@ A resource object **MAY** include the following optional fields:
     "tags": {
       "environment": "production",
       "owner": "software-development-team",
-      "cost-center": "sw-development"
+      "cost_center": "sw-development"
     }
   }
 ```
 
 > [!NOTE]
-> Platform native label concepts (e.g. Kubernetes labels, annotations) **SHOULD** be represented in the `extensions` object (e.g. `extensions.osiris.k8s.labels`) to preserve platform-specific semantics while keeping the core schema simple.
+> Platform native label concepts (e.g. Kubernetes labels, annotations) **SHOULD** be represented in the `extensions` object (e.g. `extensions.osiris.kubernetes.labels`) to preserve platform-specific semantics while keeping the core schema simple.
 
 
 ### 4.1.4 Field extensibility and unknown fields
@@ -1525,7 +1552,7 @@ Additional semantic validation rules (ID uniqueness, type validity, referential 
     "type": "AWS::EC2::Instance",
     "native_id": "i-0abc123def4567890",
     "region": "us-east-1",
-    "account_id": "123456789012"
+    "account": "123456789012"
   },
   "properties": {
     "instance_type": "t3.medium",
@@ -1534,7 +1561,7 @@ Additional semantic validation rules (ID uniqueness, type validity, referential 
     "ip_addresses": {
       "private_ip": ["10.0.1.10", "10.0.1.11"],
       "public_ip": "203.0.113.10"
-    }
+    },
     "ami_id": "ami-0abcdef1234567890"
   },
   "status": "active",
@@ -1604,7 +1631,7 @@ The `type` field is a **REQUIRED** string (see section 4.1). Type values:
 - **MUST** use dot (`.`) as the segment separator
 - **MUST** contain at least two segments (see Dot notation structure below)
 - **MAY** contain alphanumeric characters (`a-z`, `0-9`) within segments
-- **MUST** use lowercase letters, digits and dots only (no hyphens, underscores or spaces) (e.g. `compute.vm.template` rather than `compute.vm-template`)
+- **MUST** use `segments: [a-z0-9]` lowercase letters, digits and dots separator only  (no hyphens, underscores or spaces) (e.g. `compute.vm.template` rather than `compute.vm-template`)
 - **MUST NOT** start or end with a dot
 - **MUST NOT** contain consecutive dots (`..`)
 - **SHOULD** be stable across OSIRIS versions for standard types
@@ -1630,7 +1657,7 @@ Type strings **MUST** be validated against the pattern rules above.
 ### 4.2.3 Dot notation structure
 Resource types use hierarchical dot notation with segments ordered from general to specific:
 
-```
+```text
 <category>.<subcategory>[.<variant>][.<detail>]
 ```
 
@@ -1646,7 +1673,6 @@ Resource types use hierarchical dot notation with segments ordered from general 
 - `storage.volume.file` (file storage volume)
 
 **Hierarchy depth:** Types **SHOULD NOT** exceed 4-5 segments to maintain readability. Highly specific details belong in `properties` rather than type strings. Consumers **MUST** accept types with deeper hierarchies and treat them as normal type strings without error.
-
 
 ### 4.2.4 Namespace reservation
 To ensure clear separation between standard types and extensions:
@@ -1678,7 +1704,7 @@ Resources representing vendor-specific or organization-specific components that 
 **Namespace convention:** Custom types **MUST** use the `osiris.<namespace>.<type>` pattern, where:
 - `osiris.` prefix indicates an extension type
 - `<namespace>` identifies the vendor, organization or domain
-- `<type>` follows standard dot notation rules (lowercase, dots only, no hyphens, no spaces)
+- `<type>` use `segments: [a-z0-9]` lowercase letters, digits and dots separator only (no hyphens, underscores or spaces)
 
 Examples of namespaced types:
 - `osiris.aws.lambda.edge` (AWS Lambda @Edge - distinct from standard Lambda)
@@ -1831,7 +1857,7 @@ The provider object **MUST** include:
   - Lowercase
   - Short and recognizable (vendor name or product name)
   - Consistent across exports from the same producer
-  - No hyphens, underscores or spaces
+  - Use `segments: [a-z0-9]` lowercase letters, digits and dots separator only (no hyphens, underscores or spaces)
 
 **Canonical provider names:**
 
@@ -1844,8 +1870,8 @@ Producers **MUST** use canonical lowercase identifiers for well-known providers:
 | Google Cloud Platform | `gcp` | `GCP`, `Google`, `googlecloud` |
 | Oracle Cloud | `oci` | `OCI`, `Oracle`, `oraclecloud` |
 | IBM Cloud | `ibm` | `IBM`, `ibmcloud` |
-| Tencent Cloud | `tencent` | `Tencent`, `tencentcloud` |
-| Alibaba Cloud | `alibaba` | `Alibaba`, `alibabacloud`, `aliyun` |
+| Tencent Cloud | `tc` | `Tencent`, `tencentcloud` |
+| Alibaba Cloud | `ali` | `Alibaba`, `alibabacloud`, `aliyun` |
 | VMware | `vmware` | `VMware`, `vmwareesxi` |
 | Proxmox | `proxmox` | `Proxmox`, `proxmoxve` |
 | Cisco | `cisco` | `Cisco Systems`, `CiscoSystems` |
@@ -1862,7 +1888,7 @@ Producers **MUST** use canonical lowercase identifiers for well-known providers:
 | MongoDB | `mongodb` | `Mongo`, `MongoDB` |
 | Kafka | `kafka` | `Apache Kafka`, `apachekafka` |
 
-For unlisted providers, use lowercase, no hyphens, underscores or spaces (e.g. `arista`, `ciena`, `paloalto`, `checkpoint`, `f5networks`).
+For unlisted providers, use `segments: [a-z0-9]` lowercase letters, digits and dots separator only (no hyphens, underscores or spaces) (e.g. `arista`, `ciena`, `paloalto`, `checkpoint`, `f5networks`).
 
 **Rationale:** Canonical names enable reliable provider-based filtering and matching across tools.
 
@@ -2001,7 +2027,7 @@ Resource provider (per-resource):
     "type": "AWS::EC2::Instance",
     "native_id": "i-0abc123def4567890",
     "region": "us-east-1",
-    "account_id": "123456789012",
+    "account": "123456789012",
     "arn": "arn:aws:ec2:us-east-1:123456789012:instance/i-0abc123def4567890"
   },
   "status": "active"
@@ -2033,7 +2059,7 @@ Producers **SHOULD** preserve `provider.native_id` when available, as it provide
     "type": "AWS::EC2::Instance",
     "native_id": "i-0abc123def4567890",
     "region": "us-east-1",
-    "account_id": "123456789012",
+    "account": "123456789012",
     "arn": "arn:aws:ec2:us-east-1:123456789012:instance/i-0abc123def4567890"
   },
   "status": "active"
@@ -2048,10 +2074,10 @@ Producers **SHOULD** preserve `provider.native_id` when available, as it provide
   "name": "mxp-leaf-switch-01",
   "provider": {
     "name": "arista",
-    "type": "DCS-7050SX3-48YC12",
+    "model": "DCS-7050SX3-48YC12",
     "native_id": "MXP-SW-LEAF-01",
     "serial_number": "JPE19350287",
-    "software_version": "EOS-4.28.3F"
+    "version": "EOS-4.28.3F"
   },
   "location": {
     "datacenter": "MXP",
@@ -2211,7 +2237,7 @@ This allows rich producer-specific data without polluting the core OSIRIS model.
 If present, `extensions` **MUST** be a JSON object.
 
 Each extension entry **MUST** be keyed by a namespace using the reserved `osiris.` prefix:
-```
+```text
 osiris.<namespace>
 ```
 
@@ -2221,7 +2247,7 @@ The value associated with each `osiris.<namespace>` key **MUST** be a JSON objec
 ```json
 {
   "extensions": {
-    "osiris.aws": { "security_groups": ["sg-0abc123"] },
+    "osiris.aws": { "security.groups": ["sg-0abc123"] },
     "osiris.acme": { "owner_team": "software-development" }
   }
 }
@@ -2238,7 +2264,7 @@ The value associated with each `osiris.<namespace>` key **MUST** be a JSON objec
     "type": "AWS::EC2::Instance",
     "native_id": "i-0abc123def4567890",
     "region": "us-east-1",
-    "account_id": "123456789012"
+    "account": "123456789012"
   },
   "properties": {
     "instance_type": "t3.medium",
@@ -2250,7 +2276,7 @@ The value associated with each `osiris.<namespace>` key **MUST** be a JSON objec
   },
   "extensions": {
     "osiris.aws": {
-      "security_groups": [
+      "security.groups": [
         {
           "id": "sg-0abc123",
           "name": "web-tier"
@@ -2328,7 +2354,7 @@ Tags support categorization and filtering (e.g. environment, owner, cost center)
 Producers **MUST NOT** store secrets in `tags`.
 Producers **SHOULD** keep tag keys stable across exports.
 
-If a platform has richer label/annotation concepts (e.g. Kubernetes), producers **SHOULD** represent those under `extensions` (e.g. `extensions.osiris.k8s.labels`).
+If a platform has richer label/annotation concepts (e.g. Kubernetes), producers **SHOULD** represent those under `extensions` (e.g. `extensions.osiris.kubernetes.labels`).
 
 
 ### 4.4.9 Forward compatibility rules
@@ -2355,7 +2381,7 @@ If a platform has richer label/annotation concepts (e.g. Kubernetes), producers 
     "type": "AWS::EC2::Instance",
     "native_id": "i-0abc123def4567890",
     "region": "us-east-1",
-    "account_id": "123456789012",
+    "account": "123456789012",
     "arn": "arn:aws:ec2:us-east-1:123456789012:instance/i-0abc123def4567890"
   },
   "properties": {
@@ -2371,7 +2397,7 @@ If a platform has richer label/annotation concepts (e.g. Kubernetes), producers 
   "extensions": {
     "osiris.aws": {
       "subnet_id": "subnet-0abc1234def567",
-      "security_groups": ["sg-0123456789abcdef0"]
+      "security.groups": ["sg-0123456789abcdef0"]
     }
   },
   "tags": {
@@ -2390,10 +2416,10 @@ If a platform has richer label/annotation concepts (e.g. Kubernetes), producers 
   "name": "mxp-leaf-switch-01",
   "provider": {
     "name": "arista",
-    "type": "DCS-7050SX3-48YC12",
+    "model": "DCS-7050SX3-48YC12",
     "native_id": "MXP-SW-LEAF-01",
     "serial_number": "JPE19350123",
-    "software_version": "EOS-4.28.3F"
+    "version": "EOS-4.28.3F"
   },
   "properties": {
     "management_ip": "10.130.100.101",
@@ -2431,11 +2457,11 @@ If a platform has richer label/annotation concepts (e.g. Kubernetes), producers 
 #### Kubernetes pod with platform-native labels/annotations in extensions
 ```json
 {
-  "id": "k8s::nginx-7d8f9c-abcde",
+  "id": "kubernetes::nginx-7d8f9c-abcde",
   "type": "compute.container",
   "name": "nginx-7d8f9c-abcde",
   "provider": {
-    "name": "k8s",
+    "name": "kubernetes",
     "type": "Pod",
     "native_id": "nginx-7d8f9c-abcde",
     "cluster": "prod-cluster-1",
@@ -2448,7 +2474,7 @@ If a platform has richer label/annotation concepts (e.g. Kubernetes), producers 
     "phase": "Running"
   },
   "extensions": {
-    "osiris.k8s": {
+    "osiris.kubernetes": {
       "labels": {
         "app": "nginx",
         "version": "1.21",
@@ -2683,7 +2709,7 @@ Consumers **MAY**:
     "type": "AWS::EC2::Instance",
     "native_id": "i-0abc123def4567890",
     "region": "us-east-1",
-    "account_id": "123456789012"
+    "account": "123456789012"
   },
   "status": "active",
   "state": "running",
@@ -2734,7 +2760,7 @@ Consumers **MAY**:
     "type": "AWS::EC2::Instance",
     "native_id": "i-0xyz789abc123def",
     "region": "us-west-2",
-    "account_id": "123456789012"
+    "account": "123456789012"
   },
   "status": "retired",
   "state": "terminated",
@@ -2753,10 +2779,10 @@ Consumers **MAY**:
   "name": "mxp-leaf-switch-01",
   "provider": {
     "name": "arista",
-    "type": "DCS-7050SX3-48YC12",
+    "model": "DCS-7050SX3-48YC12",
     "native_id": "MXP-SW-LEAF-01",
     "serial_number": "JPE19350287",
-    "software_version": "EOS-4.28.3F"
+    "version": "EOS-4.28.3F"
   },
   "status": "degraded",
   "state": "fan-failure-detected",
@@ -2779,11 +2805,11 @@ Consumers **MAY**:
 #### Kubernetes pod with vendor-specific state
 ```json
 {
-  "id": "k8s::nginx-deployment-abc123",
+  "id": "kubernetes::nginx-deployment-abc123",
   "type": "compute.container",
   "name": "nginx-deployment-abc123",
   "provider": {
-    "name": "k8s",
+    "name": "kubernetes",
     "type": "Pod",
     "native_id": "nginx-deployment-abc123",
     "cluster": "prod-cluster-1",
@@ -2797,7 +2823,7 @@ Consumers **MAY**:
     "restart_count": 0
   },
   "extensions": {
-    "osiris.k8s": {
+    "osiris.kubernetes": {
       "conditions": [
         {
           "type": "Ready",
@@ -2817,7 +2843,7 @@ Consumers **MAY**:
 ```json
 {
   "id": "custom::DB-001",
-  "type": "storage.database",
+  "type": "application.database",
   "name": "legacy-database",
   "provider": {
     "name": "custom",
@@ -2834,7 +2860,7 @@ Consumers **MAY**:
 
 ---
 
-# 5. Connection model
+# 5 Connection model
 ## Overview
 Connections in OSIRIS represent explicit relationships between resources. They form the edges of the topology graph and encode how infrastructure components interact, depend on each other or are linked physically or logically.
 
@@ -2872,34 +2898,44 @@ Producers **SHOULD** construct connection IDs using one of these strategies:
 
 1. **Sequential numbering:**
 ```json
-   "id": "conn-001"
-   "id": "conn-002"
-   "id": "conn-003"
+{
+    "id": "conn-001",
+    "id": "conn-002",
+    "id": "conn-003"
+}
 ```
 
 2. **Descriptive naming (recommended):**
 ```json
-   "id": "conn-aws-vpc-subnet-001"
-   "id": "conn-aws-web-db-dependency"
-   "id": "conn-mxp-leaf-spine-uplink"
-   "id": "conn-mxp-app-to-cache"
+{
+    "id": "conn-aws-vpc-subnet-001",
+    "id": "conn-aws-web-db-dependency",
+    "id": "conn-mxp-leaf-spine-uplink",
+    "id": "conn-mxp-app-to-cache"
+}
 ```
 
 3. **Type-prefixed descriptive:**
 ```json
-   "id": "network-vpc-to-subnet-001"
-   "id": "dependency-web-to-db"
-   "id": "contains-subnet-vm-001"
+{
+    "id": "network-vpc-to-subnet-001",
+    "id": "dependency-web-to-db",
+    "id": "contains-subnet-vm-001"
+}
 ```
 
 4. **Hash-based (for reproducibility):**
 ```json
-   "id": "conn-a1b2c3d4e5f6"
+{
+    "id": "conn-a1b2c3d4e5f6"
+}
 ```
 
 5. **UUID (for guaranteed uniqueness on large infrastructures):**
 ```json
-   "id": "550e8400-e29b-41d4-a716-446655440000"
+{
+    "id": "550e8400-e29b-41d4-a716-446655440000"
+}
 ```
 
 
@@ -3025,14 +3061,14 @@ For `direction = "bidirectional"`, producers **SHOULD** canonicalize endpoint or
 For `direction = "forward"` and `direction = "reverse"`, producers **SHOULD NOT** reorder endpoints, as the orientation is semantically meaningful.
 
 Example fingerprint:
-```
+```text
 fingerprint = type + "|" + direction + "|" + A.resource_id + "|" + A.port + "|" + B.resource_id + "|" + B.port
 id = hash(fingerprint)
 ```
 
 #### Human-readable IDs (optional)
 Instead of hashing, producers **MAY** use a human-readable ID encoding both endpoints, for example:
-```
+```text
 cn-<source_id>-<source_port>-to-<target_id>-<target_port>-<index>
 ```
 
@@ -3130,13 +3166,13 @@ OSIRIS defines the following standard connection types:
 
 ### 5.2.4 Vendor-specific and custom connection types
 Vendor-specific or organization-specific relationships **SHOULD** use the namespaced pattern:
-```
+```text
 osiris.<namespace>.<type>
 ```
 
-Examples:
-- `osiris.aws.vpc-peering`
-- `osiris.k8s.service-selector`
+**Examples:**
+- `osiris.aws.vpc.peering`
+- `osiris.kubernetes.service.selector`
 - `osiris.arista.mlag`
 - `osiris.com.acme.workflow`
 
@@ -3303,8 +3339,8 @@ Consumers **MUST** ignore unknown extension namespaces and fields.
 ```json
 {
   "id": "conn-app-api-auth-dependency",
-  "source": "k8s::api-gateway-7d8f9c-abcde",
-  "target": "k8s::auth-service-5a6b7c-fghij",
+  "source": "kubernetes::api-gateway-7d8f9c-abcde",
+  "target": "kubernetes::auth-service-5a6b7c-fghij",
   "type": "dependency.api",
   "direction": "forward",
   "status": "active",
@@ -3336,7 +3372,7 @@ Consumers **MUST** ignore unknown extension namespaces and fields.
     "link_type": "server-access",
     "speed_gbps": 10,
     "cable": {
-      "type": "cat6a",
+      "model": "cat6a",
       "length_meters": 5
     },
     "interfaces": {
@@ -3382,7 +3418,7 @@ Consumers **MUST** ignore unknown extension namespaces and fields.
     "link_type": "uplink",
     "speed_gbps": 100,
     "cable": {
-      "type": "om4",
+      "model": "om4",
       "length_meters": 30
     },
     "interfaces": {
@@ -3493,7 +3529,7 @@ Consumers **MUST** ignore unknown extension namespaces and fields.
   "id": "conn-aws-vpc-peering-prod-dev",
   "source": "aws::vpc-0abc123def456",
   "target": "aws::vpc-0def789ghi012",
-  "type": "osiris.aws.vpc_peering",
+  "type": "osiris.aws.vpc.peering",
   "direction": "bidirectional",
   "status": "active",
   "properties": {
@@ -3576,33 +3612,43 @@ Groups do not have vendor-assigned "native IDs" since they represent logical or 
 
 1. **Sequential numbering:**
 ```json
-   "id": "group-001"
+{
+   "id": "group-001",
    "id": "group-002"
+}
 ```
 
 2. **Descriptive naming (recommended):**
 ```json
-   "id": "group-aws-vpc-production"
-   "id": "group-mxp-datacenter"
-   "id": "group-web-tier"
-   "id": "group-k8s-prod-cluster"
+{
+   "id": "group-aws-vpc-production",
+   "id": "group-mxp-datacenter",
+   "id": "group-web-tier",
+   "id": "group-kubernetes-prod-cluster"
+}
 ```
 
 3. **Type-prefixed descriptive:**
 ```json
-   "id": "environment-production"
-   "id": "datacenter-mxp"
+{
+   "id": "environment-production",
+   "id": "datacenter-mxp",
    "id": "vnet-azure-prod"
+}
 ```
 
 4. **Hash-based (for reproducibility):**
 ```json
+{
    "id": "group-a1b2c3d4e5f6"
+}
 ```
 
 5. **UUID (for guaranteed uniqueness on large infrastructures):**
 ```json
+{
    "id": "550e8400-e29b-41d4-a716-446655440000"
+}
 ```
 
 Descriptive naming (strategies 2-3) is **RECOMMENDED** as it improves human readability and debugging while maintaining uniqueness within the document scope.
@@ -3852,7 +3898,7 @@ When using `network.asn` groups, producers **SHOULD** include these properties w
 **Recommended types:**
 - **`org.team`**: Team ownership (e.g. platform-team, sme-team, security-team)
 - **`org.owner`**: Individual or group ownership
-- **`org.cost-center`**: Financial cost center allocations
+- **`org.cost_center`**: Financial cost center allocations
 - **`org.business-unit`**: Business unit or department groupings
 - **`org.project`**: Project-based groupings
 
@@ -3864,7 +3910,7 @@ When using `network.asn` groups, producers **SHOULD** include these properties w
 
 ### 6.2.4 Vendor-specific and custom group types
 Vendor-specific or organization-specific group types **SHOULD** use the namespaced pattern:
-```
+```text
 osiris.<namespace>.<type>
 ```
 
@@ -3872,7 +3918,7 @@ osiris.<namespace>.<type>
 - `osiris.aws.account` (AWS account boundary)
 - `osiris.azure.subscription` (Azure subscription)
 - `osiris.gcp.project` (GCP project)
-- `osiris.k8s.namespace` (Kubernetes namespace)
+- `osiris.kubernetes.namespace` (Kubernetes namespace)
 - `osiris.vmware.cluster` (VMware vSphere cluster)
 - `osiris.com.acme.product-line` (organization-specific product grouping)
 
@@ -3971,31 +4017,31 @@ This enables flexible filtering and navigation:
       "id": "group-aws-production-web-app",
       "type": "logical.environment",
       "name": "Production Environment",
-      "members": ["aws::i-0abc123def4567890", "..."]
+      "members": ["aws::i-0abc123def4567890", "aws::i-0def456"]
     },
     {
       "id": "group-web-tier",
       "type": "logical.tier",
       "name": "Web Tier",
-      "members": ["aws::i-0abc123def4567890", "..."]
+      "members": ["aws::i-0abc123def4567890", "aws::i-0def456"]
     },
     {
       "id": "group-billing-application",
       "type": "logical.application",
       "name": "Billing Application",
-      "members": ["aws::i-0abc123def4567890", "..."]
+      "members": ["aws::i-0abc123def4567890", "aws::i-0def456"]
     },
     {
       "id": "group-team-software-development",
       "type": "org.team",
       "name": "Software Development Team",
-      "members": ["aws::i-0abc123def4567890", "..."]
+      "members": ["aws::i-0abc123def4567890", "aws::i-0def456"]
     },
     {
       "id": "group-mxp-rack-r01",
       "type": "physical.rack",
       "name": "MXP Datacenter Rack R01",
-      "members": ["aws::i-0abc123def4567890", "..."]
+      "members": ["aws::i-0abc123def4567890", "aws::i-0def456"]
     }
   ]
 }
@@ -4004,7 +4050,7 @@ This enables flexible filtering and navigation:
 
 ### 6.3.3 Children array (hierarchical nesting)
 The `children` field is an array of group IDs that are nested under this group, enabling hierarchical organization:
-```json
+```text
 "children": ["group-mxp-building-01", "group-mxp-building-02"]
 ```
 
@@ -4064,7 +4110,7 @@ Complete physical datacenter hierarchy:
 ```
 
 **Hierarchy visualization:**
-```
+```text
 group-mxp-datacenter (physical.datacenter)
 |   +-- group-mxp-building-01 (physical.building)
 |       +-- group-mxp-floor-f1 (physical.floor)
@@ -4111,7 +4157,7 @@ Group nesting **MUST NOT** contain cycles (directly or indirectly). Producers **
 
 **Transitive membership:**
 Consumers **MAY** compute "expanded membership" (transitive closure) when useful:
-```
+```text
 effective_members(group) = union of members(group) and members(all_descendant_groups)
 ```
 
@@ -4176,6 +4222,8 @@ If duplication is necessary (e.g. both graph-based and inventory-based consumers
 ```
 
 **Using contains connections (if VPC is a topology node):**
+
+**Resource:**
 ```json
 {
   "id": "vpc-0abc123def4567890",
@@ -4188,6 +4236,10 @@ If duplication is necessary (e.g. both graph-based and inventory-based consumers
     "account": "123456789012"
   }
 }
+```
+
+**Connection:**
+```json
 {
   "id": "cn-vpc-0abc123def4567890-contains-subnet-web-001",
   "source": "vpc-0abc123def4567890",
@@ -4493,7 +4545,7 @@ Groups use the same metadata pattern as resources and connections:
     "osiris.aws": {
       "vpc_id": "vpc-0abc123def4567890",
       "dhcp_options_set": "dopt-0123456789abcdef",
-      "default_security_group": "sg-0abc123def4567890"
+      "default_security.group": "sg-0abc123def4567890"
     }
   }
 }
@@ -4703,8 +4755,8 @@ Groups use the same metadata pattern as resources and connections:
 ##### Vendor-specific group type (Kubernetes namespace)
 ```json
 {
-  "id": "grp-k8s-production",
-  "type": "osiris.k8s.namespace",
+  "id": "grp-kubernetes-production",
+  "type": "osiris.kubernetes.namespace",
   "name": "production",
   "description": "Kubernetes production namespace",
   "members": ["pod-nginx-abc123", "service-nginx", "deployment-nginx"],
@@ -4712,7 +4764,7 @@ Groups use the same metadata pattern as resources and connections:
     "cluster": "prod-cluster-1"
   },
   "extensions": {
-    "osiris.k8s": {
+    "osiris.kubernetes": {
       "resource_quotas": {
         "cpu": "100",
         "memory": "200Gi",
@@ -4790,7 +4842,7 @@ Resource types follow the dot-notation hierarchy rules defined in Chapter 4, sec
 
 
 **General conventions:**
-- Types **MUST** use lowercase letters, digits and dots only (no hyphens, underscores or spaces)
+- Types **MUST** use `segments: [a-z0-9]` lowercase letters, digits and dots separator only (no hyphens, underscores or spaces)
 - Types **SHOULD** use dots to separate hierarchy levels (e.g. `compute.vm.template`)
 - Types **SHOULD** use singular nouns (e.g. `storage.volume`, not `storage.volumes`)
 - Types **SHOULD** be concise yet descriptive (e.g. `network.firewall` rather than `network.security.firewall.device`)
@@ -4800,12 +4852,12 @@ Resource types follow the dot-notation hierarchy rules defined in Chapter 4, sec
 Standard types in this taxonomy use **2-3 segments** for most resources to avoid overloading the schema:
 
 Two segments:
-```
+```text
 compute.vm
 ```
 
 Three segments:
-```
+```text
 compute.vm.template
 ```
 
@@ -4951,7 +5003,7 @@ Use `application.database` for but not limited to:
     "type": "AWS::RDS::DBInstance",
     "native_id": "myapp-prod-db",
     "region": "us-east-1",
-    "account_id": "123456789012"
+    "account": "123456789012"
   },
   "properties": {
     "engine": "postgres",
@@ -5030,7 +5082,7 @@ Use `application.queue` for but not limited to:
     "type": "AWS::SQS::Queue",
     "native_id": "https://sqs.us-east-1.amazonaws.com/123456789012/order-processing-queue.fifo",
     "region": "us-east-1",
-    "account_id": "123456789012"
+    "account": "123456789012"
   },
   "properties": {
     "queue_type": "fifo",
@@ -5066,7 +5118,7 @@ Use `application.eventstream` for but not limited to:
     "type": "AWS::Kinesis::Stream",
     "native_id": "user-clickstream-prod",
     "region": "us-east-1",
-    "account_id": "123456789012"
+    "account": "123456789012"
   },
   "properties": {
     "shard_count": 4,
@@ -5137,7 +5189,7 @@ Use `application.cache` for but not limited to:
     "type": "AWS::ElastiCache::ReplicationGroup",
     "native_id": "session-cache-prod",
     "region": "us-east-1",
-    "account_id": "123456789012"
+    "account": "123456789012"
   },
   "properties": {
     "engine": "redis",
@@ -5280,3 +5332,2050 @@ Use `application.service` for but not limited to:
 ```
 
 ---
+
+## 7.3 Compute resources
+Compute resources represent processing capacity: virtual machines, physical servers, containers, serverless functions and compute clusters. These resources execute workloads, run operating systems and provide the computational foundation of infrastructure.
+
+
+### 7.3.1 Physical servers
+
+**Type:** `compute.server`
+
+**Definition:**
+A physical server is a bare-metal compute host: a physical machine with CPU, memory, storage and network hardware. Physical servers may run workloads directly (bare metal) or serve as hypervisor hosts for virtual machines or containers clusters.
+
+**When to use:**
+Use `compute.server` for:
+- Bare-metal cloud instances (e.g. AWS EC2 Bare Metal, Azure Dedicated Host)
+- On-premise physical servers (e.g. Dell PowerEdge, HPE ProLiant, Cisco UCS)
+- Hypervisor hosts (e.g. ESXi hosts, Proxmox nodes)
+- Any physical compute hardware
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `cpu_model` | string | Processor model | `"Intel Xeon Gold 6248R"` |
+| `cpu_cores` | integer | Total physical cores | `40` |
+| `memory_mb` | integer | Installed RAM in megabytes | `262144` |
+| `manufacturer` | string | Hardware vendor | `"Dell"`, `"HPE"`, `"Cisco"` |
+| `model` | string | Server model | `"PowerEdge R770"` |
+| `serial_number` | string | Hardware serial | `"ABCD1234"` |
+| `role` | string | Server role | `"hypervisor"`, `"bare-metal"` |
+
+**Provider mappings:**
+| Provider | Native Type | Maps to OSIRIS |
+|----------|-------------|----------------|
+| AWS | EC2 Bare Metal / Dedicated Host | `compute.server` |
+| Azure | Dedicated Host | `compute.server` |
+| Dell | PowerEdge Server | `compute.server` |
+| HPE | ProLiant Server | `compute.server` |
+| VMware | ESXi Host | `compute.server` |
+| Proxmox | Proxmox Node | `compute.server` |
+
+**Example:**
+```json
+{
+  "id": "dell::SERVICE_TAG_ABC123",
+  "type": "compute.server",
+  "name": "esx-host-03.example.com",
+  "provider": {
+    "name": "dell",
+    "model": "PowerEdge R770",
+    "native_id": "SERVICE_TAG_ABC123"
+  },
+  "properties": {
+    "manufacturer": "Dell",
+    "model": "PowerEdge R770",
+    "cpu_model": "Intel Xeon Gold 6348",
+    "cpu_cores": 56,
+    "memory_mb": 524288,
+    "role": "hypervisor",
+    "hypervisor": "vmware_esxi_8.0",
+    "management_ip": "10.0.10.42"
+  },
+  "status": "active",
+  "location": {
+    "datacenter": "MXP",
+    "floor": "1",
+    "rack": "R01",
+    "rack_unit": "42"
+  }
+}
+```
+
+
+### 7.3.2 Virtual machines
+
+**Type:** `compute.vm`
+
+**Definition:**
+A virtual machine (VM) is a software-based compute instance that emulates physical hardware. VMs run on hypervisors and provide isolated execution environments with dedicated CPU, memory, storage and network resources.
+
+**When to use:**
+Use `compute.vm` for:
+- Cloud virtual machine instances (AWS EC2, Azure VMs, GCP Compute Engine)
+- On-premise virtualized servers (VMware VMs, Proxmox VMs, Hyper-V VMs)
+- Virtual desktop infrastructure (VDI) instances
+- Any resource that represents a full virtual machine with OS-level isolation
+
+**Common properties:**
+Producers **SHOULD** include these properties when available:
+
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `vcpus` | integer | Number of virtual CPUs | `4` |
+| `memory_mb` | integer | Memory allocation in megabytes | `8192` |
+| `os` | string | Operating system | `"Ubuntu 22.04"` |
+| `hypervisor` | string | Underlying hypervisor type | `"kvm"`, `"esxi"` |
+| `instance_type` | string | Provider-defined size/shape | `"t3.medium"`, `"Standard_D4s_v3"` |
+| `state` | string | Runtime state | `"running"`, `"stopped"` |
+
+**Provider mappings:**
+| Provider | Native Type | Maps to OSIRIS |
+|----------|-------------|----------------|
+| AWS | `AWS::EC2::Instance` | `compute.vm` |
+| Azure | `Microsoft.Compute/virtualMachines` | `compute.vm` |
+| GCP | `compute#instance` | `compute.vm` |
+| Oracle Cloud (OCI) | `oci_core_instance` | `compute.vm` |
+| IBM Cloud | `ibm_is_instance` | `compute.vm` |
+| Alibaba Cloud | `ALIYUN::ECS::InstanceGroup` | `compute.vm` |
+| Tencent Cloud | `tencentcloud_instance` | `compute.vm` |
+| VMware | ESXi Virtual Machine | `compute.vm` |
+| Proxmox | QEMU/KVM VM | `compute.vm` |
+| OpenStack | Nova Instance | `compute.vm` |
+
+> [!NOTE]
+> "Native Type" is an example identifier from a common interface (CloudFormation/ARM/API/Terraform/ROS). Exporters **SHOULD** label the source system in documentation (or encode it in provider.source) when the same provider has multiple native type namespaces (e.g. IBM VPC vs Classic, Alibaba ROS vs Terraform).
+
+**Example:**
+```json
+{
+  "id": "aws::i-0abc123def4567890",
+  "type": "compute.vm",
+  "name": "web-server-01",
+  "provider": {
+    "name": "aws",
+    "type": "AWS::EC2::Instance",
+    "native_id": "i-0abc123def4567890",
+    "region": "us-east-1",
+    "account": "123456789012"
+  },
+  "properties": {
+    "instance_type": "t3.medium",
+    "vcpus": 2,
+    "memory_mb": 4096,
+    "os": "Ubuntu 22.04 LTS",
+    "state": "running",
+    "ip_addresses": {
+      "private_ip": ["10.0.1.10", "10.0.1.11"],
+      "public_ip": "203.0.113.10"
+    }
+  },
+  "status": "active"
+}
+```
+
+**Related types:**
+- `compute.vm.template` - VM templates or images
+- `compute.vm.snapshot` - Point-in-time VM snapshots
+
+
+### 7.3.3 Containers
+
+**Type:** `compute.container`
+
+**Definition:**
+A container is a lightweight, isolated execution environment that shares the host OS kernel. Containers package applications with their dependencies and provide process-level isolation without the overhead of full virtualization.
+
+**When to use:**
+Use `compute.container` for:
+- Docker containers
+- Kubernetes pods (when modeling individual containers within pods)
+- ECS/EKS task containers
+- Any container runtime instance (containerd, CRI-O, etc.)
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `image` | string | Container image reference | `"nginx:1.25.3"` |
+| `registry` | string | Image registry | `"docker.io"`, `"gcr.io"` |
+| `runtime` | string | Container runtime | `"docker"`, `"containerd"` |
+| `state` | string | Runtime state | `"running"`, `"stopped"` |
+| `cpu_limit` | string | CPU limit | `"500m"`, `"2"` |
+| `memory_limit` | string | Memory limit | `"512Mi"`, `"2Gi"` |
+
+**Provider mappings:**
+| Provider | Native Type | Maps to OSIRIS |
+|----------|-------------|----------------|
+| Docker | Container | `compute.container` |
+| Kubernetes | Container (within Pod) | `compute.container` |
+| AWS ECS | Task Container | `compute.container` |
+| Azure ACI | Container Instance | `compute.container` |
+| GCP Cloud Run | Container | `compute.container` |
+
+**Example:**
+```json
+{
+  "id": "docker::a3b2c1d4e5f6",
+  "type": "compute.container",
+  "name": "redis-cache-01",
+  "provider": {
+    "name": "docker",
+    "type": "Container",
+    "native_id": "a3b2c1d4e5f6"
+  },
+  "properties": {
+    "image": "redis:7.2-alpine",
+    "registry": "docker.io",
+    "runtime": "docker",
+    "state": "running",
+    "cpu_limit": "500m",
+    "memory_limit": "512Mi",
+    "ports": ["6379:6379"]
+  },
+  "status": "active"
+}
+```
+
+**Related types:**
+- `compute.container.pod` - Kubernetes pods (groups of containers)
+- `compute.container.image` - Container images
+
+
+### 7.3.4 Compute clusters
+
+**Type:** `compute.cluster`
+
+**Definition:**
+A compute cluster is a managed group of compute resources that work together to provide scalable processing capacity. Clusters abstract individual nodes and provide unified management, scheduling and scaling.
+
+**When to use:**
+Use `compute.cluster` for:
+- Kubernetes clusters
+- VMware vSphere clusters
+- Proxmox clusters
+- ECS/EKS clusters
+- Auto-scaling groups (when modeled as managed compute pools)
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `node_count` | integer | Number of nodes | `5` |
+| `orchestrator` | string | Cluster orchestration platform | `"kubernetes"`, `"vmware"` |
+| `version` | string | Orchestrator version | `"1.28.5"`, `"8.0 U2"` |
+| `capacity` | object | Aggregate capacity | `{"vcpus": 80, "memory_mb": 262144}` |
+
+**Provider mappings:**
+| Provider | Native Type | Maps to OSIRIS |
+|----------|-------------|----------------|
+| AWS | EKS Cluster / ECS Cluster | `compute.cluster` |
+| Azure | AKS Cluster | `compute.cluster` |
+| GCP | GKE Cluster | `compute.cluster` |
+| VMware | vSphere Cluster | `compute.cluster` |
+| Proxmox | Proxmox Cluster | `compute.cluster` |
+
+**Example:**
+```json
+{
+  "id": "vmware::domain-c7",
+  "type": "compute.cluster",
+  "name": "Production vSphere Cluster",
+  "provider": {
+    "name": "vmware",
+    "type": "vSphere Cluster",
+    "native_id": "domain-c7",
+    "region": "mxp-dc1"
+  },
+  "properties": {
+    "orchestrator": "vmware_vsphere",
+    "version": "8.0 U3",
+    "node_count": 6,
+    "capacity": {
+      "vcpus": 336,
+      "memory_mb": 3145728
+    },
+    "ha_enabled": true,
+    "drs_enabled": true
+  },
+  "status": "active"
+}
+```
+
+
+### 7.3.5 Serverless functions
+
+**Type:** `compute.function.serverless`
+
+**Definition:**
+A serverless function is an event-driven compute resource that executes code in response to triggers without requiring explicit server or VM management. Functions scale automatically and are billed based on execution time.
+
+**When to use:**
+Use `compute.function.serverless` for:
+- AWS Lambda functions
+- Azure Functions
+- Google Cloud Functions
+- Cloudflare Workers
+- Any function-as-a-service offering
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `runtime` | string | Language runtime | `"python3.11"`, `"nodejs20.x"` |
+| `memory_mb` | integer | Allocated memory | `512`, `1024` |
+| `timeout_seconds` | integer | Execution timeout | `30`, `900` |
+| `handler` | string | Function entry point | `"index.handler"` |
+| `trigger_type` | string | Invocation trigger | `"http"`, `"s3"`, `"sqs"` |
+
+**Provider mappings:**
+| Provider | Native Type | Maps to OSIRIS |
+|----------|-------------|----------------|
+| AWS | `AWS::Lambda::Function` | `compute.function.serverless` |
+| Azure | `Microsoft.Web/sites (Function App)` | `compute.function.serverless` |
+| GCP | `cloudfunctions#function` | `compute.function.serverless` |
+| Cloudflare | Workers Function | `compute.function.serverless` |
+
+**Example:**
+```json
+{
+  "id": "aws::image-processor",
+  "type": "compute.function.serverless",
+  "name": "image-processor",
+  "provider": {
+    "name": "aws",
+    "type": "AWS::Lambda::Function",
+    "native_id": "image-processor",
+    "region": "us-east-1",
+    "account": "123456789012",
+    "arn": "arn:aws:lambda:us-east-1:123456789012:function:image-processor"
+  },
+  "properties": {
+    "runtime": "python3.11",
+    "memory_mb": 1024,
+    "timeout_seconds": 60,
+    "handler": "lambda_function.handler",
+    "trigger_type": "s3"
+  },
+  "status": "active"
+}
+```
+
+---
+
+## 7.4 Storage resources
+Storage resources provide persistent data storage capabilities: block devices, object stores, file systems and storage arrays.
+
+
+### 7.4.1 Block storage
+
+**Type:** `storage.volume`
+
+**Definition:**
+A storage volume is a block-level storage device that can be attached to compute resources. Volumes provide persistent storage with raw block access, typically used for operating systems, databases and applications requiring low-latency I/O.
+
+**When to use:**
+Use `storage.volume` for:
+- Cloud block storage (AWS EBS, Azure Managed Disks, GCP Persistent Disks)
+- SAN volumes
+- Virtual machine disks (VMDKs, VHDs)
+- LUNs on storage arrays
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `size_gb` | integer | Volume capacity in gigabytes | `100` |
+| `volume_type` | string | Storage tier/type | `"ssd"`, `"hdd"`, `"gp3"` |
+| `iops` | integer | Provisioned IOPS | `3000` |
+| `encrypted` | boolean | Encryption status | `true` |
+
+**Provider mappings:**
+| Provider | Native Type | Maps to OSIRIS |
+|----------|-------------|----------------|
+| AWS | `AWS::EC2::Volume` | `storage.volume` |
+| Azure | `Microsoft.Compute/disks` | `storage.volume` |
+| GCP | `compute#disk` | `storage.volume` |
+| VMware | VMDK | `storage.volume` |
+
+**Example:**
+```json
+{
+  "id": "aws::vol-0abc123",
+  "type": "storage.volume",
+  "name": "database-data-volume",
+  "provider": {
+    "name": "aws",
+    "type": "AWS::EC2::Volume",
+    "native_id": "vol-0abc123",
+    "region": "us-east-1",
+    "account": "123456789012"
+  },
+  "properties": {
+    "size_gb": 500,
+    "volume_type": "gp3",
+    "iops": 5000,
+    "throughput_mbps": 250,
+    "encrypted": true,
+    "availability_zone": "us-east-1a"
+  },
+  "status": "active"
+}
+```
+
+
+### 7.4.2 Object storage
+
+**Type:** `storage.bucket`
+
+**Definition:**
+An object storage bucket is a container for storing unstructured data (objects) in the cloud. Buckets provide scalable, durable storage accessed via HTTP APIs, typically used for media files, backups, logs and static website hosting.
+
+**When to use:**
+Use `storage.bucket` for:
+- AWS S3 buckets
+- Azure Blob Storage containers
+- GCP Cloud Storage buckets
+- MinIO buckets
+- Any object storage container
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `versioning_enabled` | boolean | Object versioning | `true` |
+| `public_access` | boolean | Public read access | `false` |
+| `encryption` | string | Encryption type | `"SSE-S3"`, `"SSE-KMS"` |
+| `lifecycle_rules` | boolean | Lifecycle policies configured | `true` |
+
+**Provider mappings:**
+| Provider | Native Type | Maps to OSIRIS |
+|----------|-------------|----------------|
+| AWS | `AWS::S3::Bucket` | `storage.bucket` |
+| Azure | Blob Storage Container | `storage.bucket` |
+| GCP | `storage#bucket` | `storage.bucket` |
+| MinIO | Bucket | `storage.bucket` |
+
+**Example:**
+```json
+{
+  "id": "aws::my-app-assets-bucket",
+  "type": "storage.bucket",
+  "name": "application-assets",
+  "provider": {
+    "name": "aws",
+    "type": "AWS::S3::Bucket",
+    "native_id": "my-app-assets-bucket",
+    "region": "us-east-1",
+    "account": "123456789012"
+  },
+  "properties": {
+    "versioning_enabled": true,
+    "public_access": false,
+    "encryption": "SSE-S3",
+    "lifecycle_rules": true
+  },
+  "status": "active"
+}
+```
+
+
+### 7.4.3 File storage
+
+**Type:** `storage.filesystem`
+
+**Definition:**
+A file storage system provides file-based storage accessible over network protocols (NFS, SMB/CIFS). File systems organize data in hierarchical directories and support file-level operations.
+
+**When to use:**
+Use `storage.filesystem` for:
+- AWS EFS (Elastic File System)
+- Azure Files
+- GCP Filestore
+- NFS exports
+- SMB/CIFS shares
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `protocol` | string or array | Access protocol | `"nfs"`, `["nfs", "smb"]` |
+| `size_gb` | integer | Capacity | `1024` |
+| `performance_mode` | string | Performance tier | `"general-purpose"`, `"max-io"` |
+
+**Example:**
+```json
+{
+  "id": "aws::fs-0abc123",
+  "type": "storage.filesystem",
+  "name": "shared-application-data",
+  "provider": {
+    "name": "aws",
+    "type": "AWS::EFS::FileSystem",
+    "native_id": "fs-0abc123",
+    "region": "us-east-1",
+    "account": "123456789012"
+  },
+  "properties": {
+    "protocol": "nfs",
+    "size_gb": 2048,
+    "performance_mode": "general-purpose",
+    "encrypted": true
+  },
+  "status": "active"
+}
+```
+
+
+### 7.4.4 Storage systems
+
+**Type:** `storage.array`
+
+**Definition:**
+A storage array is a dedicated hardware system that provides centralized storage services. Arrays aggregate multiple disks and provide advanced features like RAID, snapshots, replication and tiered storage.
+
+**When to use:**
+Use `storage.array` for:
+- SAN arrays (45Drives, NetApp, Pure Storage)
+- NAS appliances
+- Dedicated storage systems
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `manufacturer` | string | Storage vendor | `"45Drives"`, `"Pure Storage"` |
+| `model` | string | Array model | `"storinator-xl60"` |
+| `capacity_tb` | integer | Total capacity | `100` |
+| `protocols` | array | Supported protocols | `["zfs", "iscsi", "fc"]` |
+
+**Example:**
+```json
+{
+  "id": "45drives::serial-123456",
+  "type": "storage.array",
+  "name": "storinator-xl60-01",
+  "provider": {
+    "name": "45drives",
+    "model": "Storinator XL60",
+    "native_id": "serial-123456"
+  },
+  "properties": {
+    "manufacturer": "45Drives",
+    "model": "Storinator XL60",
+    "capacity_tb": 120,
+    "protocols": ["zfs", "iscsi", "fc"],
+    "version": "ceph 10.2.0",
+    "management_ip": "10.0.20.10"
+  },
+  "status": "active"
+}
+```
+
+---
+
+## 7.5 Network resources
+Network resources provide connectivity, routing, security and traffic management. This family includes virtual networks, physical network devices, security constructs, load balancers and network interfaces.
+
+
+### 7.5.1 Virtual networks and subnets
+
+#### Virtual Private Cloud or Virtual Network
+
+**Type:** `network.vpc`
+
+**Definition:**
+A virtual private cloud (VPC) or virtual network (VNet) is an isolated network segment within a cloud or hyperscaler provider's infrastructure. VPCs provide logical network isolation with configurable IP address ranges, subnets, routing tables and security policies.
+
+**When to use:**
+Use `network.vpc` for:
+- AWS VPCs
+- Azure Virtual Networks (VNets)
+- GCP VPC Networks
+- Any cloud-native virtual network construct
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `cidr` | string or array | IP address range(s) | `"10.0.0.0/16"` |
+| `dns_enabled` | boolean | DNS resolution enabled | `true` |
+| `ipv6_enabled` | boolean | IPv6 support | `false` |
+
+**Provider mappings:**
+| Provider | Native Type | Maps to OSIRIS |
+|----------|-------------|----------------|
+| AWS | `AWS::EC2::VPC` | `network.vpc` |
+| Azure | `Microsoft.Network/virtualNetworks` | `network.vpc` |
+| GCP | `compute#network` | `network.vpc` |
+
+**Example:**
+```json
+{
+  "id": "aws::vpc-0abc123def4567890",
+  "type": "network.vpc",
+  "name": "production-vpc",
+  "provider": {
+    "name": "aws",
+    "type": "AWS::EC2::VPC",
+    "native_id": "vpc-0abc123def4567890",
+    "region": "us-east-1",
+    "account": "123456789012"
+  },
+  "properties": {
+    "cidr": "10.0.0.0/16",
+    "dns_enabled": true,
+    "dns_hostnames": true,
+    "ipv6_enabled": false
+  },
+  "status": "active"
+}
+```
+
+#### Subnet
+
+**Type:** `network.subnet`
+
+**Definition:**
+A subnet is a subdivided IP address range within a larger network. Subnets provide logical segmentation and may be associated with availability zones, routing tables or security policies.
+
+**When to use:**
+Use `network.subnet` for:
+- Cloud subnets (AWS Subnets, Azure Subnets, GCP Subnetworks)
+- VLAN segments (when modeling layer-3 subnets, not layer-2 VLANs)
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `cidr` | string | Subnet IP range | `"10.0.1.0/24"` |
+| `availability_zone` | string | Availability zone | `"us-east-1a"` |
+| `public` | boolean | Internet-routable | `true` |
+
+**Example:**
+```json
+{
+  "id": "aws::subnet-0xyz789",
+  "type": "network.subnet",
+  "name": "public-subnet-1a",
+  "provider": {
+    "name": "aws",
+    "type": "AWS::EC2::Subnet",
+    "native_id": "subnet-0xyz789",
+    "region": "us-east-1",
+    "account": "123456789012"
+  },
+  "properties": {
+    "cidr": "10.0.1.0/24",
+    "availability_zone": "us-east-1a",
+    "public": true
+  },
+  "status": "active"
+}
+```
+
+#### VLAN
+
+**Type:** `network.vlan`
+
+**Definition:**
+A Virtual LAN (VLAN) is a layer-2 network segment that logically partitions a physical network. VLANs isolate broadcast domains and enable network segmentation without physical separation.
+
+**When to use:**
+Use `network.vlan` for:
+- IEEE 802.1Q VLANs
+- Physical switch VLANs
+- On-premise network segments (when VLAN ID is the defining characteristic)
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `vlan_id` | integer | VLAN identifier (1-4094) | `100` |
+| `name` | string | VLAN name | `Office` |
+| `subnet` | string | Associated IP subnet | `"10.100.0.0/24"` |
+
+**Example:**
+```json
+{
+  "id": "cisco::100",
+  "type": "network.vlan",
+  "name": "Production VLAN",
+  "provider": {
+    "name": "cisco",
+    "type": "VLAN",
+    "native_id": "100"
+  },
+  "properties": {
+    "vlan_id": 100,
+    "vlan_name": "office",
+    "subnet": "10.100.0.0/24",
+    "description": "Production network segment"
+  },
+  "status": "active"
+}
+```
+
+
+### 7.5.2 Network devices
+
+#### Router
+
+**Type:** `network.router`
+
+**Definition:**
+A router is a network device that forwards packets between networks based on IP routing tables. Routers operate at layer 3 and make path decisions based on destination IP addresses.
+
+**When to use:**
+Use `network.router` for:
+- Physical routers (Cisco, Ciena, Nokia)
+- Virtual routers (cloud router gateways, virtual router appliances)
+- Layer-3 routing devices
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `manufacturer` | string | Device vendor | `"Cisco"`, `"Ciena"` |
+| `model` | string | Device model | `"ASR 1001-X"` |
+| `version` | string | OS/firmware version | `"IOS XE 17.9.3"` |
+| `routing_protocol` | array | Enabled protocols | `["bgp", "ospf"]` |
+
+**Example:**
+```json
+{
+  "id": "cisco::serial-ABC123",
+  "type": "network.router",
+  "name": "edge-router-01",
+  "provider": {
+    "name": "cisco",
+    "type": "ASR 1001-X",
+    "native_id": "serial-ABC123"
+  },
+  "properties": {
+    "manufacturer": "Cisco",
+    "model": "ASR 1001-X",
+    "version": "IOS XE 17.9.3",
+    "routing_protocol": ["bgp", "ospf"],
+    "management_ip": "10.0.10.1"
+  },
+  "status": "active",
+  "location": {
+    "datacenter": "MXP",
+    "floor": "1",
+    "rack": "R01"
+  }
+}
+```
+
+
+#### Router port
+
+**Type:** `network.router.port`
+
+**Definition:**
+A router port (also called router interface) is a physical or logical connection point on a router used to connect to networks or other network devices. Router ports operate at Layer 3, have IP addresses assigned, and participate in routing protocols.
+
+**When to use:**
+Use `network.router.port` for:
+- Physical router interfaces (GigabitEthernet, TenGigabitEthernet, Serial)
+- Logical interfaces (Loopback, Tunnel, VLAN interfaces)
+- WAN interfaces
+- Subinterfaces for VLAN trunking
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `interface_name` | string | Port/interface identifier | `"GigabitEthernet0/0/1"` |
+| `ip_address` | string | IPv4 address | `"192.168.1.1"` |
+| `subnet_mask` | string | Subnet mask or prefix | `"255.255.255.0"`, `"/24"` |
+| `admin_status` | string | Administrative state | `"up"`, `"down"` |
+| `oper_status` | string | Operational state | `"up"`, `"down"` |
+| `speed_mbps` | integer | Interface speed | `1000`, `10000` |
+| `duplex` | string | Duplex mode | `"full"`, `"half"`, `"auto"` |
+| `encapsulation` | string | Encapsulation type | `"dot1q"`, `"ppp"`, `"hdlc"` |
+| `vlan_id` | integer | VLAN ID (if applicable) | `100` |
+| `description` | string | Interface description | `"Link to Core Switch"` |
+
+**Example:**
+```json
+{
+  "id": "cisco::Ethernet1",
+  "type": "network.router.port",
+  "name": "edge-router-uplink",
+  "provider": {
+    "name": "cisco",
+    "type": "Router Interface",
+    "native_id": "Ethernet1"
+  },
+  "properties": {
+    "interface_name": "Ethernet1",
+    "ip_address": "10.130.100.1",
+    "subnet_mask": "255.255.255.252",
+    "admin_status": "up",
+    "oper_status": "up",
+    "speed_mbps": 10000,
+    "duplex": "full",
+    "mtu": 9214,
+    "description": "Uplink to ISP"
+  },
+  "status": "active",
+  "location": {
+    "datacenter": "MXP",
+    "floor": "1",
+    "rack": "R01",
+    "device": "edge-router-01"
+  }
+}
+```
+
+
+#### Switch
+
+**Type:** `network.switch`
+
+**Definition:**
+A network switch is a device that connects devices within a network segment and forwards frames based on MAC addresses. Switches operate primarily at layer 2, though many modern switches provide layer-3 capabilities.
+
+**When to use:**
+Use `network.switch` for:
+- Physical switches (Cisco Catalyst, Arista DCS)
+- Layer-2 switching devices
+- Spine switches
+- Leaf switches
+- Top-of-rack (ToR) switches
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `manufacturer` | string | Device vendor | `"Arista"`, `"Cisco"`, `"Ciena"`, `"Nokia"` |
+| `model` | string | Device model | `"DCS-7050SX3-48YC12"` |
+| `version` | string | OS version | `"EOS 4.31.2F"` |
+| `port_count` | integer | Number of ports | `48` |
+| `layer3_capable` | boolean | Layer-3 routing support | `true` |
+
+**Example:**
+```json
+{
+  "id": "arista::serial-XYZ789",
+  "type": "network.switch",
+  "name": "leaf-switch-01",
+  "provider": {
+    "name": "arista",
+    "type": "DCS-7050SX3-48YC12",
+    "native_id": "serial-XYZ789"
+  },
+  "properties": {
+    "manufacturer": "Arista",
+    "model": "DCS-7050SX3-48YC12",
+    "version": "EOS 4.31.2F",
+    "port_count": 48,
+    "layer3_capable": true,
+    "management_ip": "10.0.10.15"
+  },
+  "status": "active",
+  "location": {
+    "datacenter": "MXP",
+    "floor": "1",
+    "rack": "R01"
+  }
+}
+```
+
+
+#### Switch port
+
+**Type:** `network.switch.port`
+
+**Definition:**
+A switch port is a physical or logical connection point on a network switch used to connect end devices or other network equipment. Switch ports operate primarily at Layer 2, forwarding frames based on MAC addresses, though some ports may support Layer 3 functionality on capable switches.
+
+**When to use:**
+Use `network.switch.port` for:
+- Physical switch interfaces (Ethernet, GigabitEthernet, TenGigabitEthernet)
+- Access ports (connecting end devices)
+- Trunk ports (carrying multiple VLANs)
+- Port-channel/LAG members
+- SFP/QSFP transceiver ports
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `interface_name` | string | Port identifier | `"Ethernet1/1"`, `"GigabitEthernet0/1"` |
+| `port_mode` | string | Access or trunk mode | `"access"`, `"trunk"` |
+| `vlan` | integer or array | VLAN assignment | `100`, `[10, 20, 30]` |
+| `native_vlan` | integer | Native VLAN (trunk mode) | `1` |
+| `admin_status` | string | Administrative state | `"up"`, `"down"` |
+| `oper_status` | string | Operational state | `"up"`, `"down"` |
+| `speed_mbps` | integer | Port speed | `1000`, `10000`, `100000` |
+| `duplex` | string | Duplex mode | `"full"`, `"half"`, `"auto"` |
+| `spanning_tree_state` | string | STP state | `"forwarding"`, `"blocking"` |
+| `poe_enabled` | boolean | Power over Ethernet | `true`, `false` |
+| `description` | string | Port description | `"Server-01 NIC1"` |
+
+**Example:**
+```json
+{
+  "id": "arista::Ethernet48",
+  "type": "network.switch.port",
+  "name": "server-connection-r01-u42",
+  "provider": {
+    "name": "arista",
+    "type": "Switch Port",
+    "native_id": "Ethernet48"
+  },
+  "properties": {
+    "interface_name": "Ethernet48",
+    "port_mode": "access",
+    "vlan": 100,
+    "admin_status": "up",
+    "oper_status": "up",
+    "speed_mbps": 10000,
+    "duplex": "full",
+    "mtu": 9214,
+    "spanning_tree_state": "forwarding",
+    "poe_enabled": false,
+    "description": "Connection to Dell PowerEdge R770"
+  },
+  "status": "active",
+  "location": {
+    "datacenter": "MXP",
+    "floor": "1",
+    "rack": "R01",
+    "device": "leaf-switch-01"
+  }
+}
+```
+
+
+### 7.5.3 Network interfaces and endpoints
+
+**Type:** `network.interface`
+
+**Definition:**
+A network interface is a connection point between a resource and a network. Interfaces have IP addresses, MAC addresses and network configuration properties.
+
+**When to use:**
+Use `network.interface` for:
+- Virtual machine NICs (AWS ENI, Azure vNIC)
+- Physical server network adapters
+- Container network interfaces
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `mac_address` | string | Hardware address | `"00:1A:2B:3C:4D:5E"` |
+| `ip_addresses` | array | Assigned IPs | `["10.0.1.15", "10.0.1.16"]` |
+| `interface_type` | string | NIC type | `"primary"`, `"secondary"` |
+
+**Example:**
+```json
+{
+  "id": "aws::eni-0abc123",
+  "type": "network.interface",
+  "name": "web-server-primary-nic",
+  "provider": {
+    "name": "aws",
+    "type": "AWS::EC2::NetworkInterface",
+    "native_id": "eni-0abc123",
+    "region": "us-east-1",
+    "account": "123456789012"
+  },
+  "properties": {
+    "mac_address": "0a:1b:2c:3d:4e:5f",
+    "ip_addresses": ["10.0.1.15"],
+    "interface_type": "primary"
+  },
+  "status": "active"
+}
+```
+
+
+### 7.5.4 Network Load balancing
+
+**Type:** `network.loadbalancer`
+
+**Definition:**
+A load balancer distributes incoming network traffic across multiple backend targets (servers, containers, functions) to ensure availability, scalability and fault tolerance.
+
+**When to use:**
+Use `network.loadbalancer` for:
+- Cloud load balancers (AWS ALB/NLB, Azure Load Balancer, GCP Load Balancer)
+- Hardware load balancers (F5, Citrix ADC, Kemp)
+- Software load balancers (HAProxy, NGINX)
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `load_balancer_type` | string | LB type | `"application"`, `"network"`, `"gateway"` |
+| `scheme` | string | Accessibility | `"internet-facing"`, `"internal"` |
+| `protocol` | string or array | Supported protocols | `"http"`, `["http", "https"]` |
+| `algorithm` | string | Distribution algorithm | `"round-robin"`, `"least-connections"` |
+
+**Provider mappings:**
+| Provider | Native Type | Maps to OSIRIS |
+|----------|-------------|----------------|
+| AWS | ALB / NLB / GLB | `network.loadbalancer` |
+| Azure | Azure Load Balancer | `network.loadbalancer` |
+| GCP | Cloud Load Balancing | `network.loadbalancer` |
+| F5 | BIG-IP | `network.loadbalancer` |
+
+**Example:**
+```json
+{
+  "id": "aws::web-application-lb",
+  "type": "network.loadbalancer",
+  "name": "web-application-lb",
+  "provider": {
+    "name": "aws",
+    "type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+    "native_id": "web-application-lb",
+    "region": "us-east-1",
+    "account": "123456789012",
+    "arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/web-application-lb/1234567890abcdef"
+  },
+  "properties": {
+    "load_balancer_type": "application",
+    "scheme": "internet-facing",
+    "protocol": ["http", "https"],
+    "dns_name": "web-lb-123456789.us-east-1.elb.amazonaws.com"
+  },
+  "status": "active"
+}
+```
+
+
+### 7.5.5 Network security
+
+#### Firewalls
+
+**Type:** `network.firewall`
+
+**Definition:**
+A firewall is a security device or service that filters network traffic based on rules. Firewalls inspect packets and enforce access control policies to protect networks from unauthorized access.
+
+**When to use:**
+Use `network.firewall` for:
+- Physical firewall appliances (Palo Alto, Checkpoint, Cisco ASA)
+- Cloud firewalls (AWS Network Firewall, Azure Firewall)
+- Virtual firewall appliances
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `firewall_type` | string | Deployment model | `"hardware"`, `"virtual"`, `"cloud-native"` |
+| `manufacturer` | string | Device vendor | `"Palo Alto"`, `"Check Point"`, `"Cisco"` |
+| `model` | string | Device model | `"PA-5220"` |
+| `version` | string | Firmware/OS version | `"PAN-OS 11.0.3"` |
+
+**Example:**
+```json
+{
+  "id": "paloalto::serial-PAN5220-001",
+  "type": "network.firewall",
+  "name": "edge-firewall-primary",
+  "provider": {
+    "name": "paloalto",
+    "type": "PA-5220",
+    "native_id": "serial-PAN5220-001"
+  },
+  "properties": {
+    "firewall_type": "hardware",
+    "manufacturer": "Palo Alto Networks",
+    "model": "PA-5220",
+    "version": "PAN-OS 11.0.3",
+    "ha_enabled": true,
+    "management_ip": "10.0.10.20"
+  },
+  "status": "active",
+  "location": {
+    "datacenter": "MXP",
+    "floor": "1",
+    "rack": "R05"
+  }
+}
+```
+
+#### Security group
+
+**Type:** `network.security.group`
+
+**Definition:**
+A security group is a classic Hyperscaler virtual firewall that controls inbound and outbound traffic for cloud resources. Security groups use rule-based policies to permit or deny traffic based on protocol, port and source/destination.
+
+**When to use:**
+Use `network.security.group` for:
+- AWS Security Groups
+- Azure Network Security Groups (NSGs)
+- GCP Firewall Rules (when modeled as rule groups)
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `direction` | string | Traffic direction | `"ingress"`, `"egress"`, `"both"` |
+| `rule_count` | integer | Number of rules | `5` |
+
+**Example:**
+```json
+{
+  "id": "aws::sg-0abc123",
+  "type": "network.security.group",
+  "name": "web-tier-sg",
+  "provider": {
+    "name": "aws",
+    "type": "AWS::EC2::SecurityGroup",
+    "native_id": "sg-0abc123",
+    "region": "us-east-1",
+    "account": "123456789012"
+  },
+  "properties": {
+    "direction": "both",
+    "rule_count": 3,
+    "description": "Security group for web tier"
+  },
+  "status": "active"
+}
+```
+
+---
+
+## 7.6 Operational Technology resources
+Operational Technology (OT) resources represent physical infrastructure systems: building automation, physical security, power distribution, industrial control and physical infrastructure. This section start drafting the bridges between IT and OT domains.
+
+
+### 7.6.1 Building automation
+
+#### Air Handling Unit
+
+**Type:** `building.hvac.ahu`
+
+**Definition:**
+An Air Handling Unit (AHU) is a large HVAC device that conditions and circulates air as part of a building's heating, ventilation and air conditioning system. AHUs typically contain fans, filters, heating/cooling coils and dampers.
+
+**When to use:**
+Use `building.hvac.ahu` for:
+- Commercial building air handlers
+- Data center air handling systems
+- Large-scale HVAC units with integrated controls
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `manufacturer` | string | Equipment vendor | `"Carrier"`, `"Trane"` |
+| `model` | string | Equipment model | `"39M"` |
+| `capacity_cfm` | integer | Airflow capacity (cubic feet/minute) | `12000` |
+| `protocol` | string | Control protocol | `"bacnet"`, `"modbus"` |
+| `bacnet_device_id` | integer | BACnet device identifier | `100201` |
+
+**Example:**
+```json
+{
+  "id": "carrier::AHU-F1-M01",
+  "type": "building.hvac.ahu",
+  "name": "Floor 1 Main AHU",
+  "provider": {
+    "name": "carrier",
+    "type": "39M-120",
+    "native_id": "AHU-F1-M01"
+  },
+  "properties": {
+    "manufacturer": "Carrier",
+    "model": "39M-120",
+    "capacity_cfm": 12000,
+    "protocol": "bacnet",
+    "bacnet_device_id": 100201,
+    "bacnet_network": 1,
+    "ip_address": "10.20.10.30"
+  },
+  "status": "active",
+  "location": {
+    "building": "MXP",
+    "floor": "1",
+    "room": "Mechanical room"
+  }
+}
+```
+
+#### HVAC Zone/VAV
+
+**Type:** `building.hvac.vav`
+
+**Definition:**
+A Variable Air Volume (VAV) box is a terminal device that controls airflow to individual zones within a building. VAVs modulate air volume based on zone temperature demands.
+
+**When to use:**
+Use `building.hvac.vav` for:
+- VAV terminal units
+- Zone damper controllers
+- Individual zone HVAC controls
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `zone_name` | string | Controlled zone | `"Conference Room A"` |
+| `min_cfm` | integer | Minimum airflow | `100` |
+| `max_cfm` | integer | Maximum airflow | `800` |
+
+**Example:**
+```json
+{
+  "id": "trane::VAV-F2-201",
+  "type": "building.hvac.vav",
+  "name": "Room 201 VAV",
+  "provider": {
+    "name": "trane",
+    "type": "VAV Box",
+    "native_id": "VAV-F2-201"
+  },
+  "properties": {
+    "zone_name": "Office 201",
+    "min_cfm": 150,
+    "max_cfm": 1000,
+    "protocol": "bacnet",
+    "bacnet_device_id": 100301
+  },
+  "status": "active",
+  "location": {
+    "building": "MXP",
+    "floor": "2",
+    "room": "201"
+  }
+}
+```
+
+#### Chiller/Boiler
+
+**Type:** `building.hvac.chiller` / `building.hvac.boiler`
+
+**Definition:**
+A chiller produces chilled water for cooling systems. A boiler produces hot water or steam for heating systems. Both are central plant equipment that serve multiple zones or buildings.
+
+**When to use:**
+Use these types for:
+- Central chiller plants
+- Boiler systems
+- District heating/cooling equipment
+
+**Example (Chiller):**
+```json
+{
+  "id": "trane::CHLR-01",
+  "type": "building.hvac.chiller",
+  "name": "Central Chiller #1",
+  "provider": {
+    "name": "trane",
+    "type": "CVHE-400",
+    "native_id": "CHLR-01"
+  },
+  "properties": {
+    "manufacturer": "Trane",
+    "model": "CVHE-400",
+    "capacity_tons": 400,
+    "refrigerant": "R-134a",
+    "protocol": "bacnet",
+    "bacnet_device_id": 100001
+  },
+  "status": "active",
+  "location": {
+    "building": "MXP",
+    "floor": "Basement",
+    "room": "Central Plant"
+  }
+}
+```
+
+
+### 7.6.2 Physical security
+
+#### Access control panel
+
+**Type:** `security.access.panel`
+
+**Definition:**
+An access control panel is a hardware device that manages electronic door locks and reader devices. Panels authenticate credentials (cards, biometrics, PINs) and grant/deny physical access.
+
+**When to use:**
+Use `security.access.panel` for:
+- Electronic access control systems (HID, Honeywell, Lenel)
+- Badge reader controllers
+- Door control panels
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `manufacturer` | string | Equipment vendor | `"HID"`, `"Honeywell"` |
+| `model` | string | Panel model | `"VertX V100"` |
+| `door_count` | integer | Controlled doors | `8` |
+| `protocol` | string | Communication protocol | `"wiegand"`, `"osdp"` |
+
+**Example:**
+```json
+{
+  "id": "hid::ACP-F1-001",
+  "type": "security.access.panel",
+  "name": "Floor 1 Main Access Panel",
+  "provider": {
+    "name": "hid",
+    "type": "VertX V100",
+    "native_id": "ACP-F1-001"
+  },
+  "properties": {
+    "manufacturer": "HID",
+    "model": "VertX V100",
+    "door_count": 8,
+    "protocol": "wiegand",
+    "ip_address": "10.30.1.10"
+  },
+  "status": "active",
+  "location": {
+    "building": "MXP",
+    "floor": "1"
+  }
+}
+```
+
+#### Camera
+
+**Type:** `security.camera`
+
+**Definition:**
+A security camera is a video surveillance device that captures and records visual information for monitoring, incident response and forensic analysis.
+
+**When to use:**
+Use `security.camera` for:
+- IP cameras
+- Analog cameras (when modeled in infrastructure)
+- PTZ (pan-tilt-zoom) cameras
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `camera_type` | string | Camera category | `"fixed"`, `"ptz"`, `"dome"` |
+| `resolution` | string | Video resolution | `"1920x1080"`, `"3840x2160"` |
+| `stream_url` | string | Video stream endpoint | `"rtsp://10.30.2.15/stream"` |
+
+**Example:**
+```json
+{
+  "id": "axis::ACCC8E123456",
+  "type": "security.camera",
+  "name": "Main entrance camera",
+  "provider": {
+    "name": "axis",
+    "type": "P3245-LVE",
+    "native_id": "ACCC8E123456"
+  },
+  "properties": {
+    "camera_type": "dome",
+    "resolution": "1920x1080",
+    "firmware_version": "11.0",
+    "stream_url": "rtsp://10.30.2.15/axis-media/media.amp",
+    "management_ip": "10.30.2.18",
+    "poe_powered": true
+  },
+  "status": "active",
+  "location": {
+    "building": "MXP",
+    "floor": "Ground",
+    "description": "Main entrance"
+  }
+}
+```
+
+
+### 7.6.3 Power and environmental
+
+#### UPS (Uninterruptible Power Supply)
+
+**Type:** `power.ups`
+
+**Definition:**
+A UPS provides backup battery power to maintain uptime during electrical outages. UPS systems protect equipment from power disturbances and enable graceful shutdowns.
+
+**When to use:**
+Use `power.ups` for:
+- Data center UPS systems
+- Rack-mounted UPS units
+- Building backup power systems
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `manufacturer` | string | Equipment vendor | `"APC"`, `"Eaton"` |
+| `model` | string | UPS model | `"Smart-UPS SRT 10kVA"` |
+| `capacity_kva` | integer | Power capacity | `10` |
+| `runtime_minutes` | integer | Battery runtime at full load | `15` |
+| `protocol` | string | Monitoring protocol | `"snmp"`, `"modbus"` |
+
+**Example:**
+```json
+{
+  "id": "apc::AS0123456789",
+  "type": "power.ups",
+  "name": "Rack 01 UPS",
+  "provider": {
+    "name": "apc",
+    "type": "Smart-UPS SRT 10kVA",
+    "native_id": "AS0123456789"
+  },
+  "properties": {
+    "manufacturer": "APC",
+    "model": "Smart-UPS SRT 10kVA",
+    "capacity_kva": 10,
+    "runtime_minutes": 20,
+    "protocol": "snmp",
+    "management_ip": "10.40.1.15"
+  },
+  "status": "active",
+  "location": {
+    "datacenter": "MXP",
+    "floor": "1",
+    "rack": "R01"
+  }
+}
+```
+
+#### PDU (Power Distribution Unit)
+
+**Type:** `power.pdu`
+
+**Definition:**
+A PDU distributes electrical power to multiple devices within a rack or equipment area. PDUs provide metering, monitoring and if supported remote outlet control and diagnostic.
+
+**When to use:**
+Use `power.pdu` for:
+- Rack-mounted PDUs
+- Intelligent PDUs with network monitoring and control
+- Metered power strips
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `manufacturer` | string | Equipment vendor | `"APC"`, `"Vertiv"` |
+| `model` | string | PDU model | `"AP8959"` |
+| `outlet_count` | integer | Number of outlets | `16` |
+| `max_amperage` | integer | Maximum current (amps) | `30` |
+| `metered` | boolean | Power metering capability | `true` |
+
+**Example:**
+```json
+{
+  "id": "apc::PDU-R01-A",
+  "type": "power.pdu",
+  "name": "Rack 01 PDU A",
+  "provider": {
+    "name": "apc",
+    "type": "AP8959",
+    "native_id": "PDU-R01-A"
+  },
+  "properties": {
+    "manufacturer": "APC",
+    "model": "AP8959",
+    "outlet_count": 16,
+    "max_amperage": 30,
+    "voltage": 208,
+    "metered": true,
+    "managed": true,
+    "management_ip": "10.40.1.20"
+  },
+  "status": "active",
+  "location": {
+    "datacenter": "MXP",
+    "floor": "1",
+    "rack": "R01",
+    "position": "A"
+  }
+}
+```
+
+
+### 7.6.4 Industrial control systems
+
+#### PLC (Programmable Logic Controller)
+
+**Type:** `industrial.plc`
+
+**Definition:**
+A PLC is a ruggedized industrial computer that controls manufacturing processes, machinery and automation systems. PLCs execute ladder logic programs and interface with sensors and actuators.
+
+**When to use:**
+Use `industrial.plc` for:
+- Factory automation controllers
+- Process control systems
+- Industrial automation equipment
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `manufacturer` | string | Equipment vendor | `"Siemens"`, `"Allen-Bradley"` |
+| `model` | string | PLC model | `"S7-1500"` |
+| `protocol` | string | Communication protocol | `"modbus"`, `"profinet"` |
+| `io_points` | integer | Total I/O points | `128` |
+
+**Example:**
+```json
+{
+  "id": "siemens::PLC-LINE01",
+  "type": "industrial.plc",
+  "name": "Production Line 1 PLC",
+  "provider": {
+    "name": "siemens",
+    "type": "S7-1500",
+    "native_id": "PLC-LINE01"
+  },
+  "properties": {
+    "manufacturer": "Siemens",
+    "model": "S7-1500",
+    "protocol": "profinet",
+    "io_points": 256,
+    "firmware_version": "V2.9.3",
+    "ip_address": "192.168.100.10"
+  },
+  "status": "active",
+  "location": {
+    "facility": "Manufacturing Plant",
+    "line": "Production Line 1"
+  }
+}
+```
+
+#### SCADA System
+
+**Type:** `industrial.scada`
+
+**Definition:**
+A SCADA (Supervisory Control and Data Acquisition) system monitors and controls industrial processes at scale. SCADA systems aggregate data from sensors and PLCs and provide centralized visualization and control.
+
+**When to use:**
+Use `industrial.scada` for:
+- Industrial control systems
+- Utility monitoring systems (water, power, gas)
+- Process visualization and control platforms
+
+**Example:**
+```json
+{
+  "id": "wonderware::SCADA-MASTER",
+  "type": "industrial.scada",
+  "name": "Plant Master SCADA",
+  "provider": {
+    "name": "wonderware",
+    "type": "System Platform",
+    "native_id": "SCADA-MASTER"
+  },
+  "properties": {
+    "software": "Wonderware System Platform",
+    "version": "2023",
+    "node_count": 12,
+    "tag_count": 5000,
+    "redundancy": "hot-standby"
+  },
+  "status": "active",
+  "location": {
+    "facility": "Manufacturing Plant",
+    "room": "Control Room"
+  }
+}
+```
+
+
+### 7.6.5 Physical infrastructure
+Physical infrastructure resources represent the physical locations and structures that house IT and OT equipment. These resources form the foundation of the location hierarchy used throughout OSIRIS.
+
+#### Data center
+
+**Type:** `physical.datacenter`
+
+**Definition:**
+A data center (or datacenter) is a facility used to house computer systems, networking equipment, storage systems and associated components. Data centers provide power distribution, cooling, physical security and network connectivity required for IT operations.
+
+**When to use:**
+Use `physical.datacenter` for:
+- Entire datacenter facilities
+- Colocation facilities
+- Enterprise data centers
+- Edge data centers
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `tier` | string | Uptime Institute tier | `"Tier I"`, `"Tier II"`, `"Tier III"`, `"Tier IV"`, `"Tier IV Gold"` |
+| `total_sqft` | integer | Total facility area | `10000` |
+| `power_capacity_kw` | integer | Total power capacity | `5000` |
+| `cooling_capacity_tons` | integer | Cooling capacity | `800` |
+| `rack_count` | integer | Total racks | `120` |
+| `certifications` | array | Compliance certifications | `["ISO27001", "SOC2"]` |
+
+**Example:**
+```json
+{
+  "id": "custom::MXP-DC-01",
+  "type": "physical.datacenter",
+  "name": "Milan Primary Datacenter",
+  "provider": {
+    "name": "custom",
+    "type": "Enterprise Datacenter",
+    "native_id": "MXP-DC-01",
+    "namespace": "acme-infrastructure"
+  },
+  "properties": {
+    "site_code": "MXP",
+    "tier": "Tier III",
+    "total_sqft": 15000,
+    "power_capacity_kw": 3200,
+    "cooling_capacity_tons": 600,
+    "rack_count": 120,
+    "certifications": ["ISO27001", "SOC2"],
+    "address": "Via Example 123, Milan, Italy",
+    "timezone": "Europe/Rome"
+  },
+  "status": "active",
+  "location": {
+    "city": "Milan",
+    "country": "IT",
+    "region": "EMEA"
+  }
+}
+```
+
+
+#### Buildings
+
+**Type:** `physical.building`
+
+**Definition:**
+A building is a physical structure within a datacenter campus or facility. Buildings may contain multiple floors with equipment rooms, offices and support facilities.
+
+**When to use:**
+Use `physical.building` for:
+- Individual buildings within datacenter campuses
+- Multi-building facilities
+- Separate structures within a site
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `building_number` | string | Building identifier | `"01"`, `"Building A"` |
+| `total_floors` | integer | Number of floors | `3` |
+| `total_sqft` | integer | Building area | `5000` |
+| `power_capacity_kw` | integer | Building power capacity | `1500` |
+
+**Example:**
+```json
+{
+  "id": "custom::MXP-BLDG-01",
+  "type": "physical.building",
+  "name": "MXP Building 01",
+  "provider": {
+    "name": "custom",
+    "type": "Datacenter Building",
+    "native_id": "MXP-BLDG-01",
+    "namespace": "acme-infrastructure"
+  },
+  "properties": {
+    "building_number": "01",
+    "total_floors": 2,
+    "total_sqft": 8000,
+    "power_capacity_kw": 2000,
+    "primary_use": "datacenter"
+  },
+  "status": "active",
+  "location": {
+    "datacenter": "MXP"
+  }
+}
+```
+
+
+#### Floors
+
+**Type:** `physical.floor`
+
+**Definition:**
+A floor represents a level within a building. Floors contain rooms, equipment areas and infrastructure distribution systems.
+
+**When to use:**
+Use `physical.floor` for:
+- Individual floors within buildings
+- Raised floor areas
+- Equipment levels
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `floor_number` | string or integer | Floor identifier | `1`, `"Ground"`, `"B1"` |
+| `floor_sqft` | integer | Floor area | `4000` |
+| `raised_floor` | boolean | Raised floor present | `true` |
+| `ceiling_height_ft` | integer | Ceiling height | `12` |
+
+**Example:**
+```json
+{
+  "id": "custom::MXP-F1",
+  "type": "physical.floor",
+  "name": "MXP Floor 1",
+  "provider": {
+    "name": "custom",
+    "type": "Datacenter Floor",
+    "native_id": "MXP-F1",
+    "namespace": "acme-infrastructure"
+  },
+  "properties": {
+    "floor_number": 1,
+    "floor_sqft": 4000,
+    "raised_floor": true,
+    "raised_floor_height_inches": 24,
+    "ceiling_height_ft": 12,
+    "cooling_type": "hot-aisle-containment"
+  },
+  "status": "active",
+  "location": {
+    "datacenter": "MXP",
+    "building": "01"
+  }
+}
+```
+
+
+#### Rooms
+
+**Type:** `physical.room`
+
+**Definition:**
+A room represents a physical space within a floor containing infrastructure equipment. Rooms may be server rooms, network closets, electrical rooms or mechanical spaces.
+
+**When to use:**
+Use `physical.room` for:
+- Server rooms
+- Network closets
+- Equipment rooms
+- Mechanical rooms
+- Electrical rooms
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `room_number` | string | Room identifier | `"101"`, `"Server Room A"` |
+| `room_sqft` | integer | Room area | `500` |
+| `room_type` | string | Room purpose | `"server"`, `"network"`, `"mechanical"` |
+| `cooling_capacity_tons` | integer | Cooling capacity | `20` |
+
+**Example:**
+```json
+{
+  "id": "custom::MXP-F1-R105",
+  "type": "physical.room",
+  "name": "Floor 1 Server Room 105",
+  "provider": {
+    "name": "custom",
+    "type": "Server Room",
+    "native_id": "MXP-F1-R105",
+    "namespace": "acme-infrastructure"
+  },
+  "properties": {
+    "room_number": "105",
+    "room_sqft": 600,
+    "room_type": "server",
+    "cooling_capacity_tons": 25,
+    "fire_suppression": "FM-200",
+    "access_control": true
+  },
+  "status": "active",
+  "location": {
+    "datacenter": "MXP",
+    "building": "01",
+    "floor": "1"
+  }
+}
+```
+
+
+#### Racks
+
+**Type:** `physical.rack`
+
+**Definition:**
+A rack is a standardized equipment enclosure (typically 19-inch or 23-inch wide) that houses servers, network devices, storage and other infrastructure hardware. Racks are measured in rack units (U).
+
+**When to use:**
+Use `physical.rack` for:
+- Data center equipment racks
+- Network equipment cabinets
+- Server enclosures
+
+**Common properties:**
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `height_units` | integer | Rack height in U (1U = 1.75") | `42` |
+| `width_inches` | integer | Rack width | `19`, `23` |
+| `manufacturer` | string | Rack vendor | `"Schneider Electric"`, `"Chatsworth"` |
+
+**Example:**
+```json
+{
+  "id": "schneider::MXP-F1-R01",
+  "type": "physical.rack",
+  "name": "Floor 1 Rack 01",
+  "provider": {
+    "name": "schneider",
+    "type": "NetShelter SX 42U",
+    "native_id": "MXP-F1-R01"
+  },
+  "properties": {
+    "height_units": 42,
+    "width_inches": 19,
+    "depth_inches": 42,
+    "manufacturer": "APC",
+    "model": "NetShelter SX",
+    "max_weight_lbs": 3000,
+    "power_capacity_kva": 20
+  },
+  "status": "active",
+  "location": {
+    "datacenter": "MXP",
+    "building": "01",
+    "floor": "1",
+    "room": "105",
+    "row": "A",
+    "position": "01"
+  }
+}
+```
+
+
+---
+
+## 7.7 Type selection guidance
+This section provides practical guidance for choosing appropriate resource types and understanding when to use standard types versus custom types.
+
+
+### 7.7.1 Choosing appropriate types
+
+**Decision framework:**
+When assigning a type to a resource, follow this decision tree:
+
+1. **Does a standard type exist that accurately describes this resource?**
+   - YES > Use the standard type (sections 7.2–7.6)
+   - NO > Continue to step 2
+
+2. **Is there a closely related standard type?**
+   - YES > Consider using the standard type with vendor specifics in `properties`
+   - NO > Continue to step 3
+
+3. **Is this a vendor-specific resource with no standard equivalent?**
+   - YES > Use `osiris.<vendor>.<type>` namespaced type
+   - NO > Use `osiris.<organization>.<type>` for organization-specific resources
+
+**Semantic alignment:**
+Choose the type that best represents the **resource's role and function**, not its implementation details:
+```text
+Good: compute.vm (even if it's a bare-metal instance acting like a VM)
+Bad: osiris.aws.ec2.metal (overly specific)
+
+Good: network.loadbalancer (for any load balancer)
+Bad: network.alb, network.nlb.kemp (too vendor-specific)
+
+Good: building.hvac.ahu (for any air handler)
+Bad: milanmxp.keller.21c (building specific equipment model, not function)
+```
+
+**Balancing generals and specifics:**
+
+- **Prefer general types** when the resource fits a common category
+- **Use specific subtypes** when meaningful distinctions exist (e.g. `compute.vm.template` vs `compute.vm`)
+- **Avoid excessive depth** - if the type hierarchy exceeds 4 segments, consider whether details belong in `properties`
+
+**Examples:**
+| Resource | Standard Type | Rationale |
+|----------|---------------|-----------|
+| AWS EC2 t3.medium | `compute.vm` | It's a virtual machine instance |
+| Azure SQL Database | `application.database` | It's a managed database service |
+| Cisco Nexus 9300 | `network.switch` | It's a network switch |
+| AWS Lambda function | `compute.function.serverless` | Serverless compute function |
+| Kubernetes Pod | `compute.container.pod` | Container orchestration unit |
+| HID access panel | `security.access.panel` | Physical access control |
+| BACnet VAV controller | `building.hvac.vav` | HVAC zone control |
+
+
+### 7.7.2 When to use custom types
+
+**Use custom types when:**
+1. **No standard type exists**
+   - The resource represents a vendor-specific service with unique semantics
+   - Example: `osiris.aws.lambda.edge` for Lambda@Edge (distinct from standard Lambda)
+
+2. **Semantics differ significantly**
+   - Standard type exists but doesn't capture critical distinctions
+   - Example: `osiris.azure.cosmosdb` for CosmosDB if multi-model API selection is critical
+
+3. **Vendor-specific features are essential**
+   - Preserving vendor identity is important for consumers
+   - Example: `osiris.vmware.vsan` for vSAN storage (specific to VMware ecosystem)
+
+4. **Organization-specific resources**
+   - Internal infrastructure components
+   - Example: `osiris.com.acme.widget` for proprietary equipment
+
+**Namespace guidelines:**
+| Use Case | Namespace Pattern | Example |
+|----------|-------------------|---------|
+| AWS-specific | `osiris.aws.*` | `osiris.aws.lambda.edge` |
+| Azure-specific | `osiris.azure.*` | `osiris.azure.cosmosdb` |
+| GCP-specific | `osiris.gcp.*` | `osiris.gcp.cloudrun` |
+| Vendor-specific | `osiris.<vendor>.*` | `osiris.cisco.aci` |
+| Organization | `osiris.com.<org>.*` | `osiris.com.acme.widget` |
+
+**Documentation:**
+When using custom types, producers **SHOULD**:
+- Document the type semantics in generator documentation
+- Provide examples showing typical usage
+- Explain why standard types were insufficient
+- Version the generator tool if type semantics change
+
+
+### 7.7.3 Type mapping examples from well-known providers
+This section provides guidance for mapping common provider resources to OSIRIS standard types.
+
+**Provider naming:**
+The examples below use canonical provider names as defined in Chapter 4, section 4.3.3. Producers **SHOULD** use consistent lowercase identifiers (e.g. `aws`, `azure`, `gcp`, `oci`, `ibm`, `ali`, `tc`) for well-known providers.
+
+#### AWS Resource mappings
+| Provider Native Resource Type | OSIRIS Standard Type | Notes |
+|-------------------|---------------------|-------|
+| `AWS::EC2::Instance` | `compute.vm` | Virtual machine instances |
+| `AWS::Lambda::Function` | `compute.function.serverless` | Serverless functions |
+| `AWS::ECS::Service` | `application.service` | Container services |
+| `AWS::EC2::VPC` | `network.vpc` | Virtual private cloud |
+| `AWS::EC2::Subnet` | `network.subnet` | VPC subnets |
+| `AWS::EC2::SecurityGroup` | `network.security.group` | Security groups |
+| `AWS::ElasticLoadBalancingV2::LoadBalancer` | `network.loadbalancer` | ALB/NLB/GLB |
+| `AWS::EC2::Volume` | `storage.volume` | EBS volumes |
+| `AWS::S3::Bucket` | `storage.bucket` | Object storage |
+| `AWS::EFS::FileSystem` | `storage.filesystem` | Elastic file system |
+| `AWS::RDS::DBInstance` | `application.database` | Managed databases |
+| `AWS::DynamoDB::Table` | `application.database` | NoSQL database |
+| `AWS::SQS::Queue` | `application.queue` | Message queues |
+| `AWS::Kinesis::Stream` | `application.eventstream` | Event streams |
+| `AWS::ElastiCache::ReplicationGroup` | `application.cache` | Redis/Memcached |
+
+#### Microsoft Azure Resource mappings
+| Provider Native Resource Type | OSIRIS Standard Type | Notes |
+|-------------------|---------------------|-------|
+| `Microsoft.Compute/virtualMachines` | `compute.vm` | Virtual machines |
+| `Microsoft.Web/sites` (Function App) | `compute.function.serverless` | Azure Functions |
+| `Microsoft.ContainerInstance/containerGroups` | `compute.container` | Container instances |
+| `Microsoft.Network/virtualNetworks` | `network.vpc` | Virtual networks |
+| `Microsoft.Network/subnets` | `network.subnet` | VNet subnets |
+| `Microsoft.Network/networkSecurityGroups` | `network.security.group` | NSGs |
+| `Microsoft.Network/loadBalancers` | `network.loadbalancer` | Load balancers |
+| `Microsoft.Compute/disks` | `storage.volume` | Managed disks |
+| `Microsoft.Storage/storageAccounts` (Blob) | `storage.bucket` | Blob storage |
+| `Microsoft.Storage/storageAccounts` (Files) | `storage.filesystem` | Azure Files |
+| `Microsoft.Sql/servers/databases` | `application.database` | SQL Database |
+| `Microsoft.DocumentDB/databaseAccounts` | `application.database` | Cosmos DB |
+| `Microsoft.ServiceBus/namespaces` | `application.queue` | Service Bus |
+| `Microsoft.Cache/redis` | `application.cache` | Azure Cache for Redis |
+
+#### Google Cloud Platform (GCP) Resource mappings
+| Provider Native Resource Type | OSIRIS Standard Type | Notes |
+|-------------------|---------------------|-------|
+| `compute#instance` | `compute.vm` | Compute Engine instances |
+| `cloudfunctions#function` | `compute.function.serverless` | Cloud Functions |
+| `run#service` | `compute.container` | Cloud Run services |
+| `compute#network` | `network.vpc` | VPC networks |
+| `compute#subnetwork` | `network.subnet` | Subnets |
+| `compute#firewall` | `network.security.group` | Firewall rules |
+| `compute#forwardingRule` | `network.loadbalancer` | Load balancers |
+| `compute#disk` | `storage.volume` | Persistent disks |
+| `storage#bucket` | `storage.bucket` | Cloud Storage |
+| `file#instance` | `storage.filesystem` | Filestore |
+| `sqladmin#instance` | `application.database` | Cloud SQL |
+| `datastore#database` | `application.database` | Firestore |
+| `pubsub#topic` | `application.eventstream` | Pub/Sub topics |
+| `redis#instance` | `application.cache` | Memorystore Redis |
+
+#### Oracle Cloud Infrastructure (OCI) Resource mappings
+| Provider Native Resource Type | OSIRIS Standard Type | Notes |
+|-------------------|---------------------|-------|
+| `oci_core_instance` | `compute.vm` | Compute instance |
+| `oci_core_vcn` | `network.vpc` | Virtual Cloud Network |
+| `oci_core_subnet` | `network.subnet` | Subnet within a VCN |
+| `oci_core_network_security_group` | `network.security.group` | Network Security Group |
+| `oci_load_balancer_load_balancer` | `network.loadbalancer` | Load balancer |
+| `oci_core_volume` | `storage.volume` | Block storage volume |
+| `oci_objectstorage_bucket` | `storage.bucket` | Object Storage bucket |
+| `oci_file_storage_file_system` | `storage.filesystem` | File storage (FSS) |
+| `oci_database_autonomous_database` | `application.database` | Autonomous or managed database |
+| `oci_queue_queue` | `application.queue` | Queue service |
+| `oci_streaming_stream` | `application.eventstream` | Streaming (Kafka-compatible) |
+
+#### IBM Cloud Resource mappings
+| Provider Native Resource Type | OSIRIS Standard Type | Notes |
+|-------------------|---------------------|-------|
+| `ibm_is_instance` | `compute.vm` | VPC virtual server instance |
+| `ibm_is_vpc` | `network.vpc` | Virtual Private Cloud |
+| `ibm_is_subnet` | `network.subnet` | VPC subnet |
+| `ibm_is_security_group` | `network.security.group` | Security group |
+| `ibm_is_lb` | `network.loadbalancer` | Load balancer |
+| `ibm_is_volume` | `storage.volume` | Block storage volume |
+| `ibm_cos_bucket` | `storage.bucket` | Cloud Object Storage bucket |
+| `ibm_database` | `application.database` | Managed database service |
+| `ibm_resource_instance` | `application.eventstream` | IBM Event Streams (Kafka) instance |
+| `ibm_event_streams_topic` | `application.eventstream` | Event Streams topic |
+
+#### Alibaba Cloud Resource mappings
+| Provider Native Resource Type | OSIRIS Standard Type | Notes |
+|-------------------|---------------------|-------|
+| `ALIYUN::ECS::Instance` | `compute.vm` | ECS virtual machine instance |
+| `ALIYUN::ECS::VPC` | `network.vpc` | Virtual Private Cloud |
+| `ALIYUN::ECS::VSwitch` | `network.subnet` | Subnet (VSwitch) |
+| `ALIYUN::ECS::SecurityGroup` | `network.security.group` | Security group |
+| `ALIYUN::SLB::LoadBalancer` | `network.loadbalancer` | Server Load Balancer |
+| `ALIYUN::ECS::Disk` | `storage.volume` | Block disk |
+| `ALIYUN::OSS::Bucket` | `storage.bucket` | Object Storage Service bucket |
+| `ALIYUN::NAS::FileSystem` | `storage.filesystem` | NAS file system |
+| `ALIYUN::RDS::DBInstance` | `application.database` | Managed relational database |
+| `ALIYUN::REDIS::Instance` | `application.cache` | Managed cache |
+| `ALIYUN::MNS::Queue` | `application.queue` | Message Service queue |
+| `ALIYUN::KAFKA::Instance` | `application.eventstream` | Kafka event stream |
+
+#### Tencent Cloud Resource mappings
+| Provider Native Resource Type | OSIRIS Standard Type | Notes |
+|-------------------|---------------------|-------|
+| `tencentcloud_instance` | `compute.vm` | CVM compute instance |
+| `tencentcloud_vpc` | `network.vpc` | Virtual Private Cloud |
+| `tencentcloud_subnet` | `network.subnet` | Subnet |
+| `tencentcloud_security_group` | `network.security.group` | Security group |
+| `tencentcloud_clb_instance` | `network.loadbalancer` | CLB load balancer |
+| `tencentcloud_cbs_storage` | `storage.volume` | Cloud Block Storage volume |
+| `tencentcloud_cos_bucket` | `storage.bucket` | COS object storage bucket |
+| `tencentcloud_mysql_instance` | `application.database` | Managed MySQL database |
+| `tencentcloud_redis_instance` | `application.cache` | Managed Redis cache |
+| `tencentcloud_ckafka_instance` | `application.eventstream` | Kafka event stream |
+
+#### VMware vSphere Resource mappings
+| Provider Native Resource Type | OSIRIS Standard Type | Notes |
+|-------------------|---------------------|-------|
+| ESXi Host | `compute.server` | Hypervisor hosts |
+| vSphere Cluster | `compute.cluster` | Compute clusters |
+| Virtual Machine | `compute.vm` | ESXi VMs |
+| VMDK | `storage.volume` | Virtual disks |
+| Datastore | `storage.filesystem` | Shared storage |
+| vSAN Datastore | `osiris.vmware.vsan` | VMware-specific storage (custom extension type) |
+| Distributed Virtual Switch | `network.switch` | Virtual switches |
+| Port Group | `network.vlan` | Virtual network segments |
+
+#### Proxmox VE Resource mappings
+| Provider Native Resource Type | OSIRIS Standard Type | Notes |
+|-------------------|---------------------|-------|
+| Proxmox Node | `compute.server` | Physical hypervisor host |
+| LXC Container | `compute.container` | Linux container |
+| Proxmox Cluster | `compute.cluster` | Multi-node cluster |
+| QEMU VM | `compute.vm` | KVM virtual machine |
+| Storage (dir/lvmthin/zfs/cephfs/rbd) | `storage.filesystem` | Storage backends |
+| VM Disk (vm-100-disk-0) | `storage.volume` | Virtual machine disk |
+| VM Network Interface | `network.interface` | Virtual NIC |
+
+
+**Ambiguous mappings:**
+Some resources may map to multiple types depending on context:
+
+| Resource | Context | OSIRIS Type |
+|----------|---------|-------------|
+| Kubernetes Cluster | Compute pool | `compute.cluster` |
+| Kubernetes Pod | Container group | `compute.container.pod` |
+| Kubernetes Service | Network endpoint | `network.loadbalancer` or `application.service` |
+| AWS RDS Read Replica | Separate database instance | `application.database` |
+| AWS RDS Read Replica | Logical part of primary | Modeled via connections, not separate resource |
+
+Producers **SHOULD** choose the mapping that best represents the resource's primary function and document their decision for consumers.

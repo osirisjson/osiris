@@ -3,7 +3,7 @@ OSIRIS (Open Standard for Infrastructure Resource Interchange Schema) defines a 
 
 OSIRIS is designed to normalize infrastructure data exported from diverse domains, including public hyperscalers, cloud platforms, private Data Centers, network devices, virtualization platforms and where applicable Operational Technology (OT) assets. OSIRIS focuses on describing what exists and how it relates, enabling cross-platform visibility and portable consumption by tools without requiring consumers to implement vendor-specific parsers.
 
-OSIRIS is an interchange schema. It is not intended to replace vendor APIs or infrastructure-as-code models, but viceversa it aims to provide a stable and consistent schema suitable for diagramming, documentation, audit evidence, inventories and integrations.
+OSIRIS is an interchange schema. It is not intended to replace vendor APIs or infrastructure-as-code models, but vice versa it aims to provide a stable and consistent schema suitable for diagramming, documentation, audit evidence, inventories and integrations.
 
 
 ## What problem this solves
@@ -13,9 +13,10 @@ The absence of a vendor-neutral interchange format means the infrastructure mana
 
 
 ## How to validate
-some commands example with python etc
+This section will be completed after creating the parsers and validators.
 
 ## How to extend safely
-1–2 rules + example snippet
+will be added to examples/
 
 ## Contribute
+Visit https://osirisjson.org/en/get-involved for more informations

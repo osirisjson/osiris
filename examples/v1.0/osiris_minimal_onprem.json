@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "metadata": {
+    "id": "osiris-export-20260104-onprem",
+    "timestamp": "2026-01-04T12:00:00Z",
+    "generator": {
+      "name": "OSIRIS On-premise",
+      "version": "1.0.0"
+    },
+    "description": "Minimal on-premise infrastructure example"
+  },
+  "topology": {
+    "resources": [
+      {
+        "id": "dell::MXP-SRV-001",
+        "type": "compute.server",
+        "name": "MXP-SRV-001",
+        "provider": {
+          "name": "dell",
+          "type": "PowerEdge R770",
+          "native_id": "MXP-SRV-001"
+        },
+        "properties": {
+          "manufacturer": "Dell",
+          "model": "PowerEdge R770"
+        },
+        "status": "active",
+        "location": {
+          "datacenter": "MXP",
+          "rack": "R01"
+        }
+      }
+    ],
+    "connections": [],
+    "groups": []
+  }
+}
