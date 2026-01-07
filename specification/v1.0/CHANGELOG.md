@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+# [1.0.0-draft.11] - 2026-01-07
+### Added
+- Chapter 8: (8.1-8.6)
+
+### Fixed
+- Minor fixes across some sections for standardisation mismatch
+
 # [1.0.0-draft.10] - 2026-01-04
 ### Added
 - Chapter 7: (7.3-7.7)

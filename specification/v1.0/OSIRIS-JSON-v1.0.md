@@ -4,7 +4,7 @@
 | Authors   | Tia Zanella [skhell](https://github.com/skhell) |
 | Revision  | 1.0.0-DRAFT |
 | Creation date      | 14 December 2025 |
-| Last revision date | 04 January 2026 |
+| Last revision date | 07 January 2026 |
 | Status    | Draft |
 | Specification ID | OSIRIS-1.0 |
 | Schema URI | tbd later |
@@ -243,6 +243,49 @@
     - [7.7.1 Choosing appropriate types](#771-choosing-appropriate-types)
     - [7.7.2 When to use custom types](#772-when-to-use-custom-types)
     - [7.7.3 Type mapping examples from well-known providers](#773-type-mapping-examples-from-well-known-providers)
+- [8 Extension mechanism](#8-extension-mechanism)
+  - [Overview](#overview-2)
+  - [8.1 Properties vs extensions](#81-properties-vs-extensions)
+    - [8.1.1 Properties object](#811-properties-object)
+    - [8.1.2 Extensions object](#812-extensions-object)
+    - [8.1.3 Decision framework](#813-decision-framework)
+    - [8.1.4 Extension field structure](#814-extension-field-structure)
+    - [8.1.4.1 Extension object key style](#8141-extension-object-key-style)
+    - [8.1.5 Multiple extension namespaces](#815-multiple-extension-namespaces)
+    - [8.1.6 Provider-specific metadata vs extensions](#816-provider-specific-metadata-vs-extensions)
+    - [8.1.7 Forward compatibility](#817-forward-compatibility)
+  - [8.2 Vendor-specific extensions](#82-vendor-specific-extensions)
+    - [8.2.1 Vendor namespace structure](#821-vendor-namespace-structure)
+    - [8.2.2 AWS specific extensions](#822-aws-specific-extensions)
+    - [8.2.3 Azure specific extensions](#823-azure-specific-extensions)
+    - [8.2.4 GCP specific extensions](#824-gcp-specific-extensions)
+    - [8.2.5 VMware specific extensions](#825-vmware-specific-extensions)
+    - [8.2.6 Proxmox specific extensions](#826-proxmox-specific-extensions)
+    - [8.2.7 On-premise vendor extensions](#827-on-premise-vendor-extensions)
+    - [8.2.8 Extension data types](#828-extension-data-types)
+    - [8.2.9 Extension stability](#829-extension-stability)
+  - [8.3 Custom resource types](#83-custom-resource-types)
+    - [8.3.1 When to create custom types](#831-when-to-create-custom-types)
+    - [8.3.2 Custom type naming](#832-custom-type-naming)
+    - [8.3.3 Vendor-specific types](#833-vendor-specific-types)
+    - [8.3.4 Organization-specific types](#834-organization-specific-types)
+    - [8.3.5 Custom type documentation](#835-custom-type-documentation)
+    - [8.3.6 Consumer handling of custom types](#836-consumer-handling-of-custom-types)
+    - [8.3.7 Type stability and evolution](#837-type-stability-and-evolution)
+  - [8.4 Namespacing](#84-namespacing)
+    - [8.4.1 Namespace format](#841-namespace-format)
+    - [8.4.2 Registered well-known namespaces](#842-registered-well-known-namespaces)
+    - [8.4.3 Organization namespaces](#843-organization-namespaces)
+    - [8.4.4 Custom namespaces](#844-custom-namespaces)
+    - [8.4.5 Namespace registration](#845-namespace-registration)
+    - [8.4.6 Namespace collision avoidance](#846-namespace-collision-avoidance)
+    - [8.4.7 Namespace versioning](#847-namespace-versioning)
+    - [8.4.8 Forward compatibility](#848-forward-compatibility)
+  - [8.5 Extension best practices](#85-extension-best-practices)
+    - [8.5.1 For producers](#851-for-producers)
+    - [8.5.2 For consumers](#852-for-consumers)
+    - [8.5.3 Common patterns](#853-common-patterns)
+  - [8.6 Summary](#86-summary)
 
 
 ## Preface
@@ -254,7 +297,7 @@ By decoupling the resource identity from its provider-specific implementation, O
 
 
 ##### Intended Audience
-This specification is intended for:
+This specification is Intended for:
 
 - **Developers** building visualization, documentation, inventory, CMDB or management tools.
 - **Platform Engineers** designing automation and infrastructure-as-code workflows.
@@ -430,7 +473,7 @@ The core schema structure and extension mechanisms are designed primarly for sta
 OSIRIS is guided by the following core principles:
 
 ### 1.4.1 Open Standard and driven by Community Governance
-OSIRIS is an **Open Standard** intended for broad adoption across vendors, platforms and communities. The specification and evolution of the schema are intended to be community-driven and openly reviewable.
+OSIRIS is an **Open Standard** Intended for broad adoption across vendors, platforms and communities. The specification and evolution of the schema are intended to be community-driven and openly reviewable.
 
 ### 1.4.2  Simplicity
 OSIRIS prioritizes ease of understanding and implementation. The schema uses straightforward JSON structures with clear field semantics. Complexity is introduced only where necessary to represent real-world infrastructure. Producers and consumers **SHOULD** be able to implement basic OSIRIS support without extensive specialized knowledge.
@@ -519,7 +562,7 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**, **
 
 **Required field:** A field that **MUST** be present in a valid OSIRIS document or object.
 
-**Optional field:** A field that **MAY** be present but is not requird for validity.
+**Optional field:** A field that **MAY** be present but is not required for validity.
 
 **Additional properties:** Fields beyond those explicitly defined in the schema, typically used for extensions or vendor-specific data.
 
@@ -586,7 +629,7 @@ Producers **SHOULD** construct IDs using one of these strategies:
 
 4. **Generated ID (only when native ID unavailable or not globally unique):**
 ```text
-   "id": "postgres-prod-01.mxp.internal.example.com"
+   "id": "postgres-prod-01.mxp.internal.acme.example"
 ```
 
 **Rationale:** 
@@ -1703,7 +1746,7 @@ Resources representing vendor-specific or organization-specific components that 
 
 **Namespace convention:** Custom types **MUST** use the `osiris.<namespace>.<type>` pattern, where:
 - `osiris.` prefix indicates an extension type
-- `<namespace>` identifies the vendor, organization or domain
+- `<namespace>` identifies the vendor, organization or domain using reverse-domain
 - `<type>` use `segments: [a-z0-9]` lowercase letters, digits and dots separator only (no hyphens, underscores or spaces)
 
 Examples of namespaced types:
@@ -1711,7 +1754,7 @@ Examples of namespaced types:
 - `osiris.azure.cosmosdb` (Azure Cosmos DB with multi-model API)
 - `osiris.vmware.vsan` (VMware vSAN - specific storage technology)
 - `osiris.cisco.aci` (Cisco ACI fabric - vendor-specific SDN)
-- `osiris.acme.widget` (organization-specific device type)
+- `osiris.com.acme.widget` (organization-specific device type)
 
 **Namespace selection:**
 There is no central namespace registry for OSIRIS v1.0. To reduce collision risk:
@@ -1795,7 +1838,7 @@ Consumers **MUST NOT**:
 
 Standard types **SHOULD NOT** be removed or have their semantics changed in minor updates. Deprecated types **SHOULD** remain documented and supported for at least one major version cycle.
 
-**Extension types** (`osiris.*`) are not governed by OSIRIS and may evolve independently. Producers using extension types **SHOULD** version their generator tools if type semantics change to help consumers track compatibility.
+**Extension types** under `extensions["osiris.*"]` are **not semantically governed** by OSIRIS and may evolve independently. Producers using vendor/organization extensions **SHOULD** version their generator tools if extension semantics change to help consumers track compatibility.
 
 
 ### 4.2.9 Type selection guidance
@@ -1818,7 +1861,7 @@ When producing OSIRIS documents, use this decision tree for type selection:
 - AWS Lambda function > `compute.function.serverless` (standard type from Chapter 7.1)
 - AWS Lambda@Edge > `osiris.aws.lambda.edge` (edge semantics differ from standard)
 - Cisco Nexus leaf switch > `network.switch.leaf` or `network.switch` with `properties.role = "leaf"`
-- Custom monitoring appliance > `osiris.acme.monitor` (organization-specific)
+- Custom monitoring appliance > `osiris.com.acme.monitor` (organization-specific)
 
 
 ### 4.2.10 Type field validation
@@ -1857,7 +1900,7 @@ The provider object **MUST** include:
   - Lowercase
   - Short and recognizable (vendor name or product name)
   - Consistent across exports from the same producer
-  - Use `segments: [a-z0-9]` lowercase letters, digits and dots separator only (no hyphens, underscores or spaces)
+  - Use `segments: ^[a-z0-9]+(\.[a-z0-9]+)*$` lowercase letters, digits and dots separator only (no hyphens, underscores or spaces)
 
 **Canonical provider names:**
 
@@ -1991,12 +2034,12 @@ Consumers **MUST** accept resources with `provider.name = "unknown"` or `provide
 ### 4.3.6 Provider vs metadata scope
 The `provider` object and `metadata.scope` serve distinct but complementary purposes:
 
-**`resource.provider`** (per-resource attribution):
+**`provider` (per-resource attribution):**
 - Identifies the source system for an individual resource
 - Enables correlation with native vendor identifiers
 - Supports mixed-vendor topologies where resources from different providers coexist
 
-**`metadata.scope`** (document-wide context):
+**`metadata.scope` (document-wide context):**
 - Describes what infrastructure the entire document represents
 - Lists which providers, regions, accounts or environments are included in the export
 - Documents the boundaries of the topology snapshot
@@ -2030,11 +2073,23 @@ Resource provider (per-resource):
     "account": "123456789012",
     "arn": "arn:aws:ec2:us-east-1:123456789012:instance/i-0abc123def4567890"
   },
-  "status": "active"
+  "state": "running"
 }
 ```
 
 The metadata establishes document scope. The provider provides specific attribution for each resource. Both are valuable and non-redundant.
+
+OSIRIS separates **resource provenance/correlation** (provider) from **vendor- or organization-specific semantics** (extensions).
+
+- provider is for **provenance and correlation**: information required to locate, reference, or correlate a resource in its originating system (e.g. native_id, account, region, zone, subscription, project, tenant, site).
+- extensions is for **vendor- or organization-specific semantics**: non-portable configuration flags, capabilities, implementation details and settings that are meaningful primarily within that vendor/platform or within an organization.
+
+**Rule of thumb:**
+- If it helps you **find/correlate** the resource in the source system, it belongs in provider.
+- If it describes a **vendor-only feature or configuration**, it belongs in extensions.
+
+> [!NOTE]
+> Vendor namespaces under extensions (e.g. extensions["osiris.aws"]) may be emitted by third-party producers when exporting resources sourced from that vendor/platform. The namespace indicates the resource origin and the meaning of the extension payload, not the identity of the exporter.
 
 
 ### 4.3.7 Provider object stability
@@ -2248,7 +2303,7 @@ The value associated with each `osiris.<namespace>` key **MUST** be a JSON objec
 {
   "extensions": {
     "osiris.aws": { "security.groups": ["sg-0abc123"] },
-    "osiris.acme": { "owner_team": "software-development" }
+    "osiris.com.acme": { "owner_team": "software-development" }
   }
 }
 ```
@@ -2293,7 +2348,7 @@ The value associated with each `osiris.<namespace>` key **MUST** be a JSON objec
       "module": "web_servers",
       "resource_address": "module.web_servers.aws_instance.main[0]"
     },
-    "osiris.acme": {
+    "osiris.com.acme": {
       "owner_team": "software-development",
       "cost_center": "informationtechnology",
       "compliance_tags": {
@@ -2326,12 +2381,12 @@ Use `properties` for attributes intrinsic to the resource (configuration, capaci
 Use `extensions` for contextual metadata specific to a vendor, tool or organization:
 - **Vendor extensions** (`osiris.aws`, `osiris.cisco`): Provider-native structures not in core OSIRIS model
 - **Tool extensions** (`osiris.terraform`, `osiris.ansible`): Automation/management tool metadata
-- **Organization extensions** (`osiris.acme`): Internal tracking, ownership, compliance data
+- **Organization extensions** (`osiris.com.acme"`): Internal tracking, ownership, compliance data
 
 **Example decision:**
 - `properties.instance_type` - intrinsic AWS attribute
 - `extensions.osiris.aws.iam_role` - AWS-specific IAM construct
-- `extensions.osiris.acme.owner_team` - organization-specific tracking
+- `extensions.osiris.com.acme.owner_team` - organization-specific tracking
 
 
 ### 4.4.7 Properties vs extensions
@@ -2445,7 +2500,7 @@ If a platform has richer label/annotation concepts (e.g. Kubernetes), producers 
         "peer_link": "Port-Channel1"
       }
     },
-    "osiris.acme": {
+    "osiris.com.acme": {
       "maintenance_window": "sunday-02:00-04:00",
       "owner_team": "network-infrastructure"
     }
@@ -2500,7 +2555,7 @@ If a platform has richer label/annotation concepts (e.g. Kubernetes), producers 
 ```json
 {
   "id": "custom::monitor-01",
-  "type": "osiris.acme.apm.monitor",
+  "type": "osiris.com.acme.apm.monitor",
   "name": "apm-monitor-mxp",
   "provider": {
     "name": "custom",
@@ -2514,7 +2569,7 @@ If a platform has richer label/annotation concepts (e.g. Kubernetes), producers 
     "targets": ["web-01", "web-02", "api-01"]
   },
   "extensions": {
-    "osiris.acme": {
+    "osiris.com.acme": {
       "owner_team": "sre-observability",
       "cost_center": "informationtechnology",
       "compliance_required": true
@@ -2546,7 +2601,7 @@ These fields enable:
 - **Visual differentiation** in diagrams or dashboards
 
 > [!NOTE]
-> `status` and `state` represent point-in-time observations at the moment of export. They are **NOT** intended for real-time monitoring, alerting or telemetry. For runtime observability, use dedicated monitoring systems (e.g. OpenTelemetry, Prometheus).
+> `status` and `state` represent point-in-time observations at the moment of export. They are **NOT** Intended for real-time monitoring, alerting or telemetry. For runtime observability, use dedicated monitoring systems (e.g. OpenTelemetry, Prometheus).
 
 
 ### 4.5.2 Status field
@@ -3239,7 +3294,7 @@ Connections use the same metadata pattern as resources:
 - `source_transceiver` (object; optional): transceiver/module installed on the source port
 - `target_transceiver` (object; optional): transceiver/module installed on the target port
 
-`source_transceiver` and `target_transceiver` are intended for pluggable modules (SFP/SFP+/SFP28/QSFP family, SFP-10G-T, etc.). For fixed copper ports (integrated BASE-T NIC ports), producers **SHOULD** omit `*_transceiver` and instead describe the port/NIC at the resource level (e.g. server NIC model in resource properties or `provider.model`). If producers still choose to represent fixed-port endpoints, they **MUST** not imply optical DOM availability.
+`source_transceiver` and `target_transceiver` are Intended for pluggable modules (SFP/SFP+/SFP28/QSFP family, SFP-10G-T, etc.). For fixed copper ports (integrated BASE-T NIC ports), producers **SHOULD** omit `*_transceiver` and instead describe the port/NIC at the resource level (e.g. server NIC model in resource properties or `provider.model`). If producers still choose to represent fixed-port endpoints, they **MUST** not imply optical DOM availability.
 
 Each `*_transceiver` object **SHOULD** include when known:
 - `vendor` (string)
@@ -4273,7 +4328,7 @@ Choose based on consumer needs: groups for inventory/presentation, connections f
 ```json
 {
   "id": "host-mxp-f1-r22-esxi-001",
-  "type": "compute.host",
+  "type": "compute.server",
   "name": "mxp-esxi-001",
   "provider": {
     "name": "vmware",
@@ -4829,7 +4884,7 @@ The taxonomy is **descriptive, not prescriptive**: OSIRIS does not mandate that 
 - **Selection guidance** for choosing appropriate types (section 7.7)
 
 This chapter does **not** define:
-- Connection types (see Chapter 8)
+- Connection types (see Chapter 5, section 5.2)
 - Group types (see Chapter 6, section 6.2)
 - Validation rules (see Chapter 9)
 
@@ -4953,8 +5008,7 @@ Criteria for inclusion include:
 - Avoidance of vendor-specific semantics
 - Alignment with existing taxonomy structure
 
-**Extension types:**
-Types in the `osiris.*` namespace are **not governed by OSIRIS** and may evolve independently. Producers using extension types **SHOULD** version their generator tools to help consumers track compatibility.
+**Extension types** under `extensions["osiris.*"]` are **not semantically governed** by OSIRIS and may evolve independently. Producers using vendor/organization extensions **SHOULD** version their generator tools if extension semantics change to help consumers track compatibility.
 
 ---
 
@@ -5022,19 +5076,19 @@ Use `application.database` for but not limited to:
 **Example (Self-hosted PostgreSQL):**
 ```json
 {
-  "id": "postgres-mxp-prod-01.internal.example.com",
+  "id": "postgres-mxp-prod-01.internal.acme.example",
   "type": "application.database",
   "name": "production-postgresql-primary",
   "provider": {
     "name": "postgresql",
     "type": "PostgreSQL",
-    "native_id": "postgres-mxp-prod-01.internal.example.com"
+    "native_id": "postgres-mxp-prod-01.internal.acme.example"
   },
   "properties": {
     "engine": "postgres",
     "engine_version": "15.4",
     "database_type": "relational",
-    "hostname": "postgres-mxp-prod-01.internal.example.com",
+    "hostname": "postgres-mxp-prod-01.internal.acme.example",
     "port": 5432,
     "size_gb": 2000,
     "replication_mode": "synchronous",
@@ -5223,9 +5277,9 @@ Use `application.cache` for but not limited to:
     "cluster_mode": true,
     "persistence": "aof",
     "nodes": [
-      "redis-mxp-01.internal.example.com:6379",
-      "redis-mxp-02.internal.example.com:6379",
-      "redis-mxp-03.internal.example.com:6379"
+      "redis-mxp-01.internal.acme.example:6379",
+      "redis-mxp-02.internal.acme.example:6379",
+      "redis-mxp-03.internal.acme.example:6379"
     ]
   },
   "location": {
@@ -5304,7 +5358,7 @@ Use `application.service` for but not limited to:
 | `service_type` | string | Service category | `"api"`, `"web"`, `"worker"` |
 | `language` | string | Programming language | `"python"`, `"java"` |
 | `framework` | string | Application framework | `"fastapi"`, `"spring-boot"` |
-| `endpoints` | array | Service endpoints | `["https://api.example.com"]` |
+| `endpoints` | array | Service endpoints | `["https://api.acme.example"]` |
 
 **Example:**
 ```json
@@ -5323,9 +5377,9 @@ Use `application.service` for but not limited to:
     "language": "python",
     "framework": "fastapi",
     "version": "2.5.1",
-    "endpoints": ["https://api.example.com/payments"],
+    "endpoints": ["https://api.acme.example/payments"],
     "replicas": 3,
-    "container_image": "registry.example.com/payment-api:2.5.1"
+    "container_image": "registry.acme.example/payment-api:2.5.1"
   },
   "status": "active"
 }
@@ -5377,7 +5431,7 @@ Use `compute.server` for:
 {
   "id": "dell::SERVICE_TAG_ABC123",
   "type": "compute.server",
-  "name": "esx-host-03.example.com",
+  "name": "esx-host-03.acme.example",
   "provider": {
     "name": "dell",
     "model": "PowerEdge R770",
@@ -7379,3 +7433,1201 @@ Some resources may map to multiple types depending on context:
 | AWS RDS Read Replica | Logical part of primary | Modeled via connections, not separate resource |
 
 Producers **SHOULD** choose the mapping that best represents the resource's primary function and document their decision for consumers.
+
+---
+
+# 8 Extension mechanism
+## Overview
+The OSIRIS extension mechanism enables producers to include vendor-specific, domain-specific or organization-specific data without fragmenting the core standard. Extensions preserve interoperability: consumers that do not recognize extension data can safely ignore it while still processing the core topology.
+
+**Extension philosophy:**
+- **Standard first:** Use standard fields and types whenever applicable
+- **Extend selectively:** Extensions **SHOULD** be the exception, not the default
+- **Preserve interoperability:** Unknown extensions must not break consumers
+- **Document extensions:** Producers **SHOULD** document extension semantics for consumers
+
+**Terminology:**
+- **Extension:** Any data beyond the core OSIRIS specification
+- **Namespace:** A prefix that identifies the source or domain of extension data (e.g. `osiris.aws`, `osiris.oci`, `osiris.com.acme`)
+- **Standard fields:** Fields defined in this specification (e.g. `id`, `type`, `provider`, `properties`)
+- **Custom fields:** Additional fields placed in the `extensions` object
+
+---
+
+## 8.1 Properties vs extensions
+OSIRIS provides two mechanisms for including additional data beyond required fields: the `properties` object and the `extensions` object. Understanding when to use each is critical for maintaining interoperability.
+
+### 8.1.1 Properties object
+The `properties` object contains resource-specific attributes that describe generic infrastructure characteristics. Properties are **not namespaced** and represent common concepts that apply across vendors and platforms.
+
+**Use properties for:**
+- Generic infrastructure attributes (CPU count, RAM size, disk capacity)
+- Network configuration (IP addresses, MAC addresses, VLANs)
+- Physical characteristics (rack position, power consumption, dimensions)
+- Common operational metadata (hostname, DNS name, serial number)
+
+**Properties example:**
+```json
+{
+  "id": "dell::MXP-SRV-001",
+  "type": "compute.server",
+  "provider": {
+    "name": "dell",
+    "type": "PowerEdge R770",
+    "native_id": "MXP-SRV-001"
+  },
+  "properties": {
+    "hostname": "mxp-srv-001.internal.acme.example",
+    "rack_unit_start": 10,
+    "rack_unit_height": 2,
+    "power_consumption_watts": 450,
+    "service_tag": "ABC1234",
+    "cpu": {
+      "model": "Intel Xeon Gold 6430",
+      "cores": 32,
+      "threads": 64,
+      "count": 2
+    },
+    "ram_gb": 512
+  }
+}
+```
+
+**Properties are generic:** The fields above (hostname, rack position, CPU specs) are universally applicable. Any consumer can understand "rack_unit_start" regardless of whether the server is Dell, HPE, or Supermicro.
+
+
+### 8.1.2 Extensions object
+The `extensions` object contains **namespaced** vendor-specific, platform-specific or organization-specific data that extends beyond core OSIRIS semantics. Each top-level key in extensions **MUST** be a namespace string starting with `osiris.` and the value **MUST** be a JSON object.
+
+**Use extensions for:**
+- Vendor-specific features (AWS detailed monitoring, VMware Fault tolerance)
+- Platform-specific identifiers (Azure subscription IDs, GCP project IDs)
+- Proprietary configuration (vendor-specific management interfaces)
+- Organization-specific metadata (cost centers, compliance tags, custom workflows)
+
+**Extensions example:**
+```json
+{
+  "id": "aws::i-0abc123def4567890",
+  "type": "compute.vm",
+  "provider": {
+    "name": "aws",
+    "type": "AWS::EC2::Instance",
+    "native_id": "i-0abc123def4567890",
+    "region": "us-east-1"
+  },
+  "properties": {
+    "vcpus": 2,
+    "memory_gb": 4,
+    "ip_addresses": {
+      "private_ip": ["10.0.1.10"]
+    }
+  },
+  "extensions": {
+    "osiris.aws": {
+      "detailed_monitoring": true,
+      "ebs_optimized": false,
+      "placement": {
+        "availability_zone": "us-east-1a",
+        "tenancy": "default"
+      },
+      "iam_instance_profile": "arn:aws:iam::123456789012:instance-profile/web-server"
+    },
+    "osiris.custom.billing": {
+      "cost_center": "engineering",
+      "project_code": "web-platform-2024",
+      "budget_owner": "alice@acme.example"
+    }
+  }
+}
+```
+
+**Extensions are namespaced:** The `osiris.aws` prefix clearly identifies AWS-specific data, while `osiris.custom.billing` identifies organization-specific billing metadata.
+
+
+### 8.1.3 Decision framework
+When adding data to a resource, follow this decision tree:
+
+```text
+Is this data universally applicable across vendors?
++--YES > Use properties
++--NO  > Is this vendor/platform-specific?
+    +--YES > Use extensions.osiris.<vendor>
+    +--NO  > Is this organization-specific?
+        +--YES > Use extensions.osiris.com.<org>.<domain>
+```
+
+**Examples:**
+| Data | Location | Rationale |
+|------|----------|-----------|
+| CPU count | `properties.cpu.count` | Universal concept |
+| RAM size | `properties.ram_gb` | Universal concept |
+| AWS detailed monitoring | `extensions["osiris.aws"].detailed_monitoring` | AWS-specific feature |
+| VMware Fault Tolerance | `extensions.osiris.vmware.fault_tolerance` | VMware-specific feature |
+| Cost center | `extensions.osiris.com.acme.billing.cost_center` | Organization-specific |
+| IP address | `properties.ip_addresses` | Universal concept |
+| Azure subscription ID | `provider.subscription_id` | Provider metadata (not extension) |
+
+
+### 8.1.4 Extension field structure
+Extension objects **MUST** be nested under the `osiris.<namespace>` key. Producers **MUST NOT** place extension data directly under `extensions` without a namespace prefix.
+
+**Correct:**
+```json
+"extensions": {
+  "osiris.aws": {
+    "detailed_monitoring": true
+  }
+}
+```
+
+**Incorrect:**
+```json
+"extensions": {
+  "detailed_monitoring": true
+}
+```
+
+**Rationale:** Namespacing prevents collision between extensions from different sources and enables consumers to selectively process extensions they understand.
+
+
+### 8.1.4.1 Extension object key style
+Extension objects **SHOULD** follow these key naming conventions:
+
+**Recommended practices:**
+- **Use snake_case for keys:** `detailed_monitoring`, `cost_center`, `project_code`
+- **Prefer nested objects over dotted keys:** Safer for document databases (MongoDB, etc.)
+- **Use consistent naming within a namespace:** Maintain style across all extensions in the same namespace
+
+**GOOD example: Recommended style**
+```json
+"extensions": {
+  "osiris.aws": {
+    "detailed_monitoring": true,      
+    "placement": {                     
+      "availability_zone": "us-east-1a",
+      "partition_number": null
+    },
+    "iam_instance_profile": {         
+      "arn": "arn:aws:iam::123456789012:instance-profile/web",
+      "id": "AIPAI23HZ27SI6FQMGNQ2"
+    }
+  }
+}
+```
+
+**BAD example: Discouraged dotted keys**
+```json
+"extensions": {
+  "osiris.aws": {
+    "placement.availability_zone": "us-east-1a",
+    "placement.partition_number": null
+  }
+}
+```
+
+**Rationale:** Dotted keys can cause issues with document databases that interpret dots as nesting operators. Using actual nested objects is safer and more widely compatible.
+
+**Exception: Vendor-native shapes**
+When exporting lossless representations of vendor APIs, producers **MAY** preserve the vendor's native key style (camelCase, PascalCase, etc.) if explicitly documented:
+
+```json
+"extensions": {
+  "osiris.aws.raw": {
+    "DetailedMonitoring": true,
+    "EbsOptimized": false
+  }
+}
+```
+
+If using vendor-native shapes, producers **SHOULD**:
+- Use a sub-namespace (e.g. `osiris.aws.raw`) to signal non-standard casing
+- Document the preserved format
+- Consider providing both normalized and raw representations
+
+
+### 8.1.5 Multiple extension namespaces
+A single resource **MAY** contain extensions from multiple namespaces. Each namespace is independent.
+
+**Example:**
+```json
+{
+  "id": "vmware::vm-web-001",
+  "type": "compute.vm",
+  "extensions": {
+    "osiris.vmware": {
+      "fault_tolerance": false,
+      "tools_version": "12.0.0",
+      "vmx_version": "19"
+    },
+    "osiris.com.acme.monitoring": {
+      "alert_policy": "critical",
+      "on_call_team": "operations"
+    },
+    "osiris.com.acme.compliance": {
+      "pci_scope": true,
+      "data_classification": "restricted"
+    }
+  }
+}
+```
+
+Each namespace is processed independently. A consumer that understands `osiris.vmware` can use that data while safely ignoring `osiris.com.acme.monitoring` and `osiris.com.acme.compliance`.
+
+> [!NOTE]
+> This example uses organization-specific namespaces (`osiris.com.acme.*`) for production extensions. For short-lived experiments, producers **MAY** use `osiris.custom.*`, but should migrate to organization-specific namespaces when extensions stabilize.
+
+
+### 8.1.6 Provider-specific metadata vs extensions
+The `provider` object contains metadata about the resource's origin (provider name, native ID, region, account). The `extensions` object contains additional vendor-specific **properties or features** of the resource itself.
+
+**Provider object (origin metadata):**
+```json
+"provider": {
+  "name": "aws",
+  "type": "AWS::EC2::Instance",
+  "native_id": "i-0abc123",
+  "region": "us-east-1",
+  "account": "123456789012"
+}
+```
+
+**Extensions object (vendor-specific features):**
+```json
+"extensions": {
+  "osiris.aws": {
+    "detailed_monitoring": true,
+    "ebs_optimized": false
+  }
+}
+```
+
+
+**Rule of thumb:** If the data answers "where is this resource?" or "what is the provider's identifier?", it belongs in `provider`. If the data answers "what vendor-specific features does this resource have?", it belongs in `extensions`.
+
+
+### 8.1.7 Forward compatibility
+Consumers **MUST** accept resources with unknown extension namespaces. Consumers **MAY** ignore extension data they do not recognize.
+
+Producers **SHOULD** ensure that core topology (resources, connections, groups) is understandable even if consumers ignore all extension data.
+
+**Example:** A consumer that does not understand `osiris.aws` extensions can still process the resource:
+
+```json
+{
+  "id": "aws::i-0abc123",
+  "type": "compute.vm",
+  "provider": { "name": "aws", "native_id": "i-0abc123" },
+  "properties": { "vcpus": 2, "memory_gb": 4 },
+  "extensions": {
+    "osiris.aws": { "detailed_monitoring": true }
+  }
+}
+```
+
+The consumer can identify the resource (`aws::i-0abc123`), its type (`compute.vm`), and its basic properties (`vcpus`, `memory_gb`) without understanding AWS-specific extensions.
+
+---
+
+## 8.2 Vendor-specific extensions
+Vendor-specific extensions are additional resource attributes that are meaningful only within a specific vendor's ecosystem. These attributes belong in the `extensions` object under the vendor's namespace.
+
+
+### 8.2.1 Vendor namespace structure
+Vendor namespaces follow the pattern `osiris.<vendor>`, where `<vendor>` is a canonical lowercase identifier for the platform or vendor.
+
+A vendor namespace key in `extensions` **MUST** map to a JSON object.
+
+**Well-known vendor namespaces examples (non-exhaustive):**
+
+| Vendor | Namespace | Example Usage |
+|--------|-----------|---------------|
+| AWS | `osiris.aws` | `"extensions": { "osiris.aws": { "detailed_monitoring": true } }` |
+| Azure | `osiris.azure` | `"extensions": { "osiris.azure": { "managed_disk_type": "Premium_LRS" } }` |
+| GCP | `osiris.gcp` | `"extensions": { "osiris.gcp": { "preemptible": true } }` |
+| VMware | `osiris.vmware` | `"extensions": { "osiris.vmware": { "fault_tolerance": false } }` |
+| Proxmox | `osiris.proxmox` | `"extensions": { "osiris.proxmox": { "qemu_agent": true } }` |
+| Arista | `osiris.arista` | `"extensions": { "osiris.arista": { "mlag_enabled": false } }` |
+| Cisco | `osiris.cisco` | `"extensions": { "osiris.cisco": { "trustsec_enabled": true } }` |
+| Dell | `osiris.dell` | `"extensions": { "osiris.dell": { "idrac_version": "5.10" } }` |
+
+Producers **SHOULD** use consistent canonical identifiers for well-known vendors. Organization-specific namespaces **SHOULD** use domain-scoped namespaces (see section 8.4.3).
+
+
+### 8.2.2 AWS specific extensions
+AWS resources often have features specific to the AWS ecosystem. These belong under `osiris.aws`.
+
+**Example: EC2 instance with AWS-specific properties**
+```json
+{
+  "id": "aws::i-0abc123def4567890",
+  "type": "compute.vm",
+  "name": "web-server-prod-01",
+  "provider": {
+    "name": "aws",
+    "type": "AWS::EC2::Instance",
+    "native_id": "i-0abc123def4567890",
+    "region": "us-east-1",
+    "account": "123456789012"
+  },
+  "properties": {
+    "vcpus": 2,
+    "memory_gb": 4,
+    "instance_type": "t3.medium"
+  },
+  "extensions": {
+    "osiris.aws": {
+      "detailed_monitoring": true,
+      "ebs_optimized": false,
+      "ena_support": true,
+      "hypervisor": "xen",
+      "placement": {
+        "availability_zone": "us-east-1a",
+        "tenancy": "default",
+        "partition_number": null
+      },
+      "iam_instance_profile": {
+        "arn": "arn:aws:iam::123456789012:instance-profile/web-server",
+        "id": "AIPAI23HZ27SI6FQMGNQ2"
+      }
+    }
+  }
+}
+```
+
+
+### 8.2.3 Azure specific extensions
+Azure resources may include platform-specific metadata under `osiris.azure`.
+
+**Example: Azure VM with platform-specific properties**
+```json
+{
+  "id": "azure::/subscriptions/sub-123/resourceGroups/rg-prod/providers/Microsoft.Compute/virtualMachines/web-vm-01",
+  "type": "compute.vm",
+  "name": "web-vm-01",
+  "provider": {
+    "name": "azure",
+    "type": "Microsoft.Compute/virtualMachines",
+    "native_id": "/subscriptions/sub-123/resourceGroups/rg-prod/providers/Microsoft.Compute/virtualMachines/web-vm-01",
+    "region": "eastus",
+    "subscription_id": "sub-123",
+    "resource_group": "rg-prod"
+  },
+  "properties": {
+    "vm_size": "Standard_D2s_v3",
+    "vcpus": 2,
+    "memory_gb": 8
+  },
+  "extensions": {
+    "osiris.azure": {
+      "priority": "Regular",
+      "eviction_policy": null,
+      "license_type": "Windows_Server",
+      "zones": ["1"],
+      "managed_disk_type": "Premium_LRS"
+    }
+  }
+}
+```
+
+
+### 8.2.4 GCP specific extensions
+GCP resources often expose Google-specific features such as preemptibility/spot behavior, Shielded VM settings, service accounts and metadata flags. These belong under `osiris.gcp`.
+
+**Example: GCE instance with GCP-specific properties**
+```json
+{
+  "id": "gcp::projects/acme-prod/zones/us-central1-a/instances/web-01",
+  "type": "compute.vm",
+  "name": "web-01",
+  "provider": {
+    "name": "gcp",
+    "type": "compute#instance",
+    "native_id": "projects/acme-prod/zones/us-central1-a/instances/web-01",
+    "region": "us-central1",
+    "account": "acme-prod"
+  },
+  "properties": {
+    "vcpus": 2,
+    "memory_gb": 8,
+    "machine_type": "e2-standard-2"
+  },
+  "extensions": {
+    "osiris.gcp": {
+      "zone": "us-central1-a",
+      "preemptible": false,
+      "spot": true,
+      "termination_action": "STOP",
+      "shielded_vm": {
+        "secure_boot": true,
+        "vtpm": true,
+        "integrity_monitoring": true
+      },
+      "service_accounts": [
+        {
+          "email": "web-01@acme-prod.iam.gserviceaccount.com",
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform"
+          ]
+        }
+      ],
+      "scheduling": {
+        "automatic_restart": false,
+        "on_host_maintenance": "TERMINATE"
+      },
+      "labels": {
+        "env": "prod",
+        "app": "web"
+      }
+    }
+  }
+}
+```
+
+
+### 8.2.5 VMware specific extensions
+VMware environments have specific features like Fault Tolerance, vMotion, and DRS.
+
+**Example: VMware VM with ESXi-specific properties**
+```json
+{
+  "id": "vmware::vm-web-001",
+  "type": "compute.vm",
+  "name": "web-001",
+  "provider": {
+    "name": "vmware",
+    "native_id": "vm-web-001",
+    "region": "mxp-datacenter"
+  },
+  "properties": {
+    "vcpus": 4,
+    "memory_gb": 16,
+    "guest_os": "ubuntu64Guest"
+  },
+  "extensions": {
+    "osiris.vmware": {
+      "tools_status": "toolsOk",
+      "tools_version": "12.0.0",
+      "fault_tolerance": false,
+      "vmx_version": "19",
+      "drs_behavior": "fullyAutomated",
+      "cpu_hot_add_enabled": false,
+      "memory_hot_add_enabled": false
+    }
+  }
+}
+```
+
+
+### 8.2.6 Proxmox specific extensions
+Proxmox environments have platform-specific capabilities and metadata such as VMID, node placement, HA state, QEMU machine type and storage backend details.
+
+**Example: Proxmox VM with Proxmox-specific properties**
+```json
+{
+  "id": "proxmox::vm-web-001",
+  "type": "compute.vm",
+  "name": "web-001",
+  "provider": {
+    "name": "proxmox",
+    "native_id": "101",
+    "region": "mxp-datacenter"
+  },
+  "properties": {
+    "vcpus": 4,
+    "memory_gb": 16,
+    "guest_os": "ubuntu"
+  },
+  "extensions": {
+    "osiris.proxmox": {
+      "vmid": 101,
+      "node": "pve-01",
+      "ha_enabled": true,
+      "ha_state": "started",
+      "qemu_machine": "pc-q35-8.1",
+      "bios": "ovmf",
+      "tags": ["prod", "web"],
+      "storage": {
+        "backend": "ceph",
+        "pool": "rbd",
+        "volumes": [
+          {
+            "id": "vm-101-disk-0",
+            "size_gb": 60,
+            "type": "scsi"
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+
+### 8.2.7 On-premise vendor extensions
+Physical infrastructure from vendors like Dell, Arista, or Cisco may include hardware-specific extensions.
+
+**Example: Dell server with iDRAC management extensions**
+```json
+{
+  "id": "dell::MXP-SRV-R01-001",
+  "type": "compute.server",
+  "name": "MXP-SRV-R01-001",
+  "provider": {
+    "name": "dell",
+    "type": "PowerEdge R770",
+    "native_id": "MXP-SRV-R01-001"
+  },
+  "properties": {
+    "service_tag": "ABC1234",
+    "rack_unit_start": 10,
+    "cpu": {
+      "model": "Intel Xeon Gold 6430",
+      "cores": 32,
+      "count": 2
+    },
+    "ram_gb": 512
+  },
+  "extensions": {
+    "osiris.dell": {
+      "idrac_version": "5.10.00.00",
+      "idrac_ip": "10.0.100.10",
+      "lifecycle_controller_version": "4.10.10.10",
+      "bios_version": "2.15.0",
+      "system_id": 2137
+    }
+  }
+}
+```
+
+**Example: Arista switch with EOS-specific extensions**
+```json
+{
+  "id": "arista::MXP-LEAF-01",
+  "type": "network.switch",
+  "name": "MXP-LEAF-01",
+  "provider": {
+    "name": "arista",
+    "type": "DCS-7050X3-48YC12",
+    "native_id": "MXP-LEAF-01"
+  },
+  "properties": {
+    "management_ip": "10.0.10.11",
+    "site": "mxp-datacenter",
+    "rack": "R05",
+    "rack_unit_start": 22,
+    "interfaces": [
+      { "name": "Ethernet1", "type": "physical", "speed": "100G", "admin_status": "up", "oper_status": "up" },
+      { "name": "Ethernet2", "type": "physical", "speed": "100G", "admin_status": "up", "oper_status": "up" },
+      { "name": "Ethernet49", "type": "physical", "speed": "25G", "admin_status": "up", "oper_status": "down" }
+    ]
+  },
+  "extensions": {
+    "osiris.arista": {
+      "eos_version": "4.30.2F",
+      "system_mac": "00:1c:73:aa:bb:cc",
+      "serial_number": "JPE12345678",
+      "mlag": {
+        "enabled": true,
+        "domain_id": "MLAG01",
+        "peer_link": "Port-Channel1000",
+        "peer_address": "192.0.2.2",
+        "state": "active"
+      },
+      "vxlan": {
+        "enabled": true,
+        "vtep_ip": "10.0.255.11"
+      },
+      "hardware": {
+        "supervisor": "fixed",
+        "transceivers_present": 28
+      }
+    }
+  }
+}
+```
+
+
+### 8.2.8 Extension data types
+Extension values **MAY** be any valid JSON type: strings, numbers, booleans, objects, arrays, or null. Producers **SHOULD** use appropriate JSON types that reflect the data semantics.
+
+**Type examples:**
+```json
+"extensions": {
+  "osiris.aws": {
+    "detailed_monitoring": true,
+    "placement_group": null,
+    "cpu_credits": "unlimited",
+    "network_performance": "Up to 5 Gigabit",
+    "hibernation_configured": false,
+    "metadata_options": {
+      "http_tokens": "optional",
+      "http_put_response_hop_limit": 1
+    },
+    "block_device_mappings": [
+      {
+        "device_name": "/dev/sda1",
+        "ebs": {
+          "volume_id": "vol-0abc123",
+          "delete_on_termination": true
+        }
+      }
+    ]
+  }
+}
+```
+
+
+### 8.2.9 Extension stability
+Extension schemas **MAY** evolve independently of the core OSIRIS specification. Producers **SHOULD** maintain backward compatibility within an extension namespace when possible.
+
+If breaking changes to an extension schema are unavoidable, producers **MAY** version the extension namespace:
+
+```json
+"extensions": {
+  "osiris.aws.v1": { ... },
+  "osiris.aws.v2": { ... }
+}
+```
+
+Consumers **SHOULD** prefer the highest version they understand and gracefully handle unknown versions.
+
+---
+
+## 8.3 Custom resource types
+Custom resource types enable producers to represent vendor-specific or organization-specific infrastructure that does not map cleanly to standard types defined in Chapter 7. Custom types use the `osiris.<namespace>` prefix to distinguish them from standard types.
+
+
+### 8.3.1 When to create custom types
+Producers **SHOULD** use standard resource types (Chapter 7) whenever possible. Custom types are appropriate when:
+
+1. **No standard type exists** and the resource semantics are vendor-specific
+2. **Standard type exists but semantics differ significantly**
+3. **Vendor-specific features are essential** to understanding the resource
+4. **Organization-specific infrastructure** requires custom representation
+
+**Decision tree:**
+
+```text
+Does a standard type capture the resource's primary function?
++-- YES > Use the standard type
++-- NO  > Does a vendor-specific type exist for this resource?
+    +-- YES > Use the vendor type (osiris.<vendor>.*)
+    +-- NO  > Does this resource represent organization-specific infrastructure?
+        +-- YES > Create custom type (osiris.com.<org>.*)
+```
+
+
+### 8.3.2 Custom type naming
+Custom resource types **MUST** use the `osiris.<namespace>` prefix followed by dot-separated segments describing the resource type. Type identifiers **MUST** follow the same format rules as standard types (see Chapter 4, section 4.2.3):
+
+- **MUST** be in lowercase letters and digits only
+- **MUST** have dot (`.`) as the only separator
+- **MUST** have no underscores, hyphens, or spaces
+- **MUST** have no leading, trailing, or consecutive dots
+
+**GOOD valid custom types:**
+```text
+osiris.aws.lambda.edge
+osiris.azure.cosmosdb
+osiris.vmware.vsan
+osiris.cisco.aci.fabric
+osiris.com.acme.widget.v2
+```
+
+**BAD invalid custom types:**
+```text
+osiris.aws.vpc_peering
+osiris.azure.cosmos-db
+osiris.Acme.Widget
+.osiris.aws.lambda
+osiris.aws..lambda
+```
+
+
+### 8.3.3 Vendor-specific types
+Vendor-specific types use the pattern `osiris.<vendor>.*` where `<vendor>` is a well-known identifier.
+
+**Example: AWS Lambda@Edge (distinct from standard serverless)**
+```json
+{
+  "id": "aws::edge-func-auth",
+  "type": "osiris.aws.lambda.edge",
+  "name": "cloudfront-auth",
+  "provider": {
+    "name": "aws",
+    "type": "AWS::Lambda::Function",
+    "native_id": "edge-func-auth",
+    "region": "us-east-1"
+  },
+  "properties": {
+    "runtime": "python3.11",
+    "memory_mb": 128
+  },
+  "extensions": {
+    "osiris.aws": {
+      "edge_region": "us-east-1",
+      "cloudfront_distribution": "E1234567890ABC"
+    }
+  }
+}
+```
+
+**Rationale:** Lambda@Edge executes at CloudFront edge locations with different semantics than standard Lambda functions. The custom type `osiris.aws.lambda.edge` explicitly signals these distinct semantics.
+
+**Alternative approach:** If edge execution is a deployment detail rather than a fundamental semantic difference, producers **MAY** use the standard type `compute.function.serverless` and place edge-specific metadata in extensions:
+
+```json
+{
+  "id": "aws::edge-func-auth",
+  "type": "compute.function.serverless",
+  "extensions": {
+    "osiris.aws": {
+      "execution_environment": "edge",
+      "edge_region": "us-east-1"
+    }
+  }
+}
+```
+
+Producers **SHOULD** document their type selection rationale.
+
+
+### 8.3.4 Organization-specific types
+Organizations **MAY** define custom types for proprietary or organization-specific infrastructure using reverse domain notation: `osiris.com.<organization>.*`.
+
+**Example: Organization-specific monitoring appliance**
+```json
+{
+  "id": "custom::monitoring-appliance-01",
+  "type": "osiris.com.acme.monitoring.appliance",
+  "name": "monitoring-appliance-01",
+  "provider": {
+    "name": "acme",
+    "type": "Acme Monitoring Appliance v3",
+    "native_id": "monitoring-appliance-01"
+  },
+  "properties": {
+    "rack_unit_start": 5,
+    "power_consumption_watts": 200
+  },
+  "extensions": {
+    "osiris.com.acme": {
+      "firmware_version": "3.2.1",
+      "collector_count": 4,
+      "retention_days": 90
+    }
+  }
+}
+```
+
+**Reverse domain notation:**
+| Organization | Domain | Custom Type Namespace |
+|-------------|--------|----------------------|
+| Acme Corp | acme.com | `osiris.com.acme.*` |
+| Example Org | example.org | `osiris.org.example.*` |
+| Research Institute | research.edu | `osiris.edu.research.*` |
+
+
+### 8.3.5 Custom type documentation
+Producers that use custom types **SHOULD** document:
+- Type semantics and purpose
+- When to use the custom type vs standard types
+- Properties and extensions specific to the type
+- Example usage
+
+**Documentation example:**
+
+```text
+Type: osiris.com.acme.widget
+
+Purpose: Represents Acme Corp's proprietary network widget appliance
+
+Use this type when:
+- The resource is an Acme Widget hardware appliance
+- The appliance provides both routing and deep packet inspection
+
+Standard type alternative:
+- Use network.router if only routing functionality is relevant
+- Use security.firewall if only DPI functionality is relevant
+
+Required properties:
+- firmware_version (string): Widget firmware version
+- widget_mode (string): "router" | "firewall" | "hybrid"
+
+Extensions (osiris.com.acme):
+- license_key (string): Widget license key
+- management_vlan (integer): Management VLAN ID
+```
+
+
+### 8.3.6 Consumer handling of custom types
+Consumers **MUST** accept resources with unrecognized custom types. Consumers **MAY** treat unrecognized types as generic resources based on the namespace:
+
+- `osiris.aws.*` > Assume AWS-specific resource
+- `osiris.azure.*` > Assume Azure-specific resource
+- `osiris.com.<org>.*` > Assume organization-specific resource
+
+Consumers **SHOULD** preserve custom type information when re-exporting or transforming topology data.
+
+
+### 8.3.7 Type stability and evolution
+Custom types **MAY** evolve over time. Producers **SHOULD** maintain semantic stability within a custom type when possible.
+
+If a custom type's semantics change significantly, producers **MAY**:
+1. Create a new type with a version suffix (e.g. `osiris.aws.lambda.edge.v2`)
+2. Deprecate the old type with a documented migration path
+3. Support both types during a transition period
+
+---
+
+## 8.4 Namespacing
+Namespace management prevents collision between extensions from different sources and enables safe evolution of the OSIRIS ecosystem.
+
+
+### 8.4.1 Namespace format
+Extension namespaces **MUST** follow the pattern `osiris.<identifier>` where `<identifier>` is a dot-separated lowercase string.
+
+**Namespace format rules:**
+- **MUST** start with `osiris.` prefix
+- **MUST**  use lowercase letters, digits and dots only
+- **MUST** have no underscores, hyphens, or spaces
+- **MUST** have no consecutive dots
+- **MUST** have minimum two segments (e.g. `osiris.aws`, not just `osiris`)
+
+**GOOD examples of valid namespaces:**
+```
+osiris.aws
+osiris.azure.devtest
+osiris.com.acme
+osiris.custom.billing
+```
+
+**BAD examples of invalid namespaces:**
+```
+aws
+osiris.AWS
+osiris.acme_corp
+osiris.
+osiris_
+```
+
+
+### 8.4.2 Registered well-known namespaces
+The `osiris.*` namespace is reserved for OSIRIS-defined and OSIRIS-governed namespaces.
+
+The following vendor namespaces are **registered** as well-known prefixes to encourage consistent producer behavior for infrastructure management systems (hyperscalers, cloud providers, virtualization, networking, compute, storage, OT/industrial platforms).
+
+#### Hyperscalers and Cloud providers
+| Namespace | Intended for | Status |
+|-----------|--------------|--------|
+| `osiris.aws` | Amazon Web Services | Registered |
+| `osiris.azure` | Microsoft Azure | Registered |
+| `osiris.gcp` | Google Cloud Platform | Registered |
+| `osiris.oci` | Oracle Cloud Infrastructure | Registered |
+| `osiris.ibm` | IBM Cloud | Registered |
+| `osiris.ali` | Alibaba Cloud | Registered |
+| `osiris.tc` | Tencent Cloud | Registered |
+| `osiris.openstack` | OpenStack | Registered |
+| `osiris.cloudflare` | Cloudflare | Registered |
+| `osiris.digitalocean` | DigitalOcean | Registered |
+| `osiris.leaseweb` | Leaseweb | Registered |
+| `osiris.ovh` | OVH | Registered |
+
+#### Virtualization & HCI
+| Namespace | Intended for | Status |
+|-----------|--------------|--------|
+| `osiris.vmware` | VMware vSphere / ESXi | Registered |
+| `osiris.proxmox` | Proxmox VE | Registered |
+| `osiris.nutanix` | Nutanix | Registered |
+
+#### Networking & security
+| Namespace | Intended for | Status |
+|-----------|--------------|--------|
+| `osiris.arista` | Arista Networks | Registered |
+| `osiris.ciena` | Ciena | Registered |
+| `osiris.cisco` | Cisco | Registered |
+| `osiris.edgecore` | Edgecore Networks | Registered |
+| `osiris.nokia` | Nokia (networking) | Registered |
+| `osiris.juniper` | Juniper Networks | Registered |
+| `osiris.hpearuba` | HPE Aruba | Registered |
+| `osiris.paloalto` | Palo Alto Networks | Registered |
+| `osiris.fortinet` | Fortinet | Registered |
+| `osiris.checkpoint` | Check Point | Registered |
+| `osiris.f5` | F5 Networks | Registered |
+
+#### Compute & storage vendors
+| Namespace | Intended for | Status |
+|-----------|--------------|--------|
+| `osiris.dell` | Dell Technologies | Registered |
+| `osiris.hpe` | Hewlett Packard Enterprise | Registered |
+| `osiris.lenovo` | Lenovo | Registered |
+| `osiris.supermicro` | Supermicro | Registered |
+| `osiris.netapp` | NetApp | Registered |
+| `osiris.purestorage` | Pure Storage | Registered |
+| `osiris.hitachi` | Hitachi Vantara | Registered |
+
+#### Enterprise platforms & ITSM/CMDB
+| Namespace | Intended for | Status |
+|-----------|--------------|--------|
+| `osiris.sap` | SAP (landscape/platform management) | Registered |
+| `osiris.servicenow` | ServiceNow CMDB / ITSM | Registered |
+| `osiris.bmc` | BMC (CMDB/ITSM) | Registered |
+
+#### OT & Industrial ecosystems
+| Namespace | Intended for | Status |
+|-----------|--------------|--------|
+| `osiris.siemens` | Siemens OT / Industrial systems | Registered |
+| `osiris.schneider` | Schneider Electric OT / Industrial systems | Registered |
+| `osiris.rockwell` | Rockwell Automation OT / Industrial systems | Registered |
+| `osiris.abb` | ABB OT / Industrial systems | Registered |
+| `osiris.emerson` | Emerson OT / Industrial systems | Registered |
+| `osiris.honeywell` | Honeywell OT / Industrial systems | Registered |
+| `osiris.hid` | HID OT / Industrial systems | Registered |
+| `osiris.fanuc` | Fanuc OT / Industrial systems | Registered |
+| `osiris.omron` | Omron OT / Industrial systems | Registered |
+| `osiris.yaskawa` | Yaskawa OT / Industrial systems | Registered |
+| `osiris.mitsubishi` | Mitsubishi Electric OT / Industrial systems | Registered |
+| `osiris.yokogawa` | Yokogawa OT / Industrial systems | Registered |
+| `osiris.ge` | GE Digital / industrial ecosystems | Registered |
+
+
+#### Governance scope (namespaces vs semantics)
+OSIRIS governs the **namespace rules** and (when applicable) the **registry policy** for well-known namespace prefixes under `extensions` (e.g. collision avoidance, canonical vendor identifiers).
+
+OSIRIS does **not** govern the **internal semantics** of vendor/organization extensions (i.e. the fields inside `extensions["osiris.<vendor>"]`) and does **not** govern provider-defined enumerations such as `state`. Consumers **MUST** treat such values as opaque.
+
+
+> [!NOTE]
+> - These namespaces are intended to standardize vendor-specific extension placement for commonly used infrastructure management systems.
+> - Third-party producers/exporters **MAY** emit these namespaces when exporting resources sourced from the corresponding vendor/platform (e.g. a discovery tool exporting AWS resources may emit `extensions.osiris.aws`).
+> - Not all canonical `provider.name` values require a registered vendor namespace. Technologies and software components (e.g. databases, middleware, application frameworks) can be valid `provider.name` values without requiring a well-known `osiris.<vendor>` extension namespace.
+
+**Rationale:** This list focuses on systems that **manage** infrastructure resources (hyperscalers and cloud platforms, virtualization stacks, networking/security, compute/storage vendors, and OT/industrial ecosystems). Keeping the registry constrained avoids turning the specification into a general catalog of all technologies, while still enabling consistent, interoperable vendor extension usage.
+
+
+### 8.4.3 Organization namespaces
+Organizations creating proprietary extensions **SHOULD** use a domain-scoped namespace to avoid collisions:
+
+- `osiris.com.<organization>`
+- `osiris.org.<organization>`
+- `osiris.net.<organization>`
+- `osiris.edu.<institution>`
+
+**Examples:**
+
+| Organization | Domain | Recommended namespace |
+|-------------|--------|----------------------|
+| Acme Corporation | acme.com | `osiris.com.acme` |
+| Example University | example.edu | `osiris.edu.example` |
+| Research Institute | research.org | `osiris.org.research` |
+
+Domain-scoped namespaces are collision-resistant because they are derived from an internet domain controlled by the organization.
+
+
+### 8.4.4 Custom namespaces
+For short-lived experiments or early community drafts, producers **MAY** use the `osiris.custom.*` namespace.
+
+**Important:** The `osiris.custom.*` namespace is **not collision-resistant**. Multiple organizations using `osiris.custom.billing` will conflict. For any extension intended to persist or be used in production, producers **SHOULD** use reverse domain notation (e.g. `osiris.com.<org>.*`).
+
+**Recommended usage:**
+- **Experiments/prototypes:** `osiris.custom.*` (temporary)
+- **Production/persistent:** `osiris.com.<org>.*` (collision-resistant)
+
+**Example: Experimental extension (temporary)**
+```json
+"extensions": {
+  "osiris.custom.draft.monitoring": {
+    "experimental_metric": true,
+    "note": "RFC draft for community review"
+  }
+}
+```
+
+**Example: Production extension (recommended)**
+```json
+"extensions": {
+  "osiris.com.acme.monitoring": {
+    "alert_policy": "critical",
+    "on_call_team": "platform-ops"
+  }
+}
+```
+
+The `osiris.custom` namespace is appropriate for:
+- Proof-of-concept extensions
+- Community RFC drafts before standardization
+- Short-lived experimental features
+
+Producers **SHOULD** migrate from `osiris.custom.*` to organization-specific namespaces when extensions are production-ready.
+
+
+### 8.4.5 Namespace registration
+For OSIRIS v1.0, namespace registration is **informal** and community-driven. Organizations are encouraged to:
+1. Document their namespace usage publicly (e.g. in a GitHub repository)
+2. Publish extension schemas for consumer reference
+3. Coordinate with the OSIRIS community to avoid collisions
+
+Future versions of OSIRIS **MAY** introduce a formal namespace registry.
+
+
+### 8.4.6 Namespace collision avoidance
+Namespace collisions occur when multiple parties use the same namespace with different semantics. To avoid collisions:
+
+**Producers SHOULD:**
+- Use vendor namespaces (`osiris.aws`) only for the corresponding vendor
+- Use reverse domain notation for organization namespaces
+- Document namespace usage publicly
+- Avoid reusing existing namespace patterns with different semantics
+
+**Consumers SHOULD:**
+- Accept multiple extension namespaces in the same resource
+- Process known namespaces and ignore unknown ones
+- Log warnings for unexpected namespace combinations
+
+
+### 8.4.7 Namespace versioning
+If extension semantics change significantly, producers **MAY** version namespaces:
+
+```json
+"extensions": {
+  "osiris.aws.v1": {
+    "detailed_monitoring": true
+  },
+  "osiris.aws.v2": {
+    "monitoring": {
+      "level": "detailed",
+      "interval_seconds": 60
+    }
+  }
+}
+```
+
+Versioned namespaces enable gradual migration. Producers **SHOULD**:
+- Support old and new versions during a transition period
+- Document migration paths from old to new versions
+- Provide examples showing both versions
+
+
+### 8.4.8 Forward compatibility
+Consumers **MUST** accept resources with unknown extension namespaces.
+
+Consumers encountering unknown namespaces **SHOULD**:
+- Log the unknown namespace for debugging
+- Continue processing known fields and namespaces
+- Preserve unknown namespace data when re-exporting
+
+This forward compatibility ensures that new extensions do not break existing consumers.
+
+---
+
+## 8.5 Extension best practices
+### 8.5.1 For producers
+**Use standard fields and types first:**
+- Prefer standard types (Chapter 7) over custom types
+- Prefer `properties` over `extensions` for generic data
+- Only create custom types when standard types are insufficient
+
+**Document extensions:**
+- Publish extension schemas for consumer reference
+- Provide examples showing typical usage
+- Explain when to use extensions vs standard fields
+- Version extension schemas if semantics change
+
+**Validate extension data:**
+- Ensure extension data is well-formed JSON
+- Use appropriate JSON types (boolean, number, string, object, array)
+- Validate data against extension schemas before emitting
+
+**Maintain stability:**
+- Avoid breaking changes to extension schemas when possible
+- Use versioned namespaces for incompatible changes
+- Provide migration paths for deprecated extensions
+
+
+### 8.5.2 For consumers
+**Accept unknown extensions:**
+- Do not reject resources with unrecognized extension namespaces
+- Process known fields and ignore unknown extensions
+- Log unknown extensions for debugging
+
+**Preserve extension data:**
+- When re-exporting topology, preserve extension fields
+- Do not strip extensions consumers do not understand
+
+**Handle missing extensions gracefully:**
+- Do not assume extension fields are present
+- Provide defaults for missing extension values
+- Degrade gracefully when extension data is unavailable
+
+**Provide configuration:**
+- Enable users to control extension processing (enable/disable specific namespaces)
+- Allow selective extension filtering for privacy or security
+- Support extension validation against schemas
+
+
+### 8.5.3 Common patterns
+**Pattern 1: Vendor-specific feature flags**
+```json
+"extensions": {
+  "osiris.aws": {
+    "detailed_monitoring": true,
+    "ebs_optimized": false
+  }
+}
+```
+
+**Pattern 2: Organization metadata**
+```json
+"extensions": {
+  "osiris.com.acme.billing": {
+    "cost_center": "engineering",
+    "project": "web-platform"
+  },
+  "osiris.com.acme.compliance": {
+    "pci_scope": true,
+    "sox_audited": false
+  }
+}
+```
+
+**Pattern 3: Provider console/management references (non-primary identity)**
+```json
+"extensions": {
+  "osiris.azure": {
+    "portal_url": "https://portal.azure.com/#@/resource/subscriptions/.../resourceGroups/.../providers/...",
+    "zones": ["1", "2"]
+  }
+}
+```
+
+> **Note:** Provider identifiers used to locate the resource (subscription/project/account, region, native resource ID) **SHOULD** be placed in `provider`. Use extensions for vendor UX links, secondary references, or tool-specific foreign keys.
+
+**Pattern 4: Hardware management interfaces**
+```json
+"extensions": {
+  "osiris.dell": {
+    "idrac_ip": "10.0.100.10",
+    "idrac_version": "5.10.00.00",
+    "idrac_console_url": "https://10.0.100.10"
+  }
+}
+```
+
+---
+
+## 8.6 Summary
+The OSIRIS extension mechanism balances flexibility and interoperability:
+
+- **Properties** contain generic infrastructure attributes applicable across vendors
+- **Extensions** contain namespaced vendor-specific, platform-specific, or organization-specific data
+- **Custom types** represent resources that do not map to standard types
+- **Namespaces** prevent collisions and enable ecosystem growth
+
+**Key principles:**
+- Standard first, extend selectively
+- Namespace all extensions (`osiris.<namespace>`)
+- Consumers must accept unknown extensions
+- Producers should document extension semantics
+
+The extension mechanism enables the OSIRIS ecosystem to evolve without fragmenting the core specification. Producers can represent vendor-specific infrastructure while maintaining interoperability with consumers that understand only core OSIRIS fields.
