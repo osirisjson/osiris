@@ -1,0 +1,126 @@
+{
+  "$schema": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
+  "version": "1.0.0",
+  "metadata": {
+    "timestamp": "2026-01-12T13:00:00Z",
+    "generator": {
+      "name": "manual",
+      "version": "1.0.0"
+    },
+    "scope": {
+      "name": "Industrial label printing system",
+      "description": "Zebra thermal printer controlled by Rockwell PLC for packaging line at FCO facility. This example use ICAO code, FCO is referred to a facility located in Rome.",
+      "providers": ["custom"],
+      "sites": ["fco"],
+      "environments": ["production"]
+    }
+  },
+  "topology": {
+    "resources": [
+      {
+        "id": "fco-facility-01::sw-ot-floor-01",
+        "type": "network.switch",
+        "name": "SW-OT-FLOOR-01",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.cisco",
+          "native_id": "SW-OT-FLOOR-01",
+          "type": "IE-3400-8T2S",
+          "site": "fco"
+        },
+        "properties": {
+          "model": "Cisco Catalyst IE3400 Rugged Series",
+          "mgmt_ip": "10.50.20.2",
+          "uplinks": [
+            {
+              "port": "Gi1/1",
+              "peer": "ot-fco-core-01",
+              "media": "fiber"
+            }
+          ],
+          "poe": {
+            "supported": false
+          }
+        },
+        "extensions": {
+          "osiris.cisco": {
+            "os_family": "ios-xe",
+            "iosxe_version": "17.9.4",
+            "industrial_protocols": [
+              "profinet"
+            ],
+            "tsn_capable": false
+          }
+        }
+      },
+      {
+        "id": "fco-facility-01::printer-line-a-01",
+        "type": "ot.printer",
+        "name": "Line A Label Printer 01",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.zebra",
+          "native_id": "ZEBRA-ZT620-0001",
+          "site": "fco"
+        },
+        "properties": {
+          "model": "Zebra ZT620",
+          "mgmt_ip": "10.50.20.10",
+          "print_technology": "thermal_transfer",
+          "dpi": 300
+        },
+        "extensions": {
+          "osiris.zebra": {
+            "firmware": "96.21.46Z",
+            "language": [
+              "zpl",
+              "ezpl"
+            ],
+            "snmp_enabled": true
+          }
+        }
+      },
+      {
+        "id": "fco-facility-01::plc-packaging-a-01",
+        "type": "ot.controller.plc",
+        "name": "Packaging PLC A-01",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.rockwell",
+          "native_id": "PLC-A-01",
+          "site": "fco"
+        },
+        "properties": {
+          "protocols": [
+            "ethernetip"
+          ],
+          "mgmt_ip": "10.50.20.20"
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-sw-floor-01-to-printer",
+        "type": "network",
+        "source": "fco-facility-01::sw-ot-floor-01",
+        "target": "fco-facility-01::printer-line-a-01",
+        "direction": "bidirectional",
+        "properties": {
+          "vlan": 52
+        }
+      },
+      {
+        "id": "conn-plc-to-printer",
+        "type": "flow",
+        "source": "fco-facility-01::plc-packaging-a-01",
+        "target": "fco-facility-01::printer-line-a-01",
+        "direction": "forward",
+        "properties": {
+          "protocol": "tcp",
+          "application": "zpl_over_tcp",
+          "port": 9100
+        }
+      }
+    ]
+  }
+}

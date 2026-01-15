@@ -1,0 +1,431 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema#",
+  "$id": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
+  "title": "Core OSIRIS JSON Schema v1.0",
+  "description": "OSIRIS Open Standard for Infrastructure Resource Interchange Schema. This schema encodes baseline interoperability requirements; additional semantic rules (e.g. referential integrity, uniqueness) are validated by tooling.",
+  "type": "object",
+  "required": [
+    "version",
+    "metadata",
+    "topology"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Optional JSON Schema dialect reference for OSIRIS documents.",
+      "format": "uri"
+    },
+    "version": {
+      "type": "string",
+      "description": "OSIRIS specification version of this document (semver). For the v1.0 schema endpoint, patch revisions are allowed.",
+      "pattern": "^1\\.0\\.\\d+$"
+    },
+    "metadata": {
+      "$ref": "#/$defs/metadata"
+    },
+    "topology": {
+      "$ref": "#/$defs/topology"
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "osirisType": {
+      "type": "string",
+      "description": "Dot-notation type identifier (lowercase segments, at least two segments).",
+      "pattern": "^[a-z0-9]+(?:\\.[a-z0-9]+)+$",
+      "examples": [
+        "compute.vm",
+        "network.switch",
+        "ot.sensor.environmental"
+      ]
+    },
+    "providerName": {
+      "type": "string",
+      "description": "Canonical provider identifier (lowercase segments separated by dots).",
+      "pattern": "^[a-z0-9]+(?:\\.[a-z0-9]+)*$"
+    },
+    "namespaceKey": {
+      "type": "string",
+      "description": "Extension namespace key in reverse-domain or vendor form (must start with osiris.).",
+      "pattern": "^osiris\\.[a-z0-9]+(?:\\.[a-z0-9]+)*$"
+    },
+    "tags": {
+      "type": "object",
+      "description": "Arbitrary string labels for filtering, grouping, and searching.",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "default": {}
+    },
+    "freeformObject": {
+      "type": "object",
+      "description": "Free form JSON object."
+    },
+    "extensions": {
+    "type": "object",
+    "description": "Vendor or organization-specific extension payloads keyed by namespace. Each namespace value MUST be a JSON object.",
+    "propertyNames": {
+        "$ref": "#/$defs/namespaceKey"
+    },
+    "additionalProperties": {
+        "type": "object",
+        "$comment": "Extension values must be JSON objects (not null, not arrays). This enforces the forward compatibility requirement from Chapter 8.",
+        "description": "Namespace payload. The internal structure is vendor/producer-defined."
+    },
+    "default": {}
+    },
+    "provider": {
+      "type": "object",
+      "description": "Provider provenance and correlation data for locating a resource in its originating system.",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/providerName"
+        },
+        "namespace": {
+          "type": "string",
+          "description": "Required when provider.name is 'custom'. Reverse-domain style namespace (e.g. 'osiris.com.acme').",
+          "pattern": "^osiris\\.[a-z0-9]+(?:\\.[a-z0-9]+)*$"
+        },
+        "native_id": {
+          "type": "string",
+          "description": "Native identifier in the originating system (when available)."
+        },
+        "account": {
+          "type": "string",
+          "description": "Account/subscription/project identifier, depending on provider."
+        },
+        "tenant": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "description": "Native resource type in the originating system (e.g. 'AWS::EC2::Instance')."
+        },
+        "region": {
+          "type": "string"
+        },
+        "zone": {
+          "type": "string"
+        },
+        "subscription": {
+          "type": "string"
+        },
+        "project": {
+          "type": "string"
+        },
+        "site": {
+          "type": "string"
+        },
+        "system": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "name": {
+                "const": "custom"
+              }
+            },
+            "required": [
+              "name"
+            ]
+          },
+          "then": {
+            "required": [
+              "namespace"
+            ]
+          }
+        }
+      ],
+      "additionalProperties": true
+    },
+    "resource": {
+      "type": "object",
+      "description": "A resource describes an infrastructure, application or entity.",
+      "required": [
+        "id",
+        "type",
+        "provider"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "$ref": "#/$defs/osirisType"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "provider": {
+          "$ref": "#/$defs/provider"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "inactive", "degraded", "retired", "unknown"]
+        },
+        "state": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Provider-defined lifecycle state. Opaque to OSIRIS; consumers must accept any value."
+        },
+        "properties": {
+          "$ref": "#/$defs/freeformObject"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        },
+        "tags": {
+          "$ref": "#/$defs/tags"
+        }
+      },
+      "additionalProperties": true
+    },
+    "connectionDirection": {
+        "type": "string",
+        "enum": ["bidirectional", "forward", "reverse"],
+        "description": "Connection directionality. If omitted, consumers should assume 'bidirectional'."
+    },
+    "connectionType": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(?:\\.[a-z0-9]+)*$",
+        "description": "Connection type identifier. Supports base types like 'network' and dotted subtypes."
+    },
+    "connection": {
+        "type": "object",
+        "description": "A connection is an explicit relationship between two resources.",
+        "required": ["id", "type", "source", "target"],
+        "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "type": {
+              "$ref": "#/$defs/connectionType"
+            },
+            "source": {
+              "type": "string",
+              "minLength": 1
+            },
+            "target": {
+              "type": "string",
+              "minLength": 1
+            },
+            "direction": {
+              "$ref": "#/$defs/connectionDirection"
+            },
+            "name": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": ["active", "inactive", "degraded", "retired", "unknown"]
+            },
+            "state": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Provider-defined lifecycle state. Opaque to OSIRIS; consumers must accept any value."
+            },
+            "properties": {
+              "$ref": "#/$defs/freeformObject"
+            },
+            "extensions": {
+              "$ref": "#/$defs/extensions"
+            },
+            "tags": {
+              "$ref": "#/$defs/tags"
+            }
+        },
+        "additionalProperties": true
+    },
+    "group": {
+      "type": "object",
+      "description": "A group represents a logical or physical grouping of resources (inventory/reporting/hierarchy).",
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "$ref": "#/$defs/osirisType"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "properties": {
+          "$ref": "#/$defs/freeformObject"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        },
+        "tags": {
+          "$ref": "#/$defs/tags"
+        }
+      },
+      "additionalProperties": true
+    },
+    "topology": {
+      "type": "object",
+      "description": "Topology snapshot containing resources and optional connections/groups.",
+      "required": [
+        "resources"
+      ],
+      "properties": {
+        "resources": {
+            "type": "array",
+            "minItems": 1,
+            "description": "Array of resources. IDs must be unique (validated at Level 2).",
+            "items": {
+                "$ref": "#/$defs/resource"
+            }
+        },
+        "connections": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/connection"
+            },
+            "default": []
+        },
+        "groups": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/group"
+            },
+            "default": []
+        }
+      },
+      "additionalProperties": true
+    },
+    "metadataGenerator": {
+      "type": "object",
+      "required": [
+        "name",
+        "version"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "additionalProperties": true
+    },
+    "metadataScope": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "providers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/providerName"
+          }
+        },
+        "regions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "accounts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "environments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sites": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "clusters": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Document-level metadata.",
+      "required": [
+        "timestamp"
+      ],
+      "properties": {
+        "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+            "description": "Snapshot timestamp (RFC 3339 / ISO 8601 date-time)."
+        },
+        "generator": {
+          "$ref": "#/$defs/metadataGenerator"
+        },
+        "scope": {
+            "$ref": "#/$defs/metadataScope"
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

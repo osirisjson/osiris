@@ -16,7 +16,7 @@ Thumbs.db
 .project
 .settings/
 .classpath
-
+compliance/
 
 # Temporary files
 *.tmp
@@ -37,3 +37,4 @@ Thumbs.db
 secrets/
 *.pem
 *.key
+/net-commander

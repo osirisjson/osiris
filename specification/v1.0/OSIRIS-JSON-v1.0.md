@@ -4,10 +4,10 @@
 | Authors   | Tia Zanella [skhell](https://github.com/skhell) |
 | Revision  | 1.0.0-DRAFT |
 | Creation date      | 14 December 2025 |
-| Last revision date | 07 January 2026 |
+| Last revision date | 15 January 2026 |
 | Status    | Draft |
 | Specification ID | OSIRIS-1.0 |
-| Schema URI | tbd later |
+| Schema URI | [OSIRIS-1.0](https://osirisjson.org/schema/v1.0/osiris.schema.json) |
 | License   | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
 | Repository | [github.com/osirisjson/osiris](https://github.com/osirisjson/osiris) |
 
@@ -26,17 +26,17 @@
     - [1.3.4 Future Extensibility](#134-future-extensibility)
   - [1.4 Design principles](#14-design-principles)
     - [1.4.1 Open Standard and driven by Community Governance](#141-open-standard-and-driven-by-community-governance)
-    - [1.4.2  Simplicity](#142--simplicity)
-    - [1.4.3  Vendor neutrality](#143--vendor-neutrality)
-    - [1.4.4  Extensibility without fragmentation](#144--extensibility-without-fragmentation)
-    - [1.4.5  Explicit over implicit](#145--explicit-over-implicit)
-    - [1.4.6  Stability and compatibility](#146--stability-and-compatibility)
-    - [1.4.7  Practicality and parial data](#147--practicality-and-parial-data)
+    - [1.4.2 Simplicity](#142-simplicity)
+    - [1.4.3 Vendor neutrality](#143-vendor-neutrality)
+    - [1.4.4 Extensibility without fragmentation](#144-extensibility-without-fragmentation)
+    - [1.4.5 Explicit over implicit](#145-explicit-over-implicit)
+    - [1.4.6 Stability and compatibility](#146-stability-and-compatibility)
+    - [1.4.7 Practicality and partial data](#147-practicality-and-partial-data)
   - [1.5 Terminology](#15-terminology)
     - [1.5.1 Normative keywords](#151-normative-keywords)
     - [1.5.2 Core terms](#152-core-terms)
-    - [1.5.2 Domain specific terms](#152-domain-specific-terms)
-    - [1.5.3 JSON and schema terms](#153-json-and-schema-terms)
+    - [1.5.3 Domain-specific terms](#153-domain-specific-terms)
+    - [1.5.4 JSON and schema terms](#154-json-and-schema-terms)
 - [2 Core concepts](#2-core-concepts)
   - [2.1 Resources](#21-resources)
     - [2.1.1 Definition](#211-definition)
@@ -149,7 +149,7 @@
     - [4.5.5 Consumer rules](#455-consumer-rules)
     - [4.5.6 Examples](#456-examples)
 - [5 Connection model](#5-connection-model)
-  - [Overview](#overview)
+  - [5.0 Overview](#50-overview)
   - [5.1 Connection object structure](#51-connection-object-structure)
     - [5.1.1 Overview](#511-overview)
     - [5.1.2 Required fields](#512-required-fields)
@@ -176,8 +176,8 @@
     - [5.4.3 Extensions](#543-extensions)
     - [5.4.4 Examples](#544-examples)
     - [5.4.5 Validation](#545-validation)
-- [6. Group model](#6-group-model)
-  - [Overview](#overview-1)
+- [6 Group model](#6-group-model)
+  - [6.0 Overview](#60-overview)
   - [6.1 Group object structure](#61-group-object-structure)
     - [6.1.1 Overview](#611-overview)
     - [6.1.2 Required fields](#612-required-fields)
@@ -244,7 +244,7 @@
     - [7.7.2 When to use custom types](#772-when-to-use-custom-types)
     - [7.7.3 Type mapping examples from well-known providers](#773-type-mapping-examples-from-well-known-providers)
 - [8 Extension mechanism](#8-extension-mechanism)
-  - [Overview](#overview-2)
+  - [8.0 Overview](#80-overview)
   - [8.1 Properties vs extensions](#81-properties-vs-extensions)
     - [8.1.1 Properties object](#811-properties-object)
     - [8.1.2 Extensions object](#812-extensions-object)
@@ -286,6 +286,105 @@
     - [8.5.2 For consumers](#852-for-consumers)
     - [8.5.3 Common patterns](#853-common-patterns)
   - [8.6 Summary](#86-summary)
+- [9 Validation](#9-validation)
+  - [9.0 Overview](#90-overview)
+  - [9.1 JSON Schema](#91-json-schema)
+    - [9.1.1 Schema purpose](#911-schema-purpose)
+    - [9.1.2 Schema location](#912-schema-location)
+    - [9.1.3 Schema validation tools (non-normative)](#913-schema-validation-tools-non-normative)
+    - [9.1.4 Schema conformance requirements](#914-schema-conformance-requirements)
+    - [9.1.5 Schema extensibility](#915-schema-extensibility)
+  - [9.2 Minimum required fields (baseline interoperability)](#92-minimum-required-fields-baseline-interoperability)
+    - [9.2.1 Top-level required fields](#921-top-level-required-fields)
+    - [9.2.2 Metadata required fields](#922-metadata-required-fields)
+    - [9.2.3 Topology required fields](#923-topology-required-fields)
+    - [9.2.4 Resource required fields](#924-resource-required-fields)
+    - [9.2.5 Connection required fields](#925-connection-required-fields)
+    - [9.2.6 Group required fields](#926-group-required-fields)
+  - [9.3 Validation rules](#93-validation-rules)
+    - [9.3.1 Validation levels](#931-validation-levels)
+    - [9.3.2 Identity validation rules](#932-identity-validation-rules)
+    - [9.3.3 Referential integrity rules](#933-referential-integrity-rules)
+    - [9.3.4 Type format rules](#934-type-format-rules)
+    - [9.3.5 Provider validation rules](#935-provider-validation-rules)
+    - [9.3.6 Extension validation rules](#936-extension-validation-rules)
+    - [9.3.7 Domain validation rules](#937-domain-validation-rules)
+    - [9.3.8 Validation error levels](#938-validation-error-levels)
+    - [9.3.9 Validation implementation guidance](#939-validation-implementation-guidance)
+  - [9.4 Validation examples](#94-validation-examples)
+    - [9.4.1 Valid minimal document](#941-valid-minimal-document)
+    - [9.4.2 Valid document with resources and connections](#942-valid-document-with-resources-and-connections)
+    - [9.4.3 Invalid document (missing required field)](#943-invalid-document-missing-required-field)
+    - [9.4.4 Invalid document (dangling reference)](#944-invalid-document-dangling-reference)
+    - [9.4.5 Invalid document (invalid type format)](#945-invalid-document-invalid-type-format)
+  - [9.5 Summary](#95-summary)
+- [10 Examples](#10-examples)
+  - [10.1 IT Minimal Cloud Provider infrastructure](#101-it-minimal-cloud-provider-infrastructure)
+    - [10.1.0 Overview](#1010-overview)
+    - [10.1.1 Scenario](#1011-scenario)
+    - [10.1.2 Example](#1012-example)
+    - [10.1.3 Key features demonstrated](#1013-key-features-demonstrated)
+  - [10.2 IT Minimal Hyperscaler infrastructure](#102-it-minimal-hyperscaler-infrastructure)
+    - [10.2.0 Overview](#1020-overview)
+    - [10.2.1 Scenario](#1021-scenario)
+    - [10.2.2 Example](#1022-example)
+    - [10.2.3 Key features demonstrated](#1023-key-features-demonstrated)
+  - [10.3 IT Simple Hyperscaler infrastructure](#103-it-simple-hyperscaler-infrastructure)
+    - [10.3.0 Overview](#1030-overview)
+    - [10.3.1 Scenario](#1031-scenario)
+    - [10.3.2 Example](#1032-example)
+  - [10.4 IT Hyperscaler infrastructure belonging with Resource Group and VNet membership](#104-it-hyperscaler-infrastructure-belonging-with-resource-group-and-vnet-membership)
+    - [10.4.0 Overview](#1040-overview)
+    - [10.4.1 Scenario](#1041-scenario)
+    - [10.4.2 Example](#1042-example)
+  - [10.5 IT Multi-Hyperscalers environment](#105-it-multi-hyperscalers-environment)
+    - [10.5.0 Overview](#1050-overview)
+    - [10.5.1 Scenario](#1051-scenario)
+    - [10.5.2 Example](#1052-example)
+    - [10.5.3 Key features demonstrated](#1053-key-features-demonstrated)
+  - [10.6 IT Hybrid infrastructure on Hyperscaler and On-Premise](#106-it-hybrid-infrastructure-on-hyperscaler-and-on-premise)
+    - [10.6.0 Overview](#1060-overview)
+    - [10.6.1 Scenario](#1061-scenario)
+    - [10.6.2 Example](#1062-example)
+    - [10.6.3 Key features demonstrated](#1063-key-features-demonstrated)
+  - [10.7 IT Minimal On-Premise infrastructure](#107-it-minimal-on-premise-infrastructure)
+    - [10.7.0 Overview](#1070-overview)
+    - [10.7.1 Scenario](#1071-scenario)
+    - [10.7.2 Example](#1072-example)
+    - [10.7.3 Key features demonstrated](#1073-key-features-demonstrated)
+  - [10.8 IT On-Premise Network topology](#108-it-on-premise-network-topology)
+    - [10.8.0 Overview](#1080-overview)
+    - [10.8.1 Scenario](#1081-scenario)
+    - [10.8.2 Example](#1082-example)
+    - [10.8.3 Key features demonstrated](#1083-key-features-demonstrated)
+  - [10.9 OT Minimal infrastructure](#109-ot-minimal-infrastructure)
+    - [10.9.0 Overview](#1090-overview)
+    - [10.9.1 Scenario](#1091-scenario)
+    - [10.9.2 Example](#1092-example)
+    - [10.9.3 Key features demonstrated](#1093-key-features-demonstrated)
+  - [10.10 OT Cross connection with IT Network](#1010-ot-cross-connection-with-it-network)
+    - [10.10.0 Overview](#10100-overview)
+    - [10.10.1 Scenario](#10101-scenario)
+    - [10.10.2 Example](#10102-example)
+    - [10.10.3 Key features demonstrated](#10103-key-features-demonstrated)
+  - [10.11 OT Industrial printer](#1011-ot-industrial-printer)
+    - [10.11.0 Overview](#10110-overview)
+    - [10.11.1 Scenario](#10111-scenario)
+    - [10.11.2 Example](#10112-example)
+    - [10.11.3 Key features demonstrated](#10113-key-features-demonstrated)
+  - [10.12 OT Security camera](#1012-ot-security-camera)
+    - [10.12.0 Overview](#10120-overview)
+    - [10.12.1 Scenario](#10121-scenario)
+    - [10.12.2 Example](#10122-example)
+    - [10.12.3 Key features demonstrated](#10123-key-features-demonstrated)
+  - [10.13 OT Door access control](#1013-ot-door-access-control)
+    - [10.13.0 Overview](#10130-overview)
+    - [10.13.1 Scenario](#10131-scenario)
+    - [10.13.2 Example](#10132-example)
+    - [10.13.3 Key features demonstrated](#10133-key-features-demonstrated)
+  - [10.14 Summary](#1014-summary)
+    - [About example generators](#about-example-generators)
+    - [10.14.1 Common patterns](#10141-common-patterns)
 
 
 ## Preface
@@ -359,7 +458,7 @@ OSIRIS addresses the fragmentation described in section 1.1 by defining a canoni
 
 Rather than requiring each consuming application to implement and maintain vendor-specific parsers, OSIRIS adopts a translation layer approach:
 
-- **Producers** (exporters, translators or discovery agents) transform vendor-specific representations into OSIRIS format.
+- **Producers** (parsers, translators or discovery agents) transform vendor-specific representations into OSIRIS format.
 - **Consumers** (diagramming tools, CMDBs, IPAMs, DCIMs, monitoring systems, documentation pipelines) read a single, Open Standard well-defined schema.
 
 This decouples data sources from consuming applications, reducing integration complexity from S×C (S sources × C consumers) to P+C (P producers + C consumers)
@@ -475,22 +574,22 @@ OSIRIS is guided by the following core principles:
 ### 1.4.1 Open Standard and driven by Community Governance
 OSIRIS is an **Open Standard** Intended for broad adoption across vendors, platforms and communities. The specification and evolution of the schema are intended to be community-driven and openly reviewable.
 
-### 1.4.2  Simplicity
+### 1.4.2 Simplicity
 OSIRIS prioritizes ease of understanding and implementation. The schema uses straightforward JSON structures with clear field semantics. Complexity is introduced only where necessary to represent real-world infrastructure. Producers and consumers **SHOULD** be able to implement basic OSIRIS support without extensive specialized knowledge.
 
-### 1.4.3  Vendor neutrality
+### 1.4.3 Vendor neutrality
 OSIRIS does not favor any particular vendor, platform or technology. Infrastructure sources including hyperscalers, cloud providers, on-premises systems and OT environments are represented using consistent patterns. Provider specific details are accommodated through well defined extension mechanisms rather than privileged positions in the core schema.
 
-### 1.4.4  Extensibility without fragmentation
+### 1.4.4 Extensibility without fragmentation
 OSIRIS supports vendor-specific properties, custom resource types and domain-specific extensions without breaking compatibility. Extensions follow structured conventions to preserve interoperability: consumers that do not recognize extensions **MUST** be able to safely ignore them while still processing core data.
 
-### 1.4.5  Explicit over implicit
+### 1.4.5 Explicit over implicit
 Relationships, dependencies and topological connections are represented explicitly. Resource properties are clearly named with defined semantics. The schema avoids ambiguous or context-dependent interpretations that would require out-of-band knowledge to resolve.
 
-### 1.4.6  Stability and compatibility
+### 1.4.6 Stability and compatibility
 The core schema structure is designed for long-term stability. Version changes follow semantic versioning principles. Backwards compatibility **SHOULD** be maintained across minor versions and breaking changes **MUST** be introduced only in major versions with clear migration guidance and deprecation policies.
 
-### 1.4.7  Practicality and parial data
+### 1.4.7 Practicality and partial data
 OSIRIS is designed for real-world infrastructure conditions, including incomplete inventories, mixed-vendor environments and partial topology exports. The schema supports scenarios where full resource details or relationships are unavailable, enabling incremental adoption.
 
 #### Interoperability
@@ -541,7 +640,7 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**, **
 **Topology:** The complete set of resources, connections and groups that describe an infrastructure environment's structure and relationships.
 
 
-### 1.5.2 Domain specific terms
+### 1.5.3 Domain-specific terms
 **Hyperscaler:** A large-scale provider offering a broad portfolio of infrastructure services (e.g. AWS, Azure, GCP oracle Cloud, IBM Cloud, Alibaba Cloud, Tencent Cloud).
 
 **Cloud provider:** A minor provider offering cloud services such as IaaS, PaaS, SaaS or NaaS.
@@ -555,7 +654,7 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**, **
 **Interchange format:** A standardized data representation designed for exchange between heterogeneous systems and not tied to any single tool’s internal model.
 
 
-### 1.5.3 JSON and schema terms
+### 1.5.4 JSON and schema terms
 **JSON (JavaScript Object Notation):** The data serialization format used by OSIRIS, as defined in [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259.html).
 
 **JSON Schema:** A vocabulary for validating the structure of JSON documents, used to define the formal structure of OSIRIS documents.
@@ -597,8 +696,7 @@ A **Resource** represents a discrete infrastructure component with identity, pro
 ### 2.1.2 Resource identity
 Every resource **MUST** have a unique identifier within an OSIRIS document. Resource identifiers enable references from connections, group memberships and other objects.
 
-Resource identity in OSI
-RIS is **document-scoped**: identifiers **MUST** be unique within a single OSIRIS document but need not be globally unique across other documents or systems. This simplifies producer implementation while preserving referential integrity within each snapshot.
+Resource identity in OSIRIS is **document-scoped**: identifiers **MUST** be unique within a single OSIRIS document but need not be globally unique across other documents or systems. This simplifies producer implementation while preserving referential integrity within each snapshot.
 
 Resources **SHOULD** retain stable identifiers across multiple exports of the same infrastructure when feasible. Stable identifiers enable consumers to correlate resources over time, detect changes and compare snapshots.
 
@@ -629,7 +727,7 @@ Producers **SHOULD** construct IDs using one of these strategies:
 
 4. **Generated ID (only when native ID unavailable or not globally unique):**
 ```text
-   "id": "postgres-prod-01.mxp.internal.acme.example"
+   "id": "postgres-prod-01.mxp.internal.osiris.com.acme"
 ```
 
 **Rationale:** 
@@ -1099,9 +1197,9 @@ The following fields are **OPTIONAL** but **RECOMMENDED**:
 **Example:**
 ```json
   {
-    "name": "osiris-aws-exporter",
+    "name": "osiris-aws-parser",
     "version": "1.2.3",
-    "url": "https://github.com/osirisjson/hyperscaler-parser/aws/osiris-aws-exporter"
+    "url": "https://github.com/osirisjson/hyperscaler-parser/aws/osiris-aws-parser"
   }
 ```
 
@@ -1152,7 +1250,7 @@ Metadata objects **SHOULD** be concise. Large amounts of auxiliary data (e.g. fu
 {
   "timestamp": "2025-12-18T14:30:00Z",
   "generator": {
-    "name": "osiris-multihyperscalers-exporter",
+    "name": "osiris-aws-parser",
     "version": "2.1.0"
   },
   "scope": {
@@ -1175,7 +1273,7 @@ Metadata objects **SHOULD** be concise. Large amounts of auxiliary data (e.g. fu
 {
   "timestamp": "2025-12-18T14:30:00Z",
   "generator": {
-    "name": "osiris-hybrid-exporter",
+    "name": "osiris-aws-parser",
     "version": "0.9.0"
   },
   "scope": {
@@ -1580,7 +1678,7 @@ This approach ensures:
 
 
 ### 4.1.5 Resource object validation
-Resource objects **MUST** conform to the OSIRIS JSON Schema (Appendix A). Structural validation ensures required fields are present and field types are correct.
+Resource objects **MUST** conform to the [OSIRIS JSON Schema v1.0](https://osirisjson.org/schema/v1.0/osiris.schema.json). Structural validation ensures required fields are present and field types are correct.
 
 Additional semantic validation rules (ID uniqueness, type validity, referential integrity) are defined in Chapter 9 (Validation).
 
@@ -1811,7 +1909,8 @@ When vendor-specific types are necessary but a close standard equivalent exists,
 }
 ```
 
-> **Note:** The first example uses the standard type `compute.function.serverless` (defined in Chapter 7) because AWS Lambda is a standard serverless function. The second example uses a custom type `osiris.aws.lambda.edge` because Lambda @Edge has distinct execution semantics (runs at CloudFront edge locations) that differ from standard serverless functions.
+> [!NOTE]
+> The first example uses the standard type `compute.function.serverless` (defined in Chapter 7) because AWS Lambda is a standard serverless function. The second example uses a custom type `osiris.aws.lambda.edge` because Lambda @Edge has distinct execution semantics (runs at CloudFront edge locations) that differ from standard serverless functions.
 
 
 ### 4.2.7 Unknown type handling
@@ -1972,7 +2071,7 @@ The provider object **MAY** include:
 
 - **`namespace`** (string): An organization or domain identifier for custom or internal providers (see Unknown and custom providers below).
 
-- **`system`** (string): The producing system name or source inventory system identifier (useful for custom and multi-source exporters).
+- **`system`** (string): The producing system name or source inventory system identifier (useful for custom and multi-source parsers).
 
 - **`source`** (string): a short identifier of the data source path/method, e.g. cloudtrail, cloud_asset_inventory, eapi, netconf, snmp, cmdb_export.
 
@@ -2007,7 +2106,7 @@ When `provider.name` is set to `"custom"`, the `namespace` field **MUST** be pro
 ```json
 {
   "id": "custom::legacy-app-server-03",
-  "type": "compute.physical.server",
+  "type": "compute.server",
   "name": "legacy-payroll-server",
   "provider": {
     "name": "custom",
@@ -2089,7 +2188,7 @@ OSIRIS separates **resource provenance/correlation** (provider) from **vendor- o
 - If it describes a **vendor-only feature or configuration**, it belongs in extensions.
 
 > [!NOTE]
-> Vendor namespaces under extensions (e.g. extensions["osiris.aws"]) may be emitted by third-party producers when exporting resources sourced from that vendor/platform. The namespace indicates the resource origin and the meaning of the extension payload, not the identity of the exporter.
+> Vendor namespaces under extensions (e.g. extensions["osiris.aws"]) may be emitted by third-party producers when exporting resources sourced from that vendor/platform. The namespace indicates the resource origin and the meaning of the extension payload, not the identity of the parser.
 
 
 ### 4.3.7 Provider object stability
@@ -2173,7 +2272,7 @@ Producers **SHOULD** preserve `provider.native_id` when available, as it provide
 ```json
 {
   "id": "custom::ASSET-EU-04567",
-  "type": "compute.physical.server",
+  "type": "compute.server",
   "name": "legacy-app-server",
   "provider": {
     "name": "custom",
@@ -2916,7 +3015,7 @@ Consumers **MAY**:
 ---
 
 # 5 Connection model
-## Overview
+## 5.0 Overview
 Connections in OSIRIS represent explicit relationships between resources. They form the edges of the topology graph and encode how infrastructure components interact, depend on each other or are linked physically or logically.
 
 This chapter defines:
@@ -3625,8 +3724,8 @@ Consumers **MUST** accept connections with unrecognized property keys or extensi
 
 ---
 
-# 6. Group model
-## Overview
+# 6 Group model
+## 6.0 Overview
 Groups in OSIRIS provide a mechanism to organize and classify resources into meaningful collections without altering the underlying topology graph. Groups are primarily used for:
 
 - **Aggregation:** Collecting resources by shared attributes (e.g. "all production workloads", "all devices in on-premise Data Center DC-MXP", "all resources owned by Software Development Team")
@@ -3708,7 +3807,8 @@ Groups do not have vendor-assigned "native IDs" since they represent logical or 
 
 Descriptive naming (strategies 2-3) is **RECOMMENDED** as it improves human readability and debugging while maintaining uniqueness within the document scope.
 
-**Note:** Unlike resource IDs which use `provider::native-id` format to reference vendor systems, group IDs do not require namespace prefixes since groups represent logical or physical collections rather than vendor-managed objects.
+> [!NOTE]
+> Unlike resource IDs which use `provider::native-id` format to reference vendor systems, group IDs do not require namespace prefixes since groups represent logical or physical collections rather than vendor-managed objects.
 
 
 ### 6.1.3 Optional fields
@@ -5076,19 +5176,19 @@ Use `application.database` for but not limited to:
 **Example (Self-hosted PostgreSQL):**
 ```json
 {
-  "id": "postgres-mxp-prod-01.internal.acme.example",
+  "id": "postgres-mxp-prod-01.internal.osiris.com.acme",
   "type": "application.database",
   "name": "production-postgresql-primary",
   "provider": {
     "name": "postgresql",
     "type": "PostgreSQL",
-    "native_id": "postgres-mxp-prod-01.internal.acme.example"
+    "native_id": "postgres-mxp-prod-01.internal.osiris.com.acme"
   },
   "properties": {
     "engine": "postgres",
     "engine_version": "15.4",
     "database_type": "relational",
-    "hostname": "postgres-mxp-prod-01.internal.acme.example",
+    "hostname": "postgres-mxp-prod-01.internal.osiris.com.acme",
     "port": 5432,
     "size_gb": 2000,
     "replication_mode": "synchronous",
@@ -5277,9 +5377,9 @@ Use `application.cache` for but not limited to:
     "cluster_mode": true,
     "persistence": "aof",
     "nodes": [
-      "redis-mxp-01.internal.acme.example:6379",
-      "redis-mxp-02.internal.acme.example:6379",
-      "redis-mxp-03.internal.acme.example:6379"
+      "redis-mxp-01.internal.osiris.com.acme:6379",
+      "redis-mxp-02.internal.osiris.com.acme:6379",
+      "redis-mxp-03.internal.osiris.com.acme:6379"
     ]
   },
   "location": {
@@ -5499,7 +5599,7 @@ Producers **SHOULD** include these properties when available:
 | OpenStack | Nova Instance | `compute.vm` |
 
 > [!NOTE]
-> "Native Type" is an example identifier from a common interface (CloudFormation/ARM/API/Terraform/ROS). Exporters **SHOULD** label the source system in documentation (or encode it in provider.source) when the same provider has multiple native type namespaces (e.g. IBM VPC vs Classic, Alibaba ROS vs Terraform).
+> "Native Type" is an example identifier from a common interface (CloudFormation/ARM/API/Terraform/ROS). Parsers **SHOULD** label the source system in documentation (or encode it in provider.source) when the same provider has multiple native type namespaces (e.g. IBM VPC vs Classic, Alibaba ROS vs Terraform).
 
 **Example:**
 ```json
@@ -7437,7 +7537,7 @@ Producers **SHOULD** choose the mapping that best represents the resource's prim
 ---
 
 # 8 Extension mechanism
-## Overview
+## 8.0 Overview
 The OSIRIS extension mechanism enables producers to include vendor-specific, domain-specific or organization-specific data without fragmenting the core standard. Extensions preserve interoperability: consumers that do not recognize extension data can safely ignore it while still processing the core topology.
 
 **Extension philosophy:**
@@ -7477,7 +7577,7 @@ The `properties` object contains resource-specific attributes that describe gene
     "native_id": "MXP-SRV-001"
   },
   "properties": {
-    "hostname": "mxp-srv-001.internal.acme.example",
+    "hostname": "mxp-srv-001.internal.osiris.com.acme",
     "rack_unit_start": 10,
     "rack_unit_height": 2,
     "power_consumption_watts": 450,
@@ -8284,6 +8384,17 @@ If a custom type's semantics change significantly, producers **MAY**:
 ## 8.4 Namespacing
 Namespace management prevents collision between extensions from different sources and enables safe evolution of the OSIRIS ecosystem.
 
+#### Governance boundary (OSIRIS governed vs vendor defined)
+OSIRIS governs:
+- Namespace format rules (e.g. `osiris.<vendor>` and reverse-domain organization namespaces)
+- Registry and collision-avoidance rules for well-known namespaces
+
+OSIRIS does not govern:
+- The internal structure and semantics of `extensions["osiris.<vendor>"]` payloads
+- Provider-specific `state` values and other opaque vendor enums
+
+Extension payloads may evolve independently of the OSIRIS specification. Consumers **MUST** treat unknown extension fields as opaque and **MUST** ignore what they do not understand.
+
 
 ### 8.4.1 Namespace format
 Extension namespaces **MUST** follow the pattern `osiris.<identifier>` where `<identifier>` is a dot-separated lowercase string.
@@ -8314,7 +8425,9 @@ osiris_
 
 
 ### 8.4.2 Registered well-known namespaces
-The `osiris.*` namespace is reserved for OSIRIS-defined and OSIRIS-governed namespaces.
+The `osiris.` prefix is reserved by this specification for namespaces that follow OSIRIS naming rules and collision-avoidance conventions.
+
+OSIRIS governs the **namespace rules** and (when applicable) the **registry** of well-known namespaces. OSIRIS does **not** govern the **internal semantics** of vendor or organization-specific payloads carried under these namespaces.
 
 The following vendor namespaces are **registered** as well-known prefixes to encourage consistent producer behavior for infrastructure management systems (hyperscalers, cloud providers, virtualization, networking, compute, storage, OT/industrial platforms).
 
@@ -8331,8 +8444,11 @@ The following vendor namespaces are **registered** as well-known prefixes to enc
 | `osiris.openstack` | OpenStack | Registered |
 | `osiris.cloudflare` | Cloudflare | Registered |
 | `osiris.digitalocean` | DigitalOcean | Registered |
+| `osiris.linode` | Linode | Registered |
 | `osiris.leaseweb` | Leaseweb | Registered |
 | `osiris.ovh` | OVH | Registered |
+| `osiris.hetzner` | Hetzner | Registered |
+| `osiris.scaleway` | Scaleway | Registered |
 
 #### Virtualization & HCI
 | Namespace | Intended for | Status |
@@ -8378,6 +8494,10 @@ The following vendor namespaces are **registered** as well-known prefixes to enc
 | Namespace | Intended for | Status |
 |-----------|--------------|--------|
 | `osiris.siemens` | Siemens OT / Industrial systems | Registered |
+| `osiris.emerson` | Emerson OT / Industrial systems | Registered |
+| `osiris.eh` | Endress+Hauser OT / Industrial systems | Registered |
+| `osiris.vaisala` | Vaisala OT / Industrial systems | Registered |
+| `osiris.ifm` | IFM Electronic OT / Industrial systems | Registered |
 | `osiris.schneider` | Schneider Electric OT / Industrial systems | Registered |
 | `osiris.rockwell` | Rockwell Automation OT / Industrial systems | Registered |
 | `osiris.abb` | ABB OT / Industrial systems | Registered |
@@ -8400,7 +8520,7 @@ OSIRIS does **not** govern the **internal semantics** of vendor/organization ext
 
 > [!NOTE]
 > - These namespaces are intended to standardize vendor-specific extension placement for commonly used infrastructure management systems.
-> - Third-party producers/exporters **MAY** emit these namespaces when exporting resources sourced from the corresponding vendor/platform (e.g. a discovery tool exporting AWS resources may emit `extensions.osiris.aws`).
+> - Third-party producers/parsers **MAY** emit these namespaces when exporting resources sourced from the corresponding vendor/platform (e.g. a discovery tool exporting AWS resources may emit `extensions.osiris.aws`).
 > - Not all canonical `provider.name` values require a registered vendor namespace. Technologies and software components (e.g. databases, middleware, application frameworks) can be valid `provider.name` values without requiring a well-known `osiris.<vendor>` extension namespace.
 
 **Rationale:** This list focuses on systems that **manage** infrastructure resources (hyperscalers and cloud platforms, virtualization stacks, networking/security, compute/storage vendors, and OT/industrial ecosystems). Keeping the registry constrained avoids turning the specification into a general catalog of all technologies, while still enabling consistent, interoperable vendor extension usage.
@@ -8601,7 +8721,8 @@ This forward compatibility ensures that new extensions do not break existing con
 }
 ```
 
-> **Note:** Provider identifiers used to locate the resource (subscription/project/account, region, native resource ID) **SHOULD** be placed in `provider`. Use extensions for vendor UX links, secondary references, or tool-specific foreign keys.
+> [!NOTE]
+> Provider identifiers used to locate the resource (subscription/project/account, region, native resource ID) **SHOULD** be placed in `provider`. Use extensions for vendor UX links, secondary references, or tool-specific foreign keys.
 
 **Pattern 4: Hardware management interfaces**
 ```json
@@ -8631,3 +8752,1670 @@ The OSIRIS extension mechanism balances flexibility and interoperability:
 - Producers should document extension semantics
 
 The extension mechanism enables the OSIRIS ecosystem to evolve without fragmenting the core specification. Producers can represent vendor-specific infrastructure while maintaining interoperability with consumers that understand only core OSIRIS fields.
+
+---
+
+# 9 Validation
+## 9.0 Overview
+Validation ensures that OSIRIS documents conform to the specification and can be reliably consumed by implementations. This chapter defines validation requirements at three levels: **structural** (JSON schema compliance), **semantic** (referential integrity and constraint checking) and **domain** (type and property conventions).
+
+**Purpose of validation:**
+- **Quality assurance:** Ensures producers emit well-formed documents
+- **Interoperability:** Guarantees consumers can parse documents safely
+- **Debuggability:** Provides clear error messages when issues occur
+- **Forward compatibility:** Enables graceful handling of unknown extensions
+
+**Who should validate:**
+- **Producers** **SHOULD** validate documents before emission to catch errors early
+- **Consumers** **MUST** validate documents at an appropriate level before processing
+- **Tools** **MAY** provide validation services for OSIRIS documents
+
+---
+
+## 9.1 JSON Schema
+### 9.1.1 Schema purpose
+The OSIRIS JSON Schema formally defines the document structure, data types and constraints that **MUST** be satisfied by all OSIRIS documents. The schema provides **structural validation**: it verifies that:
+
+- Documents are syntactically valid JSON format
+- Required fields are present
+- Field types are correct (string, object, array, etc.)
+- Field values match defined patterns (e.g. version format, type naming)
+- Array elements conform to expected structures
+
+The complete JSON Schema is provided in **Appendix A (JSON Schema Definition)**.
+
+
+### 9.1.2 Schema location
+The canonical JSON Schema for OSIRIS v1.0 is versioned in the OSIRIS repository under `schema/v1.0/` and is published for consumption at:
+
+```text
+https://osirisjson.org/schema/v1.0/osiris.schema.json
+```
+
+Examples in Chapter 10 are intended to conform to this canonical schema.
+OSIRIS documents **SHOULD** reference the schema using the `$schema` field at the top level:
+
+```json
+{
+  "$schema": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
+  "version": "1.0.0",
+  "metadata": { ... },
+  "topology": { ... }
+}
+```
+
+Consumers **SHOULD** validate documents against the referenced schema. Producers **MAY** include the `$schema` field to enable automatic validation by schema-aware tools.
+
+
+### 9.1.3 Schema validation tools (non-normative)
+OSIRIS is intended to be validated **locally** by default to preserve privacy. Implementations **SHOULD** avoid uploading infrastructure inventories or topology snapshots to remote services.
+
+The following validation tools are **RECOMMENDED** reference implementations. They are **non-normative** and do not affect the OSIRIS specification itself.
+
+#### VS Code validator (recommended)
+A VS Code extension provides the best developer experience and privacy model:
+
+- Runs entirely on the user’s machine (offline, no upload)
+- Highlights issues inline (squiggles, diagnostics, quick fixes)
+- Supports validation levels (e.g. **basic schema**, **semantic rules**, **strict mode**)
+- Can explain errors by rule ID and link to the relevant spec section
+
+#### Command-line validators (CI / automation)
+Command-line validators are useful for CI pipelines and automated exports:
+
+- Validate files and directories (`osiris validate <file|dir>`)
+- Output machine-readable results (`--format json`) for CI parsing
+- Support validation levels and strictness options
+
+#### Web validators (optional, client-side)
+A web-based validator can be provided for convenience and demos, but **SHOULD** run **client-side** in the browser to avoid transmitting sensitive data.
+
+If a remote validation API is offered, it **MUST** be opt-in and clearly documented as server-side processing.
+
+> [!NOTE]
+> Implementations **SHOULD** keep validator logic consistent across tools by reusing a shared validation engine where possible (e.g. a common library that performs JSON Schema checks and OSIRIS semantic rule checks).
+
+
+### 9.1.4 Schema conformance requirements
+All OSIRIS v1.0 documents **MUST** conform to the JSON Schema defined in Appendix A. Producers **MUST** emit documents that pass schema validation. Consumers **MUST** reject documents that fail structural validation or provide clear diagnostic messages identifying validation failures.
+
+**Structural validation is non-negotiable:** Documents that fail JSON Schema validation are malformed and **MUST NOT** be processed by consumers except for diagnostic or debugging purposes.
+
+
+### 9.1.5 Schema extensibility
+The JSON Schema permits unknown fields in objects where extensibility is expected (top-level, metadata, resources, connections, groups, properties, extensions). This ensures forward compatibility when:
+
+- New OSIRIS versions introduce fields
+- Producers include custom metadata
+- Extensions add vendor-specific data
+
+Consumers **MUST** accept documents with unknown fields that pass schema validation. The schema uses `"additionalProperties": true` in extensible objects to permit forward-compatible evolution.
+
+---
+
+## 9.2 Minimum required fields (baseline interoperability)
+This section enumerates required fields at each level of an OSIRIS document. Required fields **MUST** be present and **MUST** contain values of the correct type. Missing or null required fields constitute validation errors.
+
+
+### 9.2.1 Top-level required fields
+Every OSIRIS document **MUST** be a JSON object containing:
+
+| Field | Type | Format | Description |
+|-------|------|--------|-------------|
+| `version` | string | `MAJOR.MINOR.PATCH` | OSIRIS specification version (e.g. `"1.0.0"`) |
+| `metadata` | object | see 9.2.2 | Document metadata |
+| `topology` | object | see 9.2.3 | Infrastructure topology data |
+
+**Validation rules:**
+- **V-DOC-001:** Document **MUST** be a JSON object (not array, string, number, etc.)
+- **V-DOC-002:** Document **MUST** contain `version`, `metadata` and `topology` fields
+- **V-DOC-003:** `version` **MUST** be a string matching `^\d+\.\d+\.\d+$` (SemVer format)
+- **V-DOC-004:** For OSIRIS v1.0 documents, `version` **MUST** be `"1.0.0"` or later v1.x.y versions
+
+**Valid example:**
+```json
+{
+  "version": "1.0.0",
+  "metadata": {
+    "timestamp": "2026-01-01T10:30:00Z"
+  },
+  "topology": {
+    "resources": []
+  }
+}
+```
+
+**Invalid examples:**
+```jsonc
+// Missing version field
+{
+  "metadata": { "timestamp": "2026-01-01T10:30:00Z" },
+  "topology": { "resources": [] }
+}
+
+// Invalid version format missing patch version
+{
+  "version": "1.0",
+  "metadata": { "timestamp": "2026-01-01T10:30:00Z" },
+  "topology": { "resources": [] }
+}
+
+// Not an object (array)
+[
+  { "version": "1.0.0", ... }
+]
+```
+
+
+### 9.2.2 Metadata required fields
+The `metadata` object **MUST** contain:
+
+| Field | Type | Format | Description |
+|-------|------|--------|-------------|
+| `timestamp` | string | ISO 8601 with timezone | Document generation timestamp |
+
+**Validation rules:**
+- **V-META-001:** Metadata object **MUST** contain `timestamp` field
+- **V-META-002:** `timestamp` **MUST** be a valid ISO 8601 timestamp with timezone designator
+- **V-META-003:** `timestamp` **MUST** include date, time and timezone (Z or offset like +00:00)
+
+**Valid timestamps:**
+```text
+"timestamp": "2026-01-01T10:30:00Z"              // UTC
+"timestamp": "2026-01-01T10:30:00+00:00"         // UTC with offset
+"timestamp": "2026-01-01T05:30:00-05:00"         // Eastern Time
+"timestamp": "2026-01-01T11:30:00+01:00"         // Central European Time
+```
+
+**Invalid timestamps:**
+```text
+"timestamp": "2026-01-01"                        // Missing time
+"timestamp": "2026-01-01T10:30:00"               // Missing timezone
+"timestamp": "2026-01-01 10:30:00Z"              // Invalid separator
+"timestamp": "Jan 1, 2026"                       // Wrong format
+```
+
+**Recommended fields (OPTIONAL but encouraged):**
+- `generator.name` (string): Name of generating tool
+- `generator.version` (string): Version of generating tool
+- `scope` (object): Description of what infrastructure is represented
+
+
+### 9.2.3 Topology required fields
+The `topology` object **MUST** contain:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `resources` | array | Array of resource objects (may be empty) |
+
+**Validation rules:**
+- **V-TPGY-001:** Topology object **MUST** contain `resources` field
+- **V-TPGY-002:** `resources` **MUST** be an array (may be empty: `[]`)
+- **V-TPGY-003:** If present, `connections` **MUST** be an array
+- **V-TPGY-004:** If present, `groups` **MUST** be an array
+
+**Minimal valid topology:**
+```json
+{
+  "resources": []
+}
+```
+
+**Topology with all fields:**
+```json
+{
+  "resources": [ ... ],
+  "connections": [ ... ],
+  "groups": [ ... ]
+}
+```
+
+> [!NOTE]
+> `connections` and `groups` are **OPTIONAL**. If omitted, they are treated as empty arrays. Producers **MAY** omit these fields entirely or provide them as empty arrays.
+
+
+### 9.2.4 Resource required fields
+Every resource object **MUST** contain:
+
+| Field | Type | Format | Description |
+|-------|------|--------|-------------|
+| `id` | string | document-unique | Unique identifier for resource |
+| `type` | string | dot notation | Resource type classification |
+| `provider` | object | see 9.2.4.1 | Provider attribution |
+
+**Validation rules:**
+- **V-RES-001:** Resource **MUST** contain `id`, `type` and `provider` fields
+- **V-RES-002:** Resource `id` **MUST** be a non-empty string
+- **V-RES-003:** Resource `id` **MUST** be unique within the document
+- **V-RES-004:** Resource `type` **MUST** be a non-empty string
+- **V-RES-005:** Resource `type` **MUST** match format: `^[a-z][a-z0-9]*(\.[a-z][a-z0-9]*)*$`
+- **V-RES-006:** Resource `type` **MUST** contain at least two segments (e.g. `compute.vm`, not just `compute`)
+- **V-RES-007:** Resource `provider` **MUST** be an object
+
+
+#### 9.2.4.1 Provider required fields
+The `provider` object within a resource **MUST** contain:
+
+| Field | Type | Format | Description |
+|-------|------|--------|-------------|
+| `name` | string | lowercase | Provider/vendor name |
+
+**Validation rules:**
+- **V-PROV-001:** Provider object **MUST** contain `name` field
+- **V-PROV-002:** Provider `name` **MUST** be a non-empty string
+- **V-PROV-003:** Provider `name` **MUST** match format: `^[a-z0-9]+(\.[a-z0-9]+)*$` (lowercase letters, digits, dots only)
+- **V-PROV-004:** Provider `name` **SHOULD** be a well-known canonical name (aws, azure, gcp, vmware, dell, cisco, arista, etc.)
+
+**Valid provider objects:**
+```jsonc
+{ "name": "aws" }
+{ "name": "azure" }
+{ "name": "dell" }
+{ "name": "cisco.aci" }  // Multi-segment allowed
+```
+
+**Invalid provider objects:**
+```jsonc
+{ "name": "AWS" }           // Not lowercase
+{ "name": "amazon-aws" }    // Contains hyphen
+{ "name": "" }              // Empty string
+{ }                         // Missing name field
+```
+
+**Recommended fields (OPTIONAL):**
+- `type` (string): Vendor-specific resource type (e.g. `"AWS::EC2::Instance"`, `"PowerEdge R770"`)
+- `native_id` (string): Vendor's native identifier (e.g. `"i-0abc123"`)
+- `region` (string): Geographic region or zone
+- `account` (string): Account, subscription or project ID
+
+
+### 9.2.5 Connection required fields
+Every connection object **MUST** contain:
+
+| Field | Type | Format | Description |
+|-------|------|--------|-------------|
+| `id` | string | document-unique | Unique identifier for connection |
+| `source` | string | resource ID reference | Source resource ID |
+| `target` | string | resource ID reference | Target resource ID |
+| `type` | string | dot notation | Connection type |
+
+**Validation rules:**
+- **V-CONN-001:** Connection **MUST** contain `id`, `source`, `target` and `type` fields
+- **V-CONN-002:** Connection `id` **MUST** be a non-empty string
+- **V-CONN-003:** Connection `id` **MUST** be unique within the document
+- **V-CONN-004:** Connection `source` **MUST** reference a valid resource `id`
+- **V-CONN-005:** Connection `target` **MUST** reference a valid resource `id`
+- **V-CONN-006:** Connection `type` **MUST** be a non-empty string
+- **V-CONN-007:** Connection `type` **MUST** match format: `^[a-z][a-z0-9]*(\.[a-z][a-z0-9]*)*$`
+
+**Valid connection:**
+```json
+{
+  "id": "conn-web-to-db",
+  "source": "aws::i-0abc123",
+  "target": "aws::db-prod-01",
+  "type": "dependency"
+}
+```
+
+**Invalid connections:**
+```jsonc
+// Missing required type field
+{
+  "id": "conn-001",
+  "source": "aws::i-0abc123",
+  "target": "aws::db-prod-01"
+}
+
+// Invalid type format
+{
+  "id": "conn-001",
+  "source": "aws::i-0abc123",
+  "target": "aws::db-prod-01",
+  "type": "TCP_CONNECTION"  // Uppercase, underscore
+}
+
+// Dangling reference
+{
+  "id": "conn-001",
+  "source": "aws::i-0abc123",
+  "target": "nonexistent-resource",  // Not in resources array
+  "type": "dependency"
+}
+```
+
+
+### 9.2.6 Group required fields
+Every group object **MUST** contain:
+
+| Field | Type | Format | Description |
+|-------|------|--------|-------------|
+| `id` | string | document-unique | Unique identifier for group |
+| `type` | string | dot notation | Group type |
+
+**Validation rules:**
+- **V-GRP-001:** Group **MUST** contain `id` and `type` fields
+- **V-GRP-002:** Group `id` **MUST** be a non-empty string
+- **V-GRP-003:** Group `id` **MUST** be unique within the document
+- **V-GRP-004:** Group `type` **MUST** be a non-empty string
+- **V-GRP-005:** Group `type` **MUST** match format: `^[a-z][a-z0-9]*(\.[a-z][a-z0-9]*)*$`
+- **V-GRP-006:** If present, group `members` **MUST** be an array of strings
+- **V-GRP-007:** If present, each group `members` entry **MUST** reference a valid resource `id`
+- **V-GRP-008:** If present, group `children` **MUST** be an array of strings
+- **V-GRP-009:** If present, each group `children` entry **MUST** reference a valid group `id`
+
+**Valid group:**
+```json
+{
+  "id": "grp-production-vpc",
+  "type": "network.vpc",
+  "members": [
+    "aws::i-0abc123",
+    "aws::i-0def456"
+  ]
+}
+```
+
+**Invalid groups:**
+```jsonc
+// Missing type
+{
+  "id": "grp-001",
+  "members": [ "aws::i-0abc123" ]
+}
+
+// Invalid type format
+{
+  "id": "grp-001",
+  "type": "Production_VPC",  // Uppercase, underscore
+  "members": [ "aws::i-0abc123" ]
+}
+
+// Dangling member reference
+{
+  "id": "grp-001",
+  "type": "network.vpc",
+  "members": [
+    "aws::i-0abc123",
+    "nonexistent-resource"  // Not in resources array
+  ]
+}
+```
+
+---
+
+## 9.3 Validation rules
+Beyond structural requirements enforced by JSON Schema, OSIRIS defines **semantic** and **domain** validation rules. These rules address referential integrity, naming conventions, type validity and extension usage.
+
+
+### 9.3.1 Validation levels
+OSIRIS defines three validation levels that consumers **MAY** implement based on their requirements:
+
+#### Level 1: Structural validation (REQUIRED)
+
+**What it validates:**
+- JSON syntax is correct
+- Required fields are present
+- Field types are correct (string, object, array, etc.)
+- Field values match format patterns
+
+**Implementation:** JSON Schema validation (Appendix A)
+**Outcome:** Document is **syntactically valid**
+**Consumers MUST implement:** Level 1 validation is mandatory
+
+
+#### Level 2: Semantic validation (RECOMMENDED)
+
+**What it validates:**
+- ID uniqueness within document
+- Referential integrity (connections > resources, groups > resources)
+- Type format compliance (lowercase, dots only)
+- Provider naming conventions
+- Extension namespace format
+
+**Implementation:** Custom validator logic after JSON Schema validation
+**Outcome:** Document is **semantically valid** and internally consistent
+**Consumers SHOULD implement:** Level 2 validation catches common producer errors
+
+
+#### Level 3: Domain validation (OPTIONAL)
+
+**What it validates:**
+- Resource types are recognized (standard types from Chapter 7)
+- Connection types are appropriate for resource types
+- Properties follow conventions for resource types
+- Extension namespaces are known/registered
+
+**Implementation:** Domain-aware validator with knowledge of OSIRIS taxonomy
+**Outcome:** Document uses **well-known types** and follows conventions
+**Consumers MAY implement:** Level 3 validation provides additional quality checks but is not required for conformance
+
+
+### 9.3.2 Identity validation rules
+
+**Rule category:** Semantic (Level 2)
+
+These rules ensure that identifiers are unique and well-formed:
+
+**V-ID-001: Resource ID uniqueness**
+- **Rule:** Every resource `id` **MUST** be unique within the document
+- **Level:** Error
+- **Example violation:**
+  ```jsonc
+  "resources": [
+    { "id": "aws::i-0abc123", "type": "compute.vm", ... },
+    { "id": "aws::i-0abc123", "type": "storage.volume", ... }  // Duplicate
+  ]
+  ```
+
+**V-ID-002: Connection ID uniqueness**
+- **Rule:** Every connection `id` **MUST** be unique within the document
+- **Level:** Error
+- **Example violation:**
+  ```jsonc
+  "connections": [
+    { "id": "conn-001", ... },
+    { "id": "conn-001", ... }  // Duplicate
+  ]
+  ```
+
+**V-ID-003: Group ID uniqueness**
+- **Rule:** Every group `id` **MUST** be unique within the document
+- **Level:** Error
+- **Example violation:**
+  ```jsonc
+  "groups": [
+    { "id": "grp-prod", "type": "administrative", ... },
+    { "id": "grp-prod", "type": "network.vpc", ... }  // Duplicate
+  ]
+  ```
+
+**V-ID-004: Non-empty IDs**
+- **Rule:** Resource, connection and group IDs **MUST** be non-empty strings
+- **Level:** Error
+- **Example violation:**
+  ```jsonc
+  { "id": "", "type": "compute.vm", ... }  // Empty ID
+  ```
+
+**V-ID-005: Resource ID format recommendation**
+- **Rule:** Resource IDs **SHOULD** use `provider::native-id` format when applicable
+- **Level:** Warning
+- **Example recommendation:**
+  ```jsonc
+  // Recommended
+  { "id": "aws::i-0abc123", ... }
+  
+  // Not recommended but valid
+  { "id": "my-web-server", ... }
+  ```
+
+**V-ID-006: Cross-scope uniqueness**
+- **Rule:** Resource, connection and group IDs occupy separate namespaces
+- **Guidance:** Same ID string **MAY** be used for a resource, connection and group without conflict
+- **Example (valid):**
+  ```jsonc
+  "resources": [ { "id": "vpc-001", ... } ],
+  "groups": [ { "id": "vpc-001", ... } ]  // Valid (different namespaces)
+  ```
+
+
+### 9.3.3 Referential integrity rules
+
+**Rule category:** Semantic (Level 2)
+
+These rules ensure that ID references resolve correctly:
+
+**V-REF-001: Connection source validity**
+- **Rule:** Connection `source` **MUST** reference an existing resource `id`
+- **Level:** Error
+- **Example violation:**
+  ```jsonc
+  "resources": [
+    { "id": "aws::i-0abc123", ... }
+  ],
+  "connections": [
+    { "source": "aws::i-0def456", ... }  // Resource doesn't exist
+  ]
+  ```
+
+**V-REF-002: Connection target validity**
+- **Rule:** Connection `target` **MUST** reference an existing resource `id`
+- **Level:** Error
+- **Example violation:**
+  ```jsonc
+  "resources": [
+    { "id": "aws::i-0abc123", ... }
+  ],
+  "connections": [
+    { "target": "aws::db-nonexistent", ... }  // Resource doesn't exist
+  ]
+  ```
+
+**V-REF-003: Group member validity**
+- **Rule:** Each group `members` entry **MUST** reference an existing resource `id`
+- **Level:** Error
+- **Example violation:**
+  ```jsonc
+  "resources": [
+    { "id": "aws::i-0abc123", ... }
+  ],
+  "groups": [
+    {
+      "members": [
+        "aws::i-0abc123",
+        "aws::i-0nonexistent"  // Resource doesn't exist
+      ]
+    }
+  ]
+  ```
+
+**V-REF-004: Group children validity**
+- **Rule:** Each group `children` entry **MUST** reference an existing group `id`
+- **Level:** Error
+- **Example violation:**
+  ```jsonc
+  "groups": [
+    { "id": "grp-parent", "children": ["grp-child"] },
+    // grp-child doesn't exist
+  ]
+  ```
+
+**V-REF-005: Circular group nesting**
+- **Rule:** Group hierarchies **MUST NOT** contain cycles
+- **Level:** Error
+- **Example violation:**
+  ```jsonc
+  "groups": [
+    { "id": "grp-a", "children": ["grp-b"] },
+    { "id": "grp-b", "children": ["grp-a"] }  // Circular reference
+  ]
+  ```
+
+**V-REF-006: Dangling references handling**
+- **Rule:** Consumers **SHOULD** report dangling references as warnings
+- **Guidance:** Consumers **MAY** skip invalid connections/groups while processing valid resources
+- **Level:** Warning (downgradeable from error for resilience)
+
+
+### 9.3.4 Type format rules
+
+**Rule category:** Structural (Level 1) and Semantic (Level 2)
+
+These rules ensure type identifiers are well-formed:
+
+**V-TYPE-001: Type must be lowercase**
+- **Rule:** Type strings **MUST** contain only lowercase letters and digits
+- **Level:** Error
+- **Example violations:**
+  ```text
+  "type": "Compute.VM"    // Uppercase
+  "type": "compute.VM"    // Uppercase segment
+  "type": "Compute"       // Uppercase
+  ```
+
+**V-TYPE-002: Type must use dot separator**
+- **Rule:** Type segments **MUST** be separated by dots (`.`)
+- **Prohibition:** Underscores (`_`), hyphens (`-`) and spaces are **NOT ALLOWED** in type strings
+- **Level:** Error
+- **Example violations:**
+  ```text
+  "type": "compute_vm"    // Underscore
+  "type": "compute-vm"    // Hyphen
+  "type": "compute vm"    // Space
+  ```
+
+**V-TYPE-003: Type must not start or end with dot**
+- **Rule:** Type strings **MUST NOT** start or end with a dot
+- **Level:** Error
+- **Example violations:**
+  ```text
+  "type": ".compute.vm"   // Leading dot
+  "type": "compute.vm."   // Trailing dot
+  ```
+
+**V-TYPE-004: Type must not have consecutive dots**
+- **Rule:** Type strings **MUST NOT** contain consecutive dots (`..`)
+- **Level:** Error
+- **Example violations:**
+  ```text
+  "type": "compute..vm"   // Consecutive dots
+  "type": "compute...vm"  // Multiple consecutive dots
+  ```
+
+**V-TYPE-005: Type must have minimum segments**
+- **Rule:** Type strings **MUST** contain at least two segments (category and subcategory)
+- **Level:** Error
+- **Example violations:**
+  ```text
+  "type": "compute"       // Only one segment
+  "type": "vm"            // Only one segment
+  ```
+
+**V-TYPE-006: Type format pattern**
+- **Rule:** Type strings **MUST** match regex: `^[a-z][a-z0-9]*(\.[a-z][a-z0-9]*)+$`
+- **Guidance:** Start with lowercase letter, followed by lowercase letters/digits, then one or more dot-separated segments with same format
+- **Level:** Error
+
+**V-TYPE-007: Custom type prefix**
+- **Rule:** Custom types **MUST** use `osiris.` prefix
+- **Guidance:** Standard types **MUST NOT** use `osiris.` prefix
+- **Level:** Error
+- **Example:**
+  ```text
+  // Standard type
+  "type": "compute.vm"
+  
+  // Custom type
+  "type": "osiris.aws.lambda.edge"
+  
+  // Standard type with osiris prefix
+  "type": "osiris.compute.vm"
+  ```
+
+**V-TYPE-008: Type depth recommendation**
+- **Rule:** Type strings **SHOULD NOT** exceed 4-5 segments
+- **Guidance:** Highly specific details belong in `properties`, not type strings
+- **Level:** Warning (informational, not error)
+
+
+### 9.3.5 Provider validation rules
+
+**Rule category:** Semantic (Level 2)
+
+These rules ensure provider information is well-formed:
+
+**V-PROV-001: Provider name lowercase**
+- **Rule:** Provider `name` **MUST** be lowercase
+- **Level:** Error
+- **Example violations:**
+  ```jsonc
+  "provider": { "name": "AWS" }      // Uppercase
+  "provider": { "name": "Azure" }    // Mixed case
+  ```
+
+**V-PROV-002: Provider name format**
+- **Rule:** Provider `name` **MUST** match pattern: `^[a-z0-9]+(\.[a-z0-9]+)*$`
+- **Allowed:** Lowercase letters, digits, dots only
+- **Not allowed:** Hyphens, underscores, spaces, uppercase
+- **Level:** Error
+- **Example violations:**
+  ```jsonc
+  "provider": { "name": "amazon-aws" }   // Hyphen
+  "provider": { "name": "cisco_aci" }    // Underscore
+  ```
+
+**V-PROV-003: Well-known provider names**
+- **Rule:** Producers **SHOULD** use canonical provider names for well-known vendors
+- **Canonical names:** aws, azure, gcp, oci, vmware, proxmox, dell, hpe, cisco, arista, juniper, paloalto, fortinet, etc.
+- **Level:** Warning
+- **Example recommendations:**
+  ```jsonc
+  // Recommended
+  "provider": { "name": "aws" }
+  
+  // Not recommended but valid
+  "provider": { "name": "amazon" }
+  "provider": { "name": "amazonwebservices" }
+  ```
+
+**V-PROV-004: Provider field recommendations**
+- **Rule:** Provider objects **SHOULD** include `type`, `native_id` and `region` when applicable
+- **Level:** Informational
+
+
+### 9.3.6 Extension validation rules
+
+**Rule category:** Semantic (Level 2)
+These rules ensure extensions follow the namespace conventions defined in Chapter 8:
+
+**V-EXT-001: Extension namespace prefix**
+- **Rule:** Extension fields **MUST** use `osiris.<namespace>` prefix
+- **Level:** Error
+- **Example:**
+  ```jsonc
+  // Valid
+  "extensions": {
+    "osiris.aws": { ... },
+    "osiris.com.acme": { ... }
+  }
+  
+  // Invalid (missing osiris prefix)
+  "extensions": {
+    "aws": { ... },
+    "custom": { ... }
+  }
+  ```
+
+**V-EXT-002: Extension namespace format**
+- **Rule:** Extension namespaces **MUST** match pattern: `^osiris\.[a-z][a-z0-9]*(\.[a-z][a-z0-9]*)*$`
+- **Level:** Error
+- **Example violations:**
+  ```jsonc
+  "extensions": {
+    "osiris.AWS": { ... },          // Uppercase
+    "osiris.my-company": { ... },   // Hyphen
+    "osiris.": { ... }               // Incomplete
+  }
+  ```
+
+**V-EXT-003: Unknown extensions**
+- **Rule:** Consumers **MUST** accept documents with unknown extension namespaces
+- **Guidance:** Consumers **MAY** log warnings for unrecognized extensions but **MUST NOT** reject documents
+- **Level:** Informational
+
+**V-EXT-004: Extension namespace registration**
+- **Rule:** Producers **SHOULD** document custom extension namespaces
+- **Guidance:** Extension namespaces **SHOULD** use reverse domain notation for organization-specific extensions (e.g. `osiris.com.acme`)
+- **Level:** Informational
+
+
+### 9.3.7 Domain validation rules
+
+**Rule category:** Domain (Level 3, OPTIONAL)
+
+These rules validate against known types and conventions:
+
+**V-DOM-001: Known resource types**
+- **Rule:** Resource types **SHOULD** be standard types from Chapter 7
+- **Guidance:** Consumers **MAY** warn about unrecognized types but **MUST NOT** reject documents
+- **Level:** Warning (informational)
+
+**V-DOM-002: Known connection types**
+- **Rule:** Connection types **SHOULD** be standard types from Chapter 5
+- **Standard types:** network, dependency, contains, dataflow, physical, plus protocol-specific subtypes
+- **Level:** Warning (informational)
+
+**V-DOM-003: Known group types**
+- **Rule:** Group types **SHOULD** be standard types from Chapter 6
+- **Standard types:** administrative, structural, plus category-specific subtypes
+- **Level:** Warning (informational)
+
+**V-DOM-004: Property conventions**
+- **Rule:** Properties **SHOULD** follow naming conventions for resource types
+- **Example:** `compute.vm` resources typically have `vcpus`, `memory_gb`, `instance_type`
+- **Level:** Informational
+
+**V-DOM-005: Connection semantics**
+- **Rule:** Connections **SHOULD** make semantic sense for resource type pairs
+- **Example:** `dependency` connections typically link application components
+- **Level:** Informational
+
+
+### 9.3.8 Validation error levels
+OSIRIS defines three error severity levels:
+
+#### ERROR (MUST Fix)
+**Severity:**
+Critical - document is malformed
+
+**Action:**
+Producers **MUST** fix errors before emission. Consumers **MUST** reject documents or emit clear error messages.
+
+**Examples:**
+- Missing required fields
+- Invalid JSON syntax
+- Duplicate IDs
+- Dangling references
+- Invalid type formats
+
+**Consumer behavior:**
+Stop processing or provide diagnostic information only
+
+
+#### WARNING (SHOULD Fix)
+**Severity:**
+Important - document may have issues
+
+**Action:**
+Producers **SHOULD** address warnings. Consumers **SHOULD** log warnings but **MAY** continue processing.
+
+**Examples:**
+- Non-standard provider names
+- Missing recommended fields
+- Unrecognized but valid types
+- Non-recommended ID formats
+
+**Consumer behavior:**
+Log warning, continue processing
+
+
+#### INFO (MAY Fix)
+
+**Severity:**
+Informational - potential improvements
+
+**Action:**
+Producers **MAY** address informational issues. Consumers **MAY** log info messages.
+
+**Examples:**
+- Optional fields not present
+- Property naming suggestions
+- Type depth recommendations
+- Extension namespace suggestions
+
+**Consumer behavior:**
+Optional logging, continue processing
+
+
+### 9.3.9 Validation implementation guidance
+
+#### For producers
+
+**Validation workflow:**
+1. Generate OSIRIS document
+2. Validate against JSON Schema (Level 1)
+   - If fails: Fix errors and retry
+3. Run semantic validation (Level 2)
+   - If errors: Fix and retry
+   - If warnings: Log and optionally fix
+4. Optionally run domain validation (Level 3)
+   - Log informational messages
+5. Emit document
+
+
+**Best practices:**
+- Validate before emission (catch errors early)
+- Log all warnings and errors during generation
+- Provide clear error messages with context
+- Test validator with invalid documents
+- Include validation in CI/CD pipelines
+
+
+#### For consumers
+
+**Validation workflow:**
+1. Receive OSIRIS document
+2. Validate against JSON Schema (Level 1)
+   - If fails: Reject document with error message
+3. Run semantic validation (Level 2)
+   - If errors: Reject or warn user
+   - If warnings: Log warnings
+4. Optionally run domain validation (Level 3)
+   - Log informational messages
+5. Process document
+
+
+**Best practices:**
+- Always perform Level 1 (structural) validation
+- Implement Level 2 (semantic) validation for production systems
+- Provide clear, actionable error messages
+- Allow users to configure validation strictness
+- Log validation events for debugging
+- Handle partial failures gracefully (e.g. skip invalid connections, process valid resources)
+
+
+#### Validation libraries
+
+**Reference implementations:**
+Producers and consumers **SHOULD** use or provide validation libraries that implement:
+- JSON Schema validation (Level 1)
+- Semantic rule checking (Level 2)
+- Optional domain validation (Level 3)
+
+---
+
+## 9.4 Validation examples
+### 9.4.1 Valid minimal document
+
+```json
+{
+  "$schema": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
+  "version": "1.0.0",
+  "metadata": {
+    "timestamp": "2026-01-01T18:30:00Z",
+    "generator": {
+      "name": "",
+      "version": ""
+    }
+  },
+  "topology": {
+    "resources": []
+  }
+}
+```
+
+**Validation result:**
+- Level 1: PASS (structure valid)
+- Level 2: PASS (no semantic issues)
+- Level 3: PASS (no domain issues)
+
+
+### 9.4.2 Valid document with resources and connections
+
+```json
+{
+  "$schema": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
+  "version": "1.0.0",
+  "metadata": {
+    "timestamp": "2026-01-01T18:30:00Z",
+    "generator": {
+      "name": "osiris-aws-parser",
+      "version": "1.0.0"
+    }
+  },
+  "topology": {
+    "resources": [
+      {
+        "id": "aws::i-0abc123",
+        "type": "compute.vm",
+        "provider": {
+          "name": "aws",
+          "type": "AWS::EC2::Instance",
+          "native_id": "i-0abc123",
+          "region": "us-east-1",
+          "account": "123456789012"
+        }
+      },
+      {
+        "id": "aws::db-prod-01",
+        "type": "application.database",
+        "provider": {
+          "name": "aws",
+          "type": "AWS::RDS::DBInstance",
+          "native_id": "db-prod-01",
+          "region": "us-east-1",
+          "account": "123456789012"
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-web-to-db",
+        "source": "aws::i-0abc123",
+        "target": "aws::db-prod-01",
+        "type": "dependency",
+        "direction": "forward"
+      }
+    ]
+  }
+}
+```
+
+**Validation result:**
+- Level 1: PASS (structure valid)
+- Level 2: PASS (IDs unique, references valid)
+- Level 3: PASS (standard types used)
+
+
+### 9.4.3 Invalid document (missing required field)
+
+```jsonc
+{
+  "$schema": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
+  "version": "1.0.0",
+  "metadata": {
+    "timestamp": "2026-01-02T10:35:00Z",
+    "generator": {
+      "name": "osiris-aws-parser",
+      "version": "1.0.0"
+    }
+  },
+  "topology": {
+    "resources": [
+      {
+        "id": "aws::i-0abc123",
+        "type": "compute.vm"
+        // Missing required "provider" field
+      }
+    ]
+  }
+}
+```
+
+**Validation result:**
+- Level 1: FAIL
+  - Error V-RES-001: Resource missing required field 'provider'
+  - Location: topology.resources[0]
+
+
+### 9.4.4 Invalid document (dangling reference)
+
+```jsonc
+{
+  "version": "1.0.0",
+  "metadata": {
+    "timestamp": "2026-01-02T10:35:00Z",
+    "generator": {
+      "name": "osiris-aws-parser",
+      "version": "1.0.0"
+    }
+  },
+  "topology": {
+    "resources": [
+      {
+        "id": "aws::i-0abc123",
+        "type": "compute.vm",
+        "provider": { "name": "aws" }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-001",
+        "source": "aws::i-0abc123",
+        "target": "aws::db-nonexistent",  // Resource doesn't exist, ID doesn't match
+        "type": "dependency"
+      }
+    ]
+  }
+}
+```
+
+**Validation result:**
+- Level 1: PASS (structure valid)
+- Level 2: FAIL
+  - Error V-REF-002: Connection target references non-existent resource 'aws::db-nonexistent'
+  - Location: topology.connections[0].target
+
+
+### 9.4.5 Invalid document (invalid type format)
+
+```jsonc
+{
+  "version": "1.0.0",
+  "metadata": {
+    "timestamp": "2026-01-02T10:55:00Z",
+    "generator": {
+      "name": "osiris-aws-parser",
+      "version": "1.0.0"
+    }
+  },
+  "topology": {
+    "resources": [
+      {
+        "id": "aws::i-0abc123",
+        "type": "Compute_VM",  // Uppercase and underscore
+        "provider": { "name": "aws" }
+      }
+    ]
+  }
+}
+```
+
+**Validation result:**
+- Level 1: FAIL
+  - Error V-TYPE-001: Type must be lowercase (found: 'Compute_VM')
+  - Error V-TYPE-002: Type must use dot separator, not underscore
+  - Location: topology.resources[0].type
+
+---
+
+## 9.5 Summary
+OSIRIS validation operates at three levels:
+
+1. **Structural (Level 1) REQUIRED:** JSON Schema validation
+2. **Semantic (Level 2) RECOMMENDED:** Referential integrity and naming rules
+3. **Domain (Level 3) OPTIONAL:** Type recognition and conventions
+
+**Key validation rules:**
+- Required fields must be present (document, metadata, topology, resources, connections, groups)
+- IDs must be unique within their scope (resources, connections, groups)
+- References must resolve (connections > resources, groups > resources)
+- Types must use lowercase dot notation (e.g. `compute.vm`, not `Compute_VM`)
+- Provider names must be lowercase (e.g. `aws`, not `AWS`)
+- Extensions must use `osiris.*` namespace prefix
+
+**Validation workflow:**
+1. Producers **MUST** validate before emission and fix errors before publishing
+3. Consumers **MUST** validate on receipt and reject or flag invalid documents (per their policy)
+5. Unknown extensions **MUST** be accepted (forward compatibility)
+
+**Implementation guidance:**
+- Use JSON Schema for Level 1 validation
+- Implement custom validation logic for Level 2
+- Optionally implement domain awareness for Level 3
+- Provide clear error messages with location information
+- Log warnings without failing validation
+- Allow configuration of validation strictness
+
+The validation rules defined in this chapter ensure that OSIRIS documents are well-formed, internally consistent and interoperable across implementations while maintaining forward compatibility for ecosystem evolution.
+
+---
+
+# 10 Examples
+This chapter references complete, validated examples in the OSIRIS repository. 
+All examples are available at:
+
+```text
+https://github.com/osirisjson/osiris/tree/main/examples/v1.0
+```
+
+**Each example is:**
+- Validated against the OSIRIS v1.0 schema
+- Illustrative and intended to be schema-valid for testing and reference
+- Informative where examples conflict with the specification, the specification is authoritative.
+
+## 10.1 IT Minimal Cloud Provider infrastructure
+### 10.1.0 Overview
+This example demonstrates the absolute minimum valid OSIRIS document for a cloud provider. Showcasing alternative example of cloud platforms beyond the major hyperscalers.
+
+It showcases:
+- Minimal valid document for cloud provider
+- Alternative cloud provider representation
+- Simple droplet with required fields only
+- Different provider naming and ID format
+
+### 10.1.1 Scenario
+A simplest cloud infrastructure on DigitalOcean:
+- Single droplet (virtual machine)
+- Provider specific ID format
+- NYC3 region
+- Used for: demonstrating non-hyperscaler providers, validation testing
+
+### 10.1.2 Example
+[View](../../examples/v1.0/IT/cloud/osiris_minimal_cloud_provider_infrastructure.json)
+
+### 10.1.3 Key features demonstrated
+**Cloud provider:**
+- DigitalOcean instead alternative of major hyperscalers
+- Shows OSIRIS supports any cloud platform
+- Provider specific ID format
+
+**Use cases:**
+- Starting point for DigitalOcean infrastructure
+- Template for other cloud providers
+- Validation testing
+
+---
+
+## 10.2 IT Minimal Hyperscaler infrastructure
+### 10.2.0 Overview
+This example demonstrates the absolute minimum valid OSIRIS document for hyperscaler infrastructure. It represents a single virtual machine with minimal required fields, serving as the simplest possible starting point.
+
+It showcases:
+- Minimal valid OSIRIS document structure
+- Single resource with only required fields
+- Essential provider attribution
+- Bare minimum metadata
+
+### 10.2.1 Scenario
+The simplest possible cloud infrastructure representation:
+- Single EC2 instance (or equivalent VM)
+- Required fields only (id, type, provider)
+- Minimal metadata (timestamp only)
+- No connections or groups
+- Used for: testing, validation, learning the basic structure
+
+### 10.2.2 Example
+[View](../../examples/v1.0/IT/hyperscalers/osiris_minimal_hyperscalers_infrastructure.json)
+
+### 10.2.3 Key features demonstrated
+**Absolute minimum fields:**
+- Document structure: version, metadata, topology
+- Resource minimum: id, type, provider
+- Provider minimum: name only
+- Metadata minimum: timestamp only
+
+**Use cases:**
+- Learning OSIRIS basics
+- Testing schema validators
+- Template for new documents
+- Demonstrating required vs. optional fields
+
+---
+
+## 10.3 IT Simple Hyperscaler infrastructure
+### 10.3.0 Overview
+This example demonstrates a basic three-tier web application running entirely in AWS. 
+
+It showcases:
+- Simple resource topology (compute, database, load balancer)
+- Basic connection types (dependency, route)
+- Standard cloud provider attribution
+- Minimal but complete metadata
+
+### 10.3.1 Scenario
+A production web application with:
+- Application Load Balancer (public-facing)
+- EC2 instance running the web application
+- RDS PostgreSQL database
+- Direct dependencies: ALB > EC2 > RDS
+
+### 10.3.2 Example
+[View](../../examples/v1.0/IT/hyperscalers/osiris_simple_hyperscaler_infrastructure.json)
+
+
+#### 10.3.3 Key features demonstrated
+**Resource diversity:**
+- Network resource (load balancer)
+- Compute resource (EC2 instance)
+- Application resource (database)
+
+**Provider attribution:**
+- Consistent AWS provider naming
+- Native type mapping (AWS::EC2::Instance)
+- Regional and account context
+
+**Connections:**
+- `route` type for traffic flow (ALB > EC2)
+- `dependency` type for application relationship (EC2 > RDS)
+- Directional semantics with `forward`
+
+**Properties:**
+- Network configuration (IPs, VPCs, subnets)
+- Instance specifications (type, image, platform)
+- Database configuration (engine, storage, endpoint)
+
+---
+
+## 10.4 IT Hyperscaler infrastructure belonging with Resource Group and VNet membership
+### 10.4.0 Overview
+Hyperscaler environments often have hierarchical containers (e.g. Azure Resource Groups, GCP Projects, AWS VPCs). OSIRIS can represent this belonging using groups (recommended for inventory/reporting) without requiring traversal semantics.
+
+### 10.4.1 Scenario
+This example represents a **multi-hyperscaler environment** where infrastructure resources originate from different providers (e.g. AWS, Azure, GCP) but are described in a **single OSIRIS document**.
+
+It demonstrates:
+- How a single topology can include heterogeneous resources across multiple providers.
+- How cross-provider dependencies can be expressed using explicit connections.
+- How cloud “ownership / belonging” containers (e.g. Resource Groups, Projects, VPC/VNet) can be represented for documentation purposes.
+
+### 10.4.2 Example
+[View](../../examples/v1.0/IT/hyperscalers/osiris_hyperscaler_infrastructure_belonging.json)
+
+#### 10.4.3 Key features demonstrated
+- **Multi-provider attribution:** resources include `provider.name` and native identifiers to preserve provenance and correlation.
+- **Cross-provider topology:** connections can link resources even when they come from different vendors or platforms.
+- **Belonging or ownership modeling:** hierarchical cloud containers (e.g. Azure Resource Group, GCP Project, AWS VPC or Azure VNet) can be represented using:
+  - **Groups** (recommended for inventory/reporting and documentation)
+  - **`contains` connections** (recommended when containment must be traversed as topology).
+- **Forward compatibility:** consumers can ignore unknown resource fields and extension namespaces while still loading the document.
+
+---
+
+## 10.5 IT Multi-Hyperscalers environment
+### 10.5.0 Overview
+This example demonstrates infrastructure spanning AWS and Azure, showcasing:
+- Multiple cloud providers in a single topology
+- Cross-cloud resource relationships
+- Provider-specific native types
+- Unified representation of diverse infrastructure
+
+### 10.5.1 Scenario
+A distributed application with:
+- Azure front-end (App Service)
+- AWS compute tier (EC2)
+- Azure database (SQL Database)
+- Cross-cloud dependencies and data flows
+
+### 10.5.2 Example
+[View](../../examples/v1.0/IT/hyperscalers/osiris_multi_hyperscaler_environment.json)
+
+### 10.5.3 Key features demonstrated
+**Multi-provider resources:**
+- Azure resources (App Service, SQL Database, Redis)
+- AWS resources (EC2)
+- Mixed provider types in single topology
+
+**Cross-cloud connections:**
+- Azure > AWS dependency (frontend to API)
+- AWS > Azure dependency (API to database)
+- Demonstrates cloud interconnection patterns
+
+**Provider diversity:**
+- Azure native IDs use ARM resource paths
+- AWS native IDs use standard format
+- Provider-specific properties maintained
+
+**Complex relationships:**
+- Multiple connection paths
+- Shared resources (Redis accessed by both frontend and API)
+- Bidirectional connections for cache access
+
+---
+
+## 10.6 IT Hybrid infrastructure on Hyperscaler and On-Premise
+### 10.6.0 Overview
+This example demonstrates a hybrid environment combining cloud and on-premise infrastructure:
+- AWS cloud resources
+- Physical on-premise servers (MXP datacenter)
+- Custom provider for on-premise equipment
+- Hybrid connectivity and dependencies
+
+### 10.6.1 Scenario
+An enterprise hybrid deployment:
+- AWS public cloud for web tier
+- On-premise physical servers for legacy applications
+- On-premise physical storage
+- Hybrid connections (VPN, direct connect)
+- Mixed virtualized and physical infrastructure
+
+### 10.6.2 Example
+[View](../../examples/v1.0/IT/hybrid/osiris_hybrid_hyperscaler_on_premise.json)
+
+### 10.6.3 Key features demonstrated
+**Hybrid topology:**
+- Cloud resources (AWS EC2, VPN)
+- Physical on-premise servers (Dell R770)
+- Physical storage infrastructure
+
+**Custom provider usage:**
+- `provider.name: "custom"` for on-premise equipment
+- Required `namespace` field with reverse-domain notation
+- Custom provider for equipment not from standard cloud vendors
+
+**Physical infrastructure details:**
+- Complete hardware specifications (CPU, memory, storage)
+- Physical location (datacenter, rack, rack unit)
+- Serial numbers and asset tags
+
+**Hybrid connectivity:**
+- VPN connection bridging cloud and on-premise
+- Connections spanning environments
+
+**Grouping:**
+- Logical groups (cloud resources)
+- Physical groups (datacenter site, rack)
+- Hierarchical organization
+
+---
+
+## 10.7 IT Minimal On-Premise infrastructure
+### 10.7.0 Overview
+This example demonstrates the absolute minimum valid OSIRIS document for on-premise physical infrastructure. It represents a single physical server with custom provider attribution.
+
+It showcases:
+- Minimal valid document for on-premise equipment
+- Custom provider with required namespace
+- Physical server resource type (not virtual machine)
+- Site-based identification pattern
+
+### 10.7.1 Scenario
+The simplest on-premise infrastructure representation:
+- Single physical server in MXP datacenter
+- Custom provider (non-cloud vendor)
+- Required namespace field (osiris.it.mxp)
+- Datacenter site attribution
+- Minimal metadata (timestamp only)
+- Used for: learning on-premise modeling, validation testing, template for datacenter exports
+
+### 10.7.2 Example
+[View](../../examples/v1.0/IT/on-premise/osiris_minimal_on_premise_infrastructure.json)
+
+### 10.7.3 Key features demonstrated
+**Custom provider requirements:**
+- `provider.name: "custom"` for non-cloud equipment
+- **Required** `namespace` field with reverse-domain notation
+- Format: `osiris.{country}.{organization}` or `osiris.{com}.{company}`
+- Example: `osiris.it.mxp` ( This example use ICAO code, MXP is referred to a Datacenter located in Milan.)
+
+**Physical infrastructure:**
+- Resource type: `compute.server` (not `compute.vm`)
+- Distinguishes physical hardware from virtual machines
+- Appropriate for bare-metal servers
+
+**ID construction:**
+- On-premise format: `site::identifier`
+- Site code: `mxp` (Milan datacenter)
+- Identifier: `server-01` (simple, human-readable)
+- Pattern enables easy organization by datacenter
+
+**Site attribution:**
+- `provider.site`: Datacenter or facility identifier
+- `provider.native_id`: Internal asset tracking number
+- Enables correlation with DCIM systems
+
+**Use cases:**
+- Starting point for on-premise OSIRIS modeling
+- Custom provider namespace validation
+- Template for datacenter asset exports
+- Demonstrating physical vs. virtual resources
+- Asset management system integration
+
+---
+
+## 10.8 IT On-Premise Network topology
+### 10.8.0 Overview
+This example demonstrates detailed network infrastructure with:
+- Physical network equipment (switches, routers)
+- Detailed interface configurations
+- Physical connectivity (fiber optics, copper)
+- Network hierarchy and segmentation
+- Complex connection properties
+
+### 10.8.1 Scenario
+A datacenter network spine-leaf architecture:
+- Spine switches (high-capacity core)
+- Leaf switches (server connectivity)
+- Physical fiber connections between tiers
+- Server network interfaces
+- Detailed transceiver and cable specifications
+
+### 10.8.2 Example
+[View](../../examples/v1.0/IT/on-premise/osiris_on_premise_network_topology.json)
+
+### 10.8.3 Key features demonstrated
+**Detailed network equipment:**
+- Switch specifications (Arista DCS-7050SX3-48YC12)
+- Port configurations and capabilities
+- Software versions (EOS 4.29.2F)
+- Management information
+
+**Physical connectivity types:**
+- `physical.fiber` connections (100G QSFP28)
+- `physical.copper` connections (10G SFP+)
+- Different media types in same topology
+
+**Interface details:**
+- Source and target interface names
+- Port numbers and types
+- Transceiver specifications (vendor, part number, serial)
+- Cable specifications (type, length, connector)
+
+**Network-specific properties:**
+- Layer 1 specifications (speed, duplex)
+- VLANs and trunking
+- Network bonding/teaming
+- MTU configurations
+
+**Hierarchical grouping:**
+- Logical tiers (spine, leaf)
+- Physical pods
+- Nested groups (fabric containing layers)
+- Network segmentation
+
+---
+
+## 10.9 OT Minimal infrastructure
+### 10.9.0 Overview
+This example demonstrates the absolute minimum valid OSIRIS document for Operational Technology (OT) infrastructure. It represents a single environmental sensor, showcasing the simplest OT device representation.
+
+It showcases:
+- Minimal valid OT document structure
+- OT-specific resource type (`ot.sensor.environmental`)
+- Custom provider for OT equipment
+- Physical facility monitoring device
+- Bridge between IT documentation and OT systems
+
+### 10.9.1 Scenario
+The simplest OT infrastructure representation:
+- Single environmental sensor in MXP datacenter
+- Temperature and humidity monitoring device
+- Custom provider with namespace (non-IT vendor)
+- Datacenter facility monitoring system
+- No network connections shown (monitoring only)
+- Used for: learning OT modeling, demonstrating IT/OT distinction, validation testing
+
+**Real-world context:**
+Environmental sensors are ubiquitous in:
+- Datacenters (temperature, humidity monitoring)
+- Server rooms (thermal monitoring)
+- Industrial facilities (environmental control)
+- Building management systems (HVAC monitoring)
+- Cold storage facilities (temperature tracking)
+
+### 10.9.2 Example
+[View](../../examples/v1.0/OT/osiris_minimal_ot_infrastructure.json)
+
+### 10.9.3 Key features demonstrated
+**OT resource types:**
+- `ot.sensor.environmental` - Distinguishes OT from IT resources
+- Operational Technology namespace (`ot.*`)
+- Physical monitoring equipment
+- Facility management systems integration
+
+**IT vs OT distinction:**
+- IT resources: `compute.*`, `network.*`, `storage.*`
+- OT resources: `ot.sensor.*`, `ot.camera.*`, `ot.access.*`
+- Clear domain separation
+- Enables IT/OT convergence modeling
+
+**Minimal OT requirements:**
+- Smallest valid OT document
+- Required fields: id, type, provider (with name and namespace)
+- Custom provider for non-cloud OT vendors
+- Site attribution for physical location
+
+**ID construction:**
+- OT format: `site::device-identifier`
+- Site code: `mxp` (example of a datacenter location)
+- Device identifier: `sensor-temp-01`
+- Human-readable, location-aware naming
+
+**Use cases:**
+- Starting point for OT infrastructure modeling
+- Template for building management systems
+- Facility monitoring system exports
+- Environmental monitoring integration
+- IT/OT convergence documentation
+
+---
+
+## 10.10 OT Cross connection with IT Network
+### 10.10.0 Overview
+**IT/OT network convergence** with security segmentation:
+- Separate IT and OT network segments
+- Industrial firewall
+- SCADA equipment
+- Secure cross-segment connectivity
+
+### 10.10.1 Scenario
+- IT Zone: Enterprise servers, users
+- OT Zone: SCADA, PLCs, HMI
+- Firewall: Paloalto at boundary
+
+### 10.10.2 Example
+[View](../../examples/v1.0/OT/osiris_it_ot_cross_network_topology.json)
+
+### 10.10.3 Key features demonstrated
+- Zone-based segmentation
+- Industrial firewall configuration
+- SCADA/ICS equipment
+- Security policies in connection properties
+- Logical grouping by network segment
+
+---
+
+## 10.11 OT Industrial printer
+### 10.11.0 Overview
+**Zebra ZT620** industrial printer connected to network infrastructure.
+
+### 10.11.1 Scenario
+Warehouse label printing:
+- Thermal transfer printer
+- Network connectivity
+- Integration with WMS
+
+### 10.11.2 Example
+[View](../../examples/v1.0/OT/osiris_industrial_printer.json)
+
+### 10.11.3 Key features demonstrated
+- Industrial equipment specifications
+- Network integration
+- PoE considerations
+- OT device on IT network
+
+---
+
+## 10.12 OT Security camera
+### 10.12.0 Overview
+IP **security camera system** with:
+- Axis IP cameras
+- Network Video Recorder (NVR)
+- PoE network switches
+
+### 10.12.1 Scenario
+- Multiple cameras (entrance, server room)
+- Central NVR for storage
+- RTSP video streams
+
+### 10.12.2 Example
+[View](../../examples/v1.0/OT/osiris_security_camera.json)
+
+### 10.12.3 Key features demonstrated
+- PoE power requirements (class 4)
+- Video stream specifications
+- `flow` connection for RTSP streams
+- NVR storage capacity
+
+---
+
+## 10.13 OT Door access control
+### 10.13.0 Overview
+Physical security **access control system** with:
+- Access control panel/controller
+- Door card readers
+- Network-connected locks
+
+### 10.13.1 Scenario
+- `ot.access.controller` - Central panel
+- `ot.access.reader` - Card/biometric readers
+- `ot.access.lock` - Electronic door locks
+
+### 10.13.2 Example
+[View](../../examples/v1.0/OT/osiris_door_access_control.json)
+
+### 10.13.3 Key features demonstrated
+- OT-specific resource types
+- `control` connection type
+- Physical location tracking
+- Controller to reader relationships
+
+---
+
+## 10.14 Summary
+### About example generators
+The examples in this repository include `generator` metadata showing hypothetical parser names. These parsers are planned for future development and do not yet exist in the v1.0 release.
+
+**Current Status:**
+Examples are hand-crafted for documentation and validation.
+
+**Future Parsers:**
+The OSIRIS project will begin developing reference parsers for well known hyperscalers and brands:
+- AWS (osiris-aws-parser)
+- Azure (osiris-azure-parser)
+- GCP (osiris-gcp-parser)
+- OCI (osiris-oci-parser)
+- IBM (osiris-ibm-parser)
+- Alibaba Cloud (osiris-ali-parser)
+- Tencent Cloud (osiris-tc-parser)
+- Proxmox (osiris-proxmox-parser)
+- VMware (osiris-vmware-parser)
+- Arista (osiris-arista-parser)
+- Cisco (osiris-cisco-parser)
+- Ciena (osiris-ciena-parser)
+- Nokia (osiris-nokia-parser)
+
+To create your own parsers follow the implementation guidelines on chapter 11.
+
+
+### 10.14.1 Common patterns
+**ID construction:**
+- Hyperscaler and Cloud Providers: `provider::native-id` (e.g. `aws::i-0abc123`)
+- On-premise: `site::identifier` (e.g. `mxp::srv-r770-001`)
+- Consistent formatting across all examples
+
+**Provider attribution:**
+- Standard providers use lowercase names (`aws`, `azure`)
+- Custom providers require `namespace` field
+- Native types preserve vendor format (`AWS::EC2::Instance`)
+
+**Network Connection directionality:**
+- `forward`: Unidirectional flow (A > B)
+- `bidirectional`: Symmetric relationship (A <-> B)
+- `reverse`: Reverse flow (B > A)
+
+**Properties structure:**
+- Type-specific properties in `properties` object
+- Vendor extensions in `extensions` object
+- Labels and metadata in `tags` object

@@ -1,0 +1,150 @@
+{
+  "$schema": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
+  "version": "1.0.0",
+  "metadata": {
+    "timestamp": "2026-01-08T14:30:00Z",
+    "generator": {
+      "name": "manual",
+      "version": "1.0.0"
+    },
+    "scope": {
+      "name": "AWS three-tier web application",
+      "description": "Application load balancer, web server and PostgreSQL database in US-East-1",
+      "providers": ["aws"],
+      "regions": ["us-east-1"],
+      "accounts": ["123456789012"],
+      "environments": ["production"]
+    }
+  },
+  "topology": {
+    "resources": [
+      {
+        "id": "aws::app-alb-prod-001",
+        "type": "network.loadbalancer",
+        "name": "app-alb-prod",
+        "description": "Application load balancer for production web app",
+        "provider": {
+          "name": "aws",
+          "type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+          "native_id": "app-alb-prod-001",
+          "region": "us-east-1",
+          "account": "123456789012"
+        },
+        "status": "active",
+        "properties": {
+          "dns_name": "app-alb-prod-123456.us-east-1.elb.amazonaws.com",
+          "scheme": "internet-facing",
+          "type": "application",
+          "ip_address_type": "ipv4",
+          "vpc_id": "vpc-0a1b2c3d",
+          "availability_zones": [
+            "us-east-1a",
+            "us-east-1b"
+          ]
+        },
+        "tags": {
+          "Environment": "production",
+          "Application": "web-app",
+          "ManagedBy": "terraform"
+        }
+      },
+      {
+        "id": "aws::i-0abc123def456",
+        "type": "compute.vm",
+        "name": "web-app-prod-01",
+        "description": "Production web application server",
+        "provider": {
+          "name": "aws",
+          "type": "AWS::EC2::Instance",
+          "native_id": "i-0abc123def456",
+          "region": "us-east-1",
+          "account": "123456789012",
+          "zone": "us-east-1a"
+        },
+        "status": "active",
+        "properties": {
+          "instance_type": "t3.medium",
+          "platform": "linux",
+          "image_id": "ami-0c55b159cbfafe1f0",
+          "private_ip": "10.0.1.10",
+          "public_ip": "203.0.113.10",
+          "vpc_id": "vpc-0a1b2c3d",
+          "subnet_id": "subnet-0abc123",
+          "security_groups": [
+            "sg-0def456"
+          ],
+          "key_name": "prod-web-key"
+        },
+        "tags": {
+          "Environment": "production",
+          "Application": "web-app",
+          "Role": "webserver"
+        },
+        "state": "running"
+      },
+      {
+        "id": "aws::db-prod-postgres-01",
+        "type": "application.database",
+        "name": "app-db-prod",
+        "description": "PostgreSQL database for production app",
+        "provider": {
+          "name": "aws",
+          "type": "AWS::RDS::DBInstance",
+          "native_id": "db-prod-postgres-01",
+          "region": "us-east-1",
+          "account": "123456789012"
+        },
+        "status": "active",
+        "properties": {
+          "engine": "postgres",
+          "engine_version": "15.4",
+          "instance_class": "db.t3.medium",
+          "allocated_storage": 100,
+          "storage_type": "gp3",
+          "endpoint": "app-db-prod.abc123.us-east-1.rds.amazonaws.com",
+          "port": 5432,
+          "multi_az": true,
+          "vpc_id": "vpc-0a1b2c3d",
+          "subnet_group": "prod-db-subnet-group"
+        },
+        "tags": {
+          "Environment": "production",
+          "Application": "web-app",
+          "Engine": "postgresql"
+        },
+        "state": "available"
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-alb-to-web",
+        "type": "route",
+        "source": "aws::app-alb-prod-001",
+        "target": "aws::i-0abc123def456",
+        "direction": "forward",
+        "name": "ALB to web server",
+        "description": "HTTP/HTTPS traffic routing from load balancer to web server",
+        "properties": {
+          "protocol": "http",
+          "port": 80,
+          "target_port": 8080,
+          "health_check": "enabled"
+        }
+      },
+      {
+        "id": "conn-web-to-db",
+        "type": "dependency",
+        "source": "aws::i-0abc123def456",
+        "target": "aws::db-prod-postgres-01",
+        "direction": "forward",
+        "name": "Web server to database",
+        "description": "Application data persistence connection",
+        "properties": {
+          "protocol": "postgresql",
+          "port": 5432,
+          "connection_pool": "enabled"
+        }
+      }
+    ]
+  }
+}

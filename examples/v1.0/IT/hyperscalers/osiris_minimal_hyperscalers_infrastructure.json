@@ -1,0 +1,48 @@
+{
+  "$schema": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
+  "version": "1.0.0",
+  "metadata": {
+    "timestamp": "2026-01-01T12:00:33Z",
+    "generator": {
+      "name": "manual",
+      "version": "1.0.0"
+    },
+    "scope": {
+      "name": "Minimal AWS infrastructure",
+      "description": "Single EC2 instance minimal example",
+      "providers": ["aws"],
+      "regions": ["us-east-1"],
+      "accounts": ["123456789012"],
+      "environments": ["example"]
+    }
+  },
+  "topology": {
+    "resources": [
+      {
+        "id": "aws::i-0abc123",
+        "type": "compute.vm",
+        "name": "web-server",
+        "description": "Minimal example EC2 instance",
+        "provider": {
+          "name": "aws",
+          "type": "AWS::EC2::Instance",
+          "native_id": "i-0abc123",
+          "region": "us-east-1",
+          "account": "123456789012",
+          "zone": "us-east-1a"
+        },
+        "status": "active",
+        "state": "running",
+        "properties": {
+          "instance_type": "t3.micro",
+          "platform": "linux",
+          "private_ip": "10.0.1.10"
+        },
+        "tags": {
+          "environment": "example",
+          "purpose": "documentation"
+        }
+      }
+    ]
+  }
+}

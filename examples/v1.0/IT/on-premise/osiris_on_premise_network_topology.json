@@ -1,0 +1,444 @@
+{
+  "$schema": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
+  "version": "1.0.0",
+  "metadata": {
+    "timestamp": "2026-01-10T17:00:00Z",
+    "generator": {
+      "name": "manual",
+      "version": "1.0.0"
+    },
+    "scope": {
+      "name": "MXP datacenter spine-leaf network",
+      "description": "Spine-leaf fabric with Arista switches and Dell server in MXP DC-A room. This example use ICAO code, MXP is referred to a Datacenter located in Milan.",
+      "providers": ["custom"],
+      "sites": ["mxp-dc-01"],
+      "environments": ["production"]
+    }
+  },
+  "topology": {
+    "resources": [
+      {
+        "id": "mxp::spine-sw-01",
+        "type": "network.switch",
+        "name": "spine-01",
+        "description": "Arista DCS-7050SX3-48YC12 spine switch",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.acme",
+          "native_id": "spine-sw-01",
+          "site": "mxp-dc-01",
+          "system": "network-inventory"
+        },
+        "status": "active",
+        "properties": {
+          "manufacturer": "Arista",
+          "model": "DCS-7050SX3-48YC12",
+          "serial_number": "JPE19120123",
+          "location": {
+            "datacenter": "MXP",
+            "room": "DC-A",
+            "rack": "R01",
+            "rack_unit": "U38-U39"
+          },
+          "software": {
+            "os": "EOS",
+            "version": "4.29.2F"
+          },
+          "hardware": {
+            "ports_total": 60,
+            "ports_10g_sfp": 48,
+            "ports_100g_qsfp28": 12,
+            "switching_capacity_tbps": 3.36,
+            "forwarding_rate_mpps": 2500
+          },
+          "management": {
+            "ip_address": "10.30.1.10",
+            "hostname": "spine-01.mxp.acme.com",
+            "mac": "02:AA:BB:CC:DD:01"
+          }
+        },
+        "tags": {
+          "Role": "spine",
+          "Tier": "core",
+          "Critical": "true"
+        },
+        "state": "operational"
+      },
+      {
+        "id": "mxp::leaf-sw-01",
+        "type": "network.switch",
+        "name": "leaf-01",
+        "description": "Arista DCS-7050SX3-48YC12 leaf switch for server connectivity",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.acme",
+          "native_id": "leaf-sw-01",
+          "site": "mxp-dc-01",
+          "system": "network-inventory"
+        },
+        "status": "active",
+        "properties": {
+          "manufacturer": "Arista",
+          "model": "DCS-7050SX3-48YC12",
+          "serial_number": "JPE19120124",
+          "location": {
+            "datacenter": "MXP",
+            "room": "DC-A",
+            "rack": "R40",
+            "rack_unit": "U40-U41"
+          },
+          "software": {
+            "os": "EOS",
+            "version": "4.29.2F"
+          },
+          "hardware": {
+            "ports_total": 60,
+            "ports_10g_sfp": 48,
+            "ports_100g_qsfp28": 12
+          },
+          "management": {
+            "ip_address": "10.30.1.40",
+            "hostname": "leaf-01.mxp.acme.com",
+            "mac": "02:AA:BB:CC:DD:01"
+          }
+        },
+        "tags": {
+          "Role": "leaf",
+          "Tier": "access",
+          "Pod": "pod-01"
+        },
+        "state": "operational"
+      },
+      {
+        "id": "mxp::leaf-sw-02",
+        "type": "network.switch",
+        "name": "leaf-02",
+        "description": "Arista DCS-7050SX3-48YC12 leaf switch",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.acme",
+          "native_id": "leaf-sw-02",
+          "site": "mxp-dc-01",
+          "system": "network-inventory"
+        },
+        "status": "active",
+        "properties": {
+          "manufacturer": "Arista",
+          "model": "DCS-7050SX3-48YC12",
+          "serial_number": "JPE19120125",
+          "location": {
+            "datacenter": "MXP",
+            "room": "DC-A",
+            "rack": "R41",
+            "rack_unit": "U40-U41"
+          },
+          "software": {
+            "os": "EOS",
+            "version": "4.29.2F"
+          },
+          "management": {
+            "ip_address": "10.10.1.41",
+            "hostname": "leaf-02.mxp.acme.com"
+          }
+        },
+        "tags": {
+          "Role": "leaf",
+          "Tier": "access",
+          "Pod": "pod-01"
+        },
+        "state": "operational"
+      },
+      {
+        "id": "mxp::srv-r770-010",
+        "type": "compute.server",
+        "name": "compute-srv-10",
+        "description": "Dell PowerEdge R770 compute server",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.acme",
+          "native_id": "srv-r770-010",
+          "site": "mxp-dc-01",
+          "system": "datacenter-inventory"
+        },
+        "status": "active",
+        "properties": {
+          "manufacturer": "Dell",
+          "model": "PowerEdge R770",
+          "serial_number": "SRV770010",
+          "location": {
+            "datacenter": "MXP",
+            "room": "DC-A",
+            "rack": "R40",
+            "rack_unit": "U10-U12"
+          },
+          "network_interfaces": [
+            {
+              "name": "ens1f0",
+              "mac": "02:AA:BB:CC:DD:01",
+              "ip_address": "10.0.10.50",
+              "speed_gbps": 10,
+              "status": "up",
+              "connected_to": "leaf-01:Ethernet1"
+            },
+            {
+              "name": "ens1f1",
+              "mac": "02:AA:BB:CC:DD:01",
+              "ip_address": "10.0.10.51",
+              "speed_gbps": 10,
+              "status": "up",
+              "connected_to": "leaf-02:Ethernet1"
+            }
+          ]
+        },
+        "tags": {
+          "Purpose": "compute",
+          "Pod": "pod-01"
+        },
+        "state": "operational"
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-spine01-to-leaf01-uplink1",
+        "type": "physical.fiber",
+        "source": "mxp::spine-sw-01",
+        "target": "mxp::leaf-sw-01",
+        "direction": "bidirectional",
+        "name": "Spine-01 to Leaf-01 Uplink 1",
+        "description": "100G fiber uplink",
+        "properties": {
+          "source_interface": {
+            "name": "Ethernet49/1",
+            "port_number": 49,
+            "type": "QSFP28-100G",
+            "status": "up",
+            "transceiver": {
+              "type": "QSFP28-100GBASE-SR4",
+              "vendor": "Finisar",
+              "part_number": "FTLC1152RDPL",
+              "serial_number": "FNS12345678",
+              "wavelength_nm": 850,
+              "distance_m": 100
+            }
+          },
+          "target_interface": {
+            "name": "Ethernet49/1",
+            "port_number": 49,
+            "type": "QSFP28-100G",
+            "status": "up",
+            "transceiver": {
+              "type": "QSFP28-100GBASE-SR4",
+              "vendor": "Finisar",
+              "part_number": "FTLC1152RDPL",
+              "serial_number": "FNS12345679"
+            }
+          },
+          "cable": {
+            "type": "fiber_optic",
+            "connector": "MPO",
+            "fiber_count": 12,
+            "fiber_type": "multimode_om4",
+            "length_m": 15,
+            "part_number": "CAB-MTP-OM4-15M"
+          },
+          "layer": "layer1",
+          "speed": "100000",
+          "duplex": "full",
+          "mtu": 9214,
+          "vlan_trunk": true
+        },
+        "tags": {
+          "LinkType": "uplink",
+          "Critical": "true"
+        }
+      },
+      {
+        "id": "conn-spine01-to-leaf02-uplink1",
+        "type": "physical.fiber",
+        "source": "mxp::spine-sw-01",
+        "target": "mxp::leaf-sw-02",
+        "direction": "bidirectional",
+        "name": "Spine-01 to Leaf-02 Uplink 1",
+        "description": "100G fiber uplink",
+        "properties": {
+          "source_interface": {
+            "name": "Ethernet50/1",
+            "port_number": 50,
+            "type": "QSFP28-100G",
+            "status": "up"
+          },
+          "target_interface": {
+            "name": "Ethernet49/1",
+            "port_number": 49,
+            "type": "QSFP28-100G",
+            "status": "up"
+          },
+          "cable": {
+            "type": "fiber_optic",
+            "connector": "MPO",
+            "fiber_type": "multimode_om4",
+            "length_m": 20
+          },
+          "layer": "layer1",
+          "speed": "100000",
+          "duplex": "full",
+          "mtu": 9214
+        },
+        "tags": {
+          "LinkType": "uplink"
+        }
+      },
+      {
+        "id": "conn-leaf01-to-srv10-nic1",
+        "type": "physical.copper",
+        "source": "mxp::leaf-sw-01",
+        "target": "mxp::srv-r770-010",
+        "direction": "bidirectional",
+        "name": "Leaf-01 to Server-10 NIC1",
+        "description": "10G copper server connection",
+        "properties": {
+          "source_interface": {
+            "name": "Ethernet1",
+            "port_number": 1,
+            "type": "SFP+-10G",
+            "status": "up",
+            "transceiver": {
+              "type": "SFP-10GBASE-T",
+              "vendor": "Arista",
+              "part_number": "SFP-10G-T"
+            }
+          },
+          "target_interface": {
+            "name": "ens1f0",
+            "mac": "02:AA:BB:CC:DD:01",
+            "type": "RJ45",
+            "status": "up"
+          },
+          "cable": {
+            "type": "copper",
+            "category": "cat6a",
+            "length_m": 5,
+            "part_number": "CAB-ETH-5M"
+          },
+          "layer": "layer1",
+          "speed": "10000",
+          "duplex": "full",
+          "vlan_access": 10,
+          "port_security": "enabled"
+        },
+        "tags": {
+          "LinkType": "server-access"
+        }
+      },
+      {
+        "id": "conn-leaf02-to-srv10-nic2",
+        "type": "physical.copper",
+        "source": "mxp::leaf-sw-02",
+        "target": "mxp::srv-r770-010",
+        "direction": "bidirectional",
+        "name": "Leaf-02 to Server-10 NIC2",
+        "description": "10G copper server connection (redundant path)",
+        "properties": {
+          "source_interface": {
+            "name": "Ethernet1",
+            "port_number": 1,
+            "type": "SFP+-10G",
+            "status": "up"
+          },
+          "target_interface": {
+            "name": "ens1f1",
+            "mac": "02:AA:BB:CC:DD:01",
+            "type": "RJ45",
+            "status": "up"
+          },
+          "cable": {
+            "type": "copper",
+            "category": "cat6a",
+            "length_m": 7
+          },
+          "layer": "layer1",
+          "speed": "10000",
+          "duplex": "full",
+          "vlan_access": 10,
+          "bonding": {
+            "enabled": true,
+            "mode": "active-backup",
+            "primary": "ens1f0"
+          }
+        },
+        "tags": {
+          "LinkType": "server-access",
+          "Redundancy": "backup"
+        }
+      }
+    ],
+    "groups": [
+      {
+        "id": "group-spine-layer",
+        "type": "logical.tier",
+        "name": "Spine Layer",
+        "description": "Core spine switches",
+        "members": [
+          "mxp::spine-sw-01"
+        ],
+        "tags": {
+          "Layer": "core",
+          "Function": "routing"
+        }
+      },
+      {
+        "id": "group-leaf-layer",
+        "type": "logical.tier",
+        "name": "Leaf Layer",
+        "description": "Access leaf switches",
+        "members": [
+          "mxp::leaf-sw-01",
+          "mxp::leaf-sw-02"
+        ],
+        "tags": {
+          "Layer": "access",
+          "Function": "switching"
+        }
+      },
+      {
+        "id": "group-pod-01",
+        "type": "logical.pod",
+        "name": "POD-01",
+        "description": "Network pod with leaf switches and servers",
+        "members": [
+          "mxp::leaf-sw-01",
+          "mxp::leaf-sw-02",
+          "mxp::srv-r770-010"
+        ],
+        "properties": {
+          "subnet": "10.0.10.0/24",
+          "vlan": 10,
+          "gateway": "10.0.10.1"
+        },
+        "tags": {
+          "Pod": "pod-01",
+          "Isolation": "layer3"
+        }
+      },
+      {
+        "id": "group-fabric",
+        "type": "logical.network",
+        "name": "Datacenter Fabric",
+        "description": "Complete spine-leaf fabric",
+        "children": [
+          "group-spine-layer",
+          "group-leaf-layer"
+        ],
+        "properties": {
+          "topology": "spine-leaf",
+          "protocol": "BGP",
+          "asn_range": "65000-65010"
+        },
+        "tags": {
+          "Architecture": "clos",
+          "Redundancy": "full"
+        }
+      }
+    ]
+  }
+}

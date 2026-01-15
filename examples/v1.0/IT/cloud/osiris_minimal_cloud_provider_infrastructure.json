@@ -1,0 +1,44 @@
+{
+  "$schema": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
+  "version": "1.0.0",
+  "metadata": {
+    "timestamp": "2026-01-01T12:11:10Z",
+    "generator": {
+      "name": "manual",
+      "version": "1.0.0"
+    },
+    "scope": {
+      "name": "Minimal DigitalOcean infrastructure",
+      "description": "Single Ubuntu droplet in NYC3 for development",
+      "providers": ["digitalocean"],
+      "regions": ["nyc3"],
+      "environments": ["development"]
+    }
+  },
+  "topology": {
+    "resources": [
+      {
+        "id": "digitalocean::123456789",
+        "type": "compute.vm",
+        "name": "example-dev-nyc3",
+        "provider": {
+          "name": "digitalocean",
+          "native_id": "123456789",
+          "region": "nyc3"
+        },
+        "status": "active",
+        "state": "running",
+        "properties": {
+          "vcpus": 1,
+          "memory_mb": 1024,
+          "disk_gb": 25,
+          "image": "ubuntu-22-04-x64"
+        },
+        "tags": {
+          "environment": "development",
+          "purpose": "documentation"
+        }
+      }
+    ]
+  }
+}

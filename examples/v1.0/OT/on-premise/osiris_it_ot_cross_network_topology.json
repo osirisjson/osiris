@@ -1,0 +1,229 @@
+{
+  "$schema": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
+  "version": "1.0.0",
+  "metadata": {
+    "timestamp": "2026-01-11T18:00:00Z",
+    "generator": {
+      "name": "manual",
+      "version": "1.0.0"
+    },
+    "scope": {
+      "name": "IT/OT network convergence",
+      "description": "Segmented network with firewall boundary connecting IT enterprise systems to OT production line at MXP facility. This example use ICAO code, MXP is referred to a Datacenter located in Milan.",
+      "providers": ["custom", "vmware"],
+      "sites": ["mxp"],
+      "environments": ["production"]
+    }
+  },
+  "topology": {
+    "resources": [
+      {
+        "id": "mxp::core-sw-01",
+        "type": "network.switch",
+        "name": "CORE-SW-01",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.cisco",
+          "native_id": "CORE-SW-01",
+          "site": "mxp"
+        },
+        "properties": {
+          "model": "Nexus 93180YC-FX",
+          "mgmt_ip": "10.10.0.2"
+        },
+        "extensions": {
+          "osiris.cisco": {
+            "nxos_version": "10.2(5)",
+            "vpc_enabled": true
+          }
+        }
+      },
+      {
+        "id": "mxp::fw-it-ot-01",
+        "type": "network.firewall",
+        "name": "FW-IT-OT-01",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.paloalto",
+          "native_id": "pa-3220-01",
+          "site": "mxp"
+        },
+        "properties": {
+          "mgmt_ip": "10.10.0.10",
+          "zones": [
+            "it",
+            "ot"
+          ],
+          "mode": "routed"
+        },
+        "extensions": {
+          "osiris.paloalto": {
+            "panos_version": "11.2.0",
+            "url_filtering": true
+          }
+        }
+      },
+      {
+        "id": "mxp::dist-sw-ot-01",
+        "type": "network.switch",
+        "name": "DIST-SW-OT-01",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.arista",
+          "native_id": "DIST-SW-OT-01",
+          "site": "mxp"
+        },
+        "properties": {
+          "model": "7050X3",
+          "mgmt_ip": "10.50.0.2"
+        },
+        "extensions": {
+          "osiris.arista": {
+            "eos_version": "4.30.2F",
+            "mlag_enabled": false
+          }
+        }
+      },
+      {
+        "id": "mxp::plc-line-a-01",
+        "type": "ot.controller.plc",
+        "name": "PLC Line A 01",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.schneider",
+          "native_id": "plc-01",
+          "site": "mxp"
+        },
+        "properties": {
+          "ip": "10.50.40.20",
+          "model": "Modicon M580",
+          "location": "Line A"
+        },
+        "extensions": {
+          "osiris.schneider": {
+            "firmware": "V3.20",
+            "protocols": [
+              "modbus",
+              "opcua"
+            ]
+          }
+        }
+      },
+      {
+        "id": "mxp::jump-host-01",
+        "type": "compute.vm",
+        "name": "jump-host-01",
+        "provider": {
+          "name": "vmware",
+          "native_id": "vm-9001",
+          "site": "mxp",
+          "cluster": "mxp-esxi-prod"
+        },
+        "properties": {
+          "vcpus": 2,
+          "memory_gb": 8,
+          "guest_os": "windows2022"
+        },
+        "extensions": {
+          "osiris.vmware": {
+            "vmx_version": "19"
+          }
+        }
+      },
+      {
+        "id": "mxp::allegra-svc-01",
+        "type": "application.service",
+        "name": "historian-svc-01",
+        "provider": {
+          "name": "vmware",
+          "native_id": "vm-9002",
+          "site": "mxp",
+          "cluster": "mxp-esxi-prod"
+        },
+        "properties": {
+          "runtime": "windows",
+          "purpose": "process-historian"
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-core-sw-01-to-fw-it-ot-01",
+        "type": "network",
+        "source": "mxp::core-sw-01",
+        "target": "mxp::fw-it-ot-01",
+        "direction": "bidirectional",
+        "properties": {
+          "port": "Ethernet1/1",
+          "vlan": 10
+        }
+      },
+      {
+        "id": "conn-fw-it-ot-01-to-dist-sw-ot-01",
+        "type": "network",
+        "source": "mxp::fw-it-ot-01",
+        "target": "mxp::dist-sw-ot-01",
+        "direction": "bidirectional",
+        "properties": {
+          "port": "Ethernet1/2",
+          "vlan": 200
+        }
+      },
+      {
+        "id": "conn-dist-sw-ot-01-to-plc-line-a-01",
+        "type": "network",
+        "source": "mxp::dist-sw-ot-01",
+        "target": "mxp::plc-line-a-01",
+        "direction": "bidirectional",
+        "properties": {
+          "vlan": 210,
+          "port": "Ethernet12"
+        }
+      },
+      {
+        "id": "conn-jump-host-01-to-plc-line-a-01",
+        "type": "flow.control",
+        "source": "mxp::jump-host-01",
+        "target": "mxp::plc-line-a-01",
+        "direction": "bidirectional",
+        "properties": {
+          "protocol": "opcua",
+          "port": 4840
+        }
+      },
+      {
+        "id": "conn-plc-line-a-01-to-allegra-svc-01",
+        "type": "flow.telemetry",
+        "source": "mxp::plc-line-a-01",
+        "target": "mxp::allegra-svc-01",
+        "direction": "forward",
+        "properties": {
+          "protocol": "opcua",
+          "port": 4840
+        }
+      }
+    ],
+    "groups": [
+      {
+        "id": "grp-mxp-zone-it",
+        "type": "logical.security.zone",
+        "name": "IT Zone",
+        "members": [
+          "mxp::core-sw-01",
+          "mxp::fw-it-ot-01",
+          "mxp::jump-host-01",
+          "mxp::allegra-svc-01"
+        ]
+      },
+      {
+        "id": "grp-mxp-zone-ot",
+        "type": "logical.security.zone",
+        "name": "OT Zone",
+        "members": [
+          "mxp::dist-sw-ot-01",
+          "mxp::plc-line-a-01"
+        ]
+      }
+    ]
+  }
+}

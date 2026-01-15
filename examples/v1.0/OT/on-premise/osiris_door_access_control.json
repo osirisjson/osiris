@@ -1,0 +1,151 @@
+{
+  "$schema": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
+  "version": "1.0.0",
+  "metadata": {
+    "timestamp": "2026-01-13T14:00:00Z",
+    "generator": {
+      "name": "manual",
+      "version": "1.0.0"
+    },
+    "scope": {
+      "name": "Physical access control system",
+      "description": "HID door access controller with RFID reader and electric lock at MXP facility.  This example use ICAO code, MXP is referred to a Datacenter located in Milan.",
+      "providers": ["custom"],
+      "sites": ["mxp"],
+      "environments": ["production"]
+    }
+  },
+  "topology": {
+    "resources": [
+      {
+        "id": "mxp::sw-ot-access-01",
+        "type": "network.switch",
+        "name": "SW-OT-ACCESS-01",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.cisco",
+          "native_id": "SW-OT-ACCESS-01",
+          "type": "IE-3300-8T2S-E",
+          "site": "mxp"
+        },
+        "properties": {
+          "model": "Cisco Catalyst IE3300 Rugged Series",
+          "mgmt_ip": "10.50.10.2",
+          "uplinks": [
+            {
+              "port": "Gi1/1",
+              "peer": "ot-mxp-core-01",
+              "media": "fiber"
+            }
+          ],
+          "poe": {
+            "supported": true,
+            "budget_w": 240
+          }
+        },
+        "extensions": {
+          "osiris.cisco": {
+            "os_family": "ios-xe",
+            "iosxe_version": "17.12.1",
+            "industrial_protocols": [
+              "profinet",
+              "mrp"
+            ],
+            "ring_protocol": "mrp",
+            "ptp_boundary_clock": true
+          }
+        }
+      },
+      {
+        "id": "mxp::access-panel-01",
+        "type": "ot.access.controller",
+        "name": "Door Access Panel 01",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.hid",
+          "native_id": "VERTX-V100-0001",
+          "site": "mxp"
+        },
+        "properties": {
+          "model": "HID VertX V1000",
+          "mgmt_ip": "10.50.10.20",
+          "firmware": "3.0.1",
+          "doors_supported": 2
+        },
+        "extensions": {
+          "osiris.hid": {
+            "panel_family": "vertx",
+            "encryption_enabled": true,
+            "event_buffer_size": 10000
+          }
+        }
+      },
+      {
+        "id": "mxp::door-01-reader-01",
+        "type": "ot.access.reader",
+        "name": "Door 01 Reader",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.hid",
+          "native_id": "READER-01",
+          "site": "mxp"
+        },
+        "properties": {
+          "reader_type": "rfid",
+          "protocol": "osdp",
+          "mounting": "wall"
+        }
+      },
+      {
+        "id": "mxp::door-01-lock-01",
+        "type": "ot.access.lock",
+        "name": "Door 01 Electric Strike",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.acme",
+          "native_id": "LOCK-01",
+          "site": "mxp"
+        },
+        "properties": {
+          "lock_type": "electric_strike",
+          "fail_secure": true
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-sw-access-01-to-panel-01",
+        "type": "network",
+        "source": "mxp::sw-ot-access-01",
+        "target": "mxp::access-panel-01",
+        "direction": "bidirectional",
+        "properties": {
+          "vlan": 50,
+          "ip_subnet": "10.50.10.0/24"
+        }
+      },
+      {
+        "id": "conn-panel-01-to-reader-01",
+        "type": "control",
+        "source": "mxp::access-panel-01",
+        "target": "mxp::door-01-reader-01",
+        "direction": "bidirectional",
+        "properties": {
+          "interface": "rs485",
+          "protocol": "osdp"
+        }
+      },
+      {
+        "id": "conn-panel-01-to-lock-01",
+        "type": "control",
+        "source": "mxp::access-panel-01",
+        "target": "mxp::door-01-lock-01",
+        "direction": "forward",
+        "properties": {
+          "signal": "relay",
+          "normal_state": "closed"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "$schema": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
+  "version": "1.0.0",
+  "metadata": {
+    "timestamp": "2026-01-09T10:00:00Z",
+    "generator": {
+      "name": "manual",
+      "version": "1.0.0"
+    },
+    "scope": {
+      "name": "Video surveillance system",
+      "description": "IP security camera with NVR and PoE network infrastructure at MXP Datacenter.",
+      "providers": ["custom"],
+      "sites": ["mxp"],
+      "environments": ["production"]
+    }
+  },
+  "topology": {
+    "resources": [
+      {
+        "id": "mxp::sw-ot-security-01",
+        "type": "network.switch",
+        "name": "SW-OT-SECURITY-01",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.cisco",
+          "native_id": "SW-OT-SECURITY-01",
+          "type": "IE-3300-8P2S-E",
+          "site": "mxp"
+        },
+        "properties": {
+          "model": "Cisco Catalyst IE3300 Rugged Series",
+          "mgmt_ip": "10.50.30.2",
+          "uplinks": [
+            {
+              "port": "Gi1/1",
+              "peer": "ot-mxp-core-01",
+              "media": "fiber"
+            }
+          ],
+          "poe": {
+            "supported": true,
+            "budget_w": 180
+          }
+        },
+        "extensions": {
+          "osiris.cisco": {
+            "os_family": "ios-xe",
+            "iosxe_version": "17.12.1",
+            "industrial_protocols": [],
+            "port_security_enabled": true
+          }
+        }
+      },
+      {
+        "id": "mxp::cam-perimeter-01",
+        "type": "ot.camera",
+        "name": "Perimeter Camera 01",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.axis",
+          "native_id": "AXIS-Q3515-0001",
+          "site": "mxp"
+        },
+        "properties": {
+          "model": "AXIS Q3515-LVE",
+          "mgmt_ip": "10.50.30.10",
+          "resolution": "1080p",
+          "fps": 25,
+          "poe_required": true
+        },
+        "extensions": {
+          "osiris.axis": {
+            "firmware": "10.12.221",
+            "rtsp_enabled": true,
+            "onvif_profile": [
+              "S",
+              "T"
+            ],
+            "analytics": {
+              "motion_detection": true
+            }
+          }
+        }
+      },
+      {
+        "id": "mxp::nvr-01",
+        "type": "compute.server",
+        "name": "Security NVR 01",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.acme",
+          "native_id": "NVR-01",
+          "site": "mxp"
+        },
+        "properties": {
+          "mgmt_ip": "10.50.30.20",
+          "os": "linux",
+          "role": "video_recorder"
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-sw-security-01-to-cam",
+        "type": "network",
+        "source": "mxp::sw-ot-security-01",
+        "target": "mxp::cam-perimeter-01",
+        "direction": "bidirectional",
+        "properties": {
+          "vlan": 53
+        }
+      },
+      {
+        "id": "conn-cam-to-nvr",
+        "type": "flow",
+        "source": "mxp::cam-perimeter-01",
+        "target": "mxp::nvr-01",
+        "direction": "forward",
+        "properties": {
+          "protocol": "rtsp",
+          "port": 554
+        }
+      }
+    ]
+  }
+}

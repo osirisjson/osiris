@@ -1,0 +1,213 @@
+{
+  "$schema": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
+  "version": "1.0.0",
+  "metadata": {
+    "timestamp": "2026-01-08T15:45:00Z",
+    "generator": {
+      "name": "manual",
+      "version": "1.0.0"
+    },
+    "scope": {
+      "name": "Multi-cloud web application",
+      "description": "Three-tier application with frontend and database in Azure East US, API backend in AWS US-East-1",
+      "providers": ["aws", "azure"],
+      "regions": ["us-east-1", "eastus"],
+      "accounts": ["123456789012"],
+      "environments": ["production"]
+    }
+  },
+  "topology": {
+    "resources": [
+      {
+        "id": "azure::app-web-frontend",
+        "type": "compute.container",
+        "name": "web-frontend-prod",
+        "description": "Azure App Service hosting React frontend",
+        "provider": {
+          "name": "azure",
+          "type": "Microsoft.Web/sites",
+          "native_id": "/subscriptions/sub-001/resourceGroups/prod-rg/providers/Microsoft.Web/sites/web-frontend-prod",
+          "region": "eastus",
+          "subscription": "sub-001",
+          "tenant": "tenant-001"
+        },
+        "status": "active",
+        "state": "running",
+        "properties": {
+          "kind": "app,linux",
+          "runtime_stack": "NODE|18-lts",
+          "default_hostname": "web-frontend-prod.azurewebsites.net",
+          "https_only": true,
+          "ftps_state": "Disabled",
+          "reserved": true
+        },
+        "tags": {
+          "Environment": "production",
+          "Tier": "frontend",
+          "Platform": "azure"
+        }
+      },
+      {
+        "id": "aws::i-0xyz789abc123",
+        "type": "compute.vm",
+        "name": "api-server-prod-01",
+        "description": "AWS EC2 instance running API backend",
+        "provider": {
+          "name": "aws",
+          "type": "AWS::EC2::Instance",
+          "native_id": "i-0xyz789abc123",
+          "region": "us-east-1",
+          "account": "123456789012",
+          "zone": "us-east-1b"
+        },
+        "status": "active",
+        "state": "running",
+        "properties": {
+          "instance_type": "c5.xlarge",
+          "platform": "linux",
+          "image_id": "ami-0c55b159cbfafe1f0",
+          "private_ip": "10.0.2.78",
+          "public_ip": "203.0.113.10",
+          "vpc_id": "vpc-0def456",
+          "subnet_id": "subnet-0ghi789"
+        },
+        "tags": {
+          "Environment": "production",
+          "Tier": "backend",
+          "Platform": "aws"
+        }
+      },
+      {
+        "id": "azure::sql-prod-db",
+        "type": "application.database",
+        "name": "prod-sql-database",
+        "description": "Azure SQL Database for application data",
+        "provider": {
+          "name": "azure",
+          "type": "Microsoft.Sql/servers/databases",
+          "native_id": "/subscriptions/sub-001/resourceGroups/prod-rg/providers/Microsoft.Sql/servers/prod-sql-srv/databases/prod-db",
+          "region": "eastus",
+          "subscription": "sub-001"
+        },
+        "status": "active",
+        "state": "online",
+        "properties": {
+          "edition": "Standard",
+          "service_tier": "S2",
+          "max_size_bytes": 268435456000,
+          "server_name": "prod-sql-srv.database.windows.net",
+          "collation": "SQL_Latin1_General_CP1_CI_AS",
+          "zone_redundant": false
+        },
+        "tags": {
+          "Environment": "production",
+          "Engine": "mssql",
+          "Platform": "azure"
+        }
+      },
+      {
+        "id": "azure::redis-cache-prod",
+        "type": "application.cache",
+        "name": "prod-redis-cache",
+        "description": "Azure Redis Cache for session storage",
+        "provider": {
+          "name": "azure",
+          "type": "Microsoft.Cache/Redis",
+          "native_id": "/subscriptions/sub-001/resourceGroups/prod-rg/providers/Microsoft.Cache/Redis/prod-redis",
+          "region": "eastus",
+          "subscription": "sub-001"
+        },
+        "status": "active",
+        "state": "running",
+        "properties": {
+          "sku": "Standard",
+          "family": "C",
+          "capacity": 1,
+          "redis_version": "6.0",
+          "port": 6379,
+          "ssl_port": 6380,
+          "hostname": "prod-redis.redis.cache.windows.net"
+        },
+        "tags": {
+          "Environment": "production",
+          "Purpose": "session-cache",
+          "Platform": "azure"
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-frontend-to-api",
+        "type": "dependency",
+        "source": "azure::app-web-frontend",
+        "target": "aws::i-0xyz789abc123",
+        "direction": "forward",
+        "name": "Frontend to API",
+        "description": "Cross-cloud API calls from Azure frontend to AWS backend",
+        "status": "active",
+        "properties": {
+          "protocol": "https",
+          "port": 443,
+          "endpoint": "https://api.example.com/v1",
+          "authentication": "oauth2"
+        },
+        "tags": {
+          "type": "cross-cloud",
+          "critical": "true"
+        }
+      },
+      {
+        "id": "conn-api-to-db",
+        "type": "dependency",
+        "source": "aws::i-0xyz789abc123",
+        "target": "azure::sql-prod-db",
+        "direction": "forward",
+        "name": "API to Database",
+        "description": "Database connection from AWS API to Azure SQL",
+        "status": "active",
+        "properties": {
+          "protocol": "tds",
+          "port": 1433,
+          "connection_string_encrypted": true,
+          "connection_pool_size": 20
+        },
+        "tags": {
+          "type": "cross-cloud",
+          "critical": "true"
+        }
+      },
+      {
+        "id": "conn-frontend-to-cache",
+        "type": "dependency",
+        "source": "azure::app-web-frontend",
+        "target": "azure::redis-cache-prod",
+        "direction": "bidirectional",
+        "name": "Frontend session cache",
+        "description": "Session data storage and retrieval",
+        "status": "active",
+        "properties": {
+          "protocol": "redis",
+          "port": 6380,
+          "ssl": true,
+          "use_case": "session-storage"
+        }
+      },
+      {
+        "id": "conn-api-to-cache",
+        "type": "dependency",
+        "source": "aws::i-0xyz789abc123",
+        "target": "azure::redis-cache-prod",
+        "direction": "bidirectional",
+        "name": "API cache access",
+        "description": "API response caching",
+        "status": "active",
+        "properties": {
+          "protocol": "redis",
+          "port": 6380,
+          "ssl": true,
+          "use_case": "response-cache"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "$schema": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
+  "version": "1.0.0",
+  "metadata": {
+    "timestamp": "2026-01-04T18:01:00Z",
+    "generator": {
+      "name": "manual",
+      "version": "1.0.0"
+    },
+    "scope": {
+      "name": "Azure resource group hierarchy",
+      "description": "Production resource group containing virtual network and web server VM in West Europe",
+      "providers": ["azure"],
+      "accounts": ["11111111-2222-3333-4444-555555555555"],
+      "environments": ["production"]
+    }
+  },
+  "topology": {
+    "resources": [
+      {
+        "id": "azure::rg-prod",
+        "type": "container.resourcegroup",
+        "name": "rg-prod",
+        "description": "Production RG in Azure",
+        "provider": {
+          "name": "azure",
+          "type": "Microsoft.Resources/resourceGroups",
+          "native_id": "/subscriptions/11111111-2222-3333-4444-555555555555/resourceGroups/rg-prod",
+          "subscription": "11111111-2222-3333-4444-555555555555",
+          "region": "westeurope"
+        },
+        "status": "active",
+        "tags": {
+          "environment": "production",
+          "managed-by": "terraform"
+        }
+      },
+      {
+        "id": "azure::vnet-prod",
+        "type": "network.vnet",
+        "name": "vnet-prod",
+        "description": "Production Virtual Network in Azure",
+        "provider": {
+          "name": "azure",
+          "type": "Microsoft.Network/virtualNetworks",
+          "native_id": "/subscriptions/11111111-2222-3333-4444-555555555555/resourceGroups/rg-prod/providers/Microsoft.Network/virtualNetworks/vnet-prod",
+          "subscription": "11111111-2222-3333-4444-555555555555",
+          "region": "westeurope"
+        },
+        "status": "active",
+        "properties": {
+          "address_space": ["10.0.0.0/16"],
+          "subnets": [
+            {
+              "name": "subnet-web",
+              "address_prefix": "10.0.1.0/24"
+            }
+          ]
+        },
+        "tags": {
+          "environment": "production",
+          "tier": "network"
+        }
+      },
+      {
+        "id": "azure::vm-web-01",
+        "type": "compute.vm",
+        "name": "vm-web-01",
+        "description": "Production web server VM in Azure",
+        "provider": {
+          "name": "azure",
+          "type": "Microsoft.Compute/virtualMachines",
+          "native_id": "/subscriptions/11111111-2222-3333-4444-555555555555/resourceGroups/rg-prod/providers/Microsoft.Compute/virtualMachines/vm-web-01",
+          "subscription": "11111111-2222-3333-4444-555555555555",
+          "region": "westeurope"
+        },
+        "status": "active",
+        "state": "running",
+        "properties": {
+          "vm_size": "Standard_D2s_v3",
+          "os_type": "Linux",
+          "private_ip": "10.0.1.10",
+          "subnet": "subnet-web"
+        },
+        "tags": {
+          "environment": "production",
+          "role": "webserver"
+        }
+      }
+    ],
+    "groups": [
+      {
+        "id": "group-rg-prod-resources",
+        "type": "logical.membership",
+        "name": "rg-prod Resources",
+        "description": "All resources belonging to rg-prod resource group",
+        "members": [
+          "azure::rg-prod",
+          "azure::vnet-prod",
+          "azure::vm-web-01"
+        ],
+        "properties": {
+          "resource_group": "rg-prod",
+          "subscription": "11111111-2222-3333-4444-555555555555"
+        },
+        "tags": {
+          "purpose": "resource-group-membership",
+          "resource-group": "rg-prod"
+        }
+      }
+    ]
+  }
+}

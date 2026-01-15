@@ -1,12 +1,29 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+# [1.0.0-draft.12] - 2026-01-15
+### Added
+- Chapter 9: (9.1-9.5)
+- Chapter 10: (10.1-10.5)
+- Drafted first version of core schema osiris.schema.json
+- Drafted contributing.md and code_of_conduct.md
+
+### Updated
+- Examples for IT and OT environments
+
+### Fixed
+- Minor fixes across some sections for standardisation mismatch
+- README.md
+- Heading and TOC fixes
+
+
 # [1.0.0-draft.11] - 2026-01-07
 ### Added
 - Chapter 8: (8.1-8.6)
 
 ### Fixed
 - Minor fixes across some sections for standardisation mismatch
+
 
 # [1.0.0-draft.10] - 2026-01-04
 ### Added
@@ -15,6 +32,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Minor fixes across some sections for standardisation mismatch
+
 
 # [1.0.0-draft.9] - 2025-12-31
 ### Updated
