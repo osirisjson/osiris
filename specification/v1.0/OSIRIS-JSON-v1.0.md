@@ -4,7 +4,7 @@
 | Authors   | Tia Zanella [skhell](https://github.com/skhell) |
 | Revision  | 1.0.0-DRAFT |
 | Creation date      | 14 December 2025 |
-| Last revision date | 15 January 2026 |
+| Last revision date | 22 January 2026 |
 | Status    | Draft |
 | Specification ID | OSIRIS-1.0 |
 | Schema URI | [OSIRIS-1.0](https://osirisjson.org/schema/v1.0/osiris.schema.json) |
@@ -385,6 +385,28 @@
   - [10.14 Summary](#1014-summary)
     - [About example generators](#about-example-generators)
     - [10.14.1 Common patterns](#10141-common-patterns)
+- [11 Implementation guidelines](#11-implementation-guidelines)
+  - [11.0 Overview](#110-overview)
+  - [11.1 Parser development](#111-parser-development)
+    - [11.1.1 Core responsibilities](#1111-core-responsibilities)
+    - [11.1.2 Mapping strategy](#1112-mapping-strategy)
+    - [11.1.3 Identity and ID stability](#1113-identity-and-id-stability)
+    - [11.1.4 Relationship extraction for connections and groups](#1114-relationship-extraction-for-connections-and-groups)
+    - [11.1.5 Partial data and unknowns](#1115-partial-data-and-unknowns)
+    - [11.1.6 Validation workflow for producers](#1116-validation-workflow-for-producers)
+    - [11.1.7 Document splitting and export scope](#1117-document-splitting-and-export-scope)
+    - [11.1.8 Logging and telemetry](#1118-logging-and-telemetry)
+  - [11.2 Consumer implementation](#112-consumer-implementation)
+    - [11.2.1 Version handling and negotiation](#1121-version-handling-and-negotiation)
+    - [11.2.2 Consumer validation policy](#1122-consumer-validation-policy)
+    - [11.2.3 Graph construction and traversal](#1123-graph-construction-and-traversal)
+    - [11.2.4 Unknown types and extensions](#1124-unknown-types-and-extensions)
+    - [11.2.5 Merging diff and snapshot correlation](#1125-merging-diff-and-snapshot-correlation)
+  - [11.3 Best practices](#113-best-practices)
+    - [11.3.1 Best practices for producers](#1131-best-practices-for-producers)
+    - [11.3.2 Best practices for consumers](#1132-best-practices-for-consumers)
+    - [11.3.3 Common pitfalls](#1133-common-pitfalls)
+    - [11.3.4 Interoperability tips and checklist](#1134-interoperability-tips-and-checklist)
 
 
 ## Preface
@@ -731,7 +753,7 @@ Producers **SHOULD** construct IDs using one of these strategies:
 ```
 
 **Rationale:** 
-Using native provider IDs maintains traceability to source systems, enables change tracking, and reflects actual infrastructure state.
+Using native provider IDs maintains traceability to source systems, enables change tracking and reflects actual infrastructure state.
 
 **ID separator (`::`):**
 The double-colon separator distinguishes the provider namespace from the native identifier. This separator was chosen because:
@@ -1487,7 +1509,7 @@ Producers **SHOULD** validate referential integrity before emitting documents. C
       "id": "conn-vm-runs-on-host",
       "source": "proxmox::vm-100",
       "target": "dell::MXP-SRV-R98-001",
-      "type": "runs_on",
+      "type": "compute.runs.on",
       "direction": "forward"
     }
   ],
@@ -1772,7 +1794,7 @@ The `type` field is a **REQUIRED** string (see section 4.1). Type values:
 - **MUST** use dot (`.`) as the segment separator
 - **MUST** contain at least two segments (see Dot notation structure below)
 - **MAY** contain alphanumeric characters (`a-z`, `0-9`) within segments
-- **MUST** use `segments: [a-z0-9]` lowercase letters, digits and dots separator only  (no hyphens, underscores or spaces) (e.g. `compute.vm.template` rather than `compute.vm-template`)
+- **MUST** use `segments: [a-z0-9]` lowercase letters, digits and dots separator only  (no hyphens, underscores or spaces) (e.g. `compute.vm.template` rather than `compute.vm-template` or `compute.vm_template`)
 - **MUST NOT** start or end with a dot
 - **MUST NOT** contain consecutive dots (`..`)
 - **SHOULD** be stable across OSIRIS versions for standard types
@@ -2360,7 +2382,7 @@ Properties **MAY** contain primitive values, arrays and nested objects of arbitr
 Property keys **SHOULD** follow these conventions:
 
 - Lowercase with underscores for multi-word keys (e.g. `instance_type`, `private_ip`, `disk_size_gb`)
-  - Underscores enable direct property access in most programming languages (unlike hyphens which are operators)
+- Underscores enable direct property access in most programming languages (unlike hyphens which are operators)
 - Include units in the key name where applicable (e.g. `memory_gb`, `throughput_mbps`)
 - Remain stable across exports from the same producer
 
@@ -4039,8 +4061,8 @@ When using `network.asn` groups, producers **SHOULD** include these properties w
 
 **Recommended types:**
 - **`security.zone`**: Security or trust zones (e.g. DMZ, trusted, untrusted, quarantine)
-- **`security.trust-boundary`**: Trust domain boundaries
-- **`security.compliance-scope`**: Compliance boundary groupings (e.g. PCI-DSS scope, HIPAA scope)
+- **`security.trust.boundary`**: Trust domain boundaries
+- **`security.compliance.scope`**: Compliance boundary groupings (e.g. PCI-DSS scope, HIPAA scope)
 
 **Example use cases:**
 - Modeling zero-trust network architecture
@@ -4053,8 +4075,9 @@ When using `network.asn` groups, producers **SHOULD** include these properties w
 **Recommended types:**
 - **`org.team`**: Team ownership (e.g. platform-team, sme-team, security-team)
 - **`org.owner`**: Individual or group ownership
-- **`org.cost_center`**: Financial cost center allocations
-- **`org.business-unit`**: Business unit or department groupings
+- **`org.costcenter`**: Financial cost center allocations
+- **`org.bu`**: Business unit or department groupings
+- **`org.dept`**: Business unit or department groupings
 - **`org.project`**: Project-based groupings
 
 **Example use cases:**
@@ -4075,7 +4098,7 @@ osiris.<namespace>.<type>
 - `osiris.gcp.project` (GCP project)
 - `osiris.kubernetes.namespace` (Kubernetes namespace)
 - `osiris.vmware.cluster` (VMware vSphere cluster)
-- `osiris.com.acme.product-line` (organization-specific product grouping)
+- `osiris.com.acme.product.line` (organization-specific product grouping)
 
 **Namespace selection guidance:**
 - Well-known vendors **MAY** use simple namespaces (e.g. `osiris.aws`, `osiris.arista`)
@@ -4762,7 +4785,7 @@ Groups use the same metadata pattern as resources and connections:
 ```json
 {
   "id": "grp-az-rg-prod-weu-01",
-  "type": "cloud.resource_group",
+  "type": "cloud.resource.group",
   "name": "rg-prod-weu-01",
   "description": "Production resource group in West Europe",
   "members": [
@@ -6218,7 +6241,7 @@ Use `network.router` for:
 **Type:** `network.router.port`
 
 **Definition:**
-A router port (also called router interface) is a physical or logical connection point on a router used to connect to networks or other network devices. Router ports operate at Layer 3, have IP addresses assigned, and participate in routing protocols.
+A router port (also called router interface) is a physical or logical connection point on a router used to connect to networks or other network devices. Router ports operate at Layer 3, have IP addresses assigned and participate in routing protocols.
 
 **When to use:**
 Use `network.router.port` for:
@@ -7825,7 +7848,7 @@ Producers **SHOULD** ensure that core topology (resources, connections, groups) 
 }
 ```
 
-The consumer can identify the resource (`aws::i-0abc123`), its type (`compute.vm`), and its basic properties (`vcpus`, `memory_gb`) without understanding AWS-specific extensions.
+The consumer can identify the resource (`aws::i-0abc123`), its type (`compute.vm`) and its basic properties (`vcpus`, `memory_gb`) without understanding AWS-specific extensions.
 
 ---
 
@@ -7986,7 +8009,7 @@ GCP resources often expose Google-specific features such as preemptibility/spot 
 
 
 ### 8.2.5 VMware specific extensions
-VMware environments have specific features like Fault Tolerance, vMotion, and DRS.
+VMware environments have specific features like Fault Tolerance, vMotion and DRS.
 
 **Example: VMware VM with ESXi-specific properties**
 ```json
@@ -8501,7 +8524,6 @@ The following vendor namespaces are **registered** as well-known prefixes to enc
 | `osiris.schneider` | Schneider Electric OT / Industrial systems | Registered |
 | `osiris.rockwell` | Rockwell Automation OT / Industrial systems | Registered |
 | `osiris.abb` | ABB OT / Industrial systems | Registered |
-| `osiris.emerson` | Emerson OT / Industrial systems | Registered |
 | `osiris.honeywell` | Honeywell OT / Industrial systems | Registered |
 | `osiris.hid` | HID OT / Industrial systems | Registered |
 | `osiris.fanuc` | Fanuc OT / Industrial systems | Registered |
@@ -8523,7 +8545,7 @@ OSIRIS does **not** govern the **internal semantics** of vendor/organization ext
 > - Third-party producers/parsers **MAY** emit these namespaces when exporting resources sourced from the corresponding vendor/platform (e.g. a discovery tool exporting AWS resources may emit `extensions.osiris.aws`).
 > - Not all canonical `provider.name` values require a registered vendor namespace. Technologies and software components (e.g. databases, middleware, application frameworks) can be valid `provider.name` values without requiring a well-known `osiris.<vendor>` extension namespace.
 
-**Rationale:** This list focuses on systems that **manage** infrastructure resources (hyperscalers and cloud platforms, virtualization stacks, networking/security, compute/storage vendors, and OT/industrial ecosystems). Keeping the registry constrained avoids turning the specification into a general catalog of all technologies, while still enabling consistent, interoperable vendor extension usage.
+**Rationale:** This list focuses on systems that **manage** infrastructure resources (hyperscalers and cloud platforms, virtualization stacks, networking/security, compute/storage vendors and OT/industrial ecosystems). Keeping the registry constrained avoids turning the specification into a general catalog of all technologies, while still enabling consistent, interoperable vendor extension usage.
 
 
 ### 8.4.3 Organization namespaces
@@ -8886,7 +8908,7 @@ Every OSIRIS document **MUST** be a JSON object containing:
 ```
 
 **Invalid examples:**
-```jsonc
+```text
 // Missing version field
 {
   "metadata": { "timestamp": "2026-01-01T10:30:00Z" },
@@ -9007,7 +9029,7 @@ The `provider` object within a resource **MUST** contain:
 - **V-PROV-004:** Provider `name` **SHOULD** be a well-known canonical name (aws, azure, gcp, vmware, dell, cisco, arista, etc.)
 
 **Valid provider objects:**
-```jsonc
+```text
 { "name": "aws" }
 { "name": "azure" }
 { "name": "dell" }
@@ -9015,7 +9037,7 @@ The `provider` object within a resource **MUST** contain:
 ```
 
 **Invalid provider objects:**
-```jsonc
+```text
 { "name": "AWS" }           // Not lowercase
 { "name": "amazon-aws" }    // Contains hyphen
 { "name": "" }              // Empty string
@@ -9059,7 +9081,7 @@ Every connection object **MUST** contain:
 ```
 
 **Invalid connections:**
-```jsonc
+```text
 // Missing required type field
 {
   "id": "conn-001",
@@ -9117,7 +9139,7 @@ Every group object **MUST** contain:
 ```
 
 **Invalid groups:**
-```jsonc
+```text
 // Missing type
 {
   "id": "grp-001",
@@ -9201,7 +9223,7 @@ These rules ensure that identifiers are unique and well-formed:
 - **Rule:** Every resource `id` **MUST** be unique within the document
 - **Level:** Error
 - **Example violation:**
-  ```jsonc
+  ```text
   "resources": [
     { "id": "aws::i-0abc123", "type": "compute.vm", ... },
     { "id": "aws::i-0abc123", "type": "storage.volume", ... }  // Duplicate
@@ -9212,7 +9234,7 @@ These rules ensure that identifiers are unique and well-formed:
 - **Rule:** Every connection `id` **MUST** be unique within the document
 - **Level:** Error
 - **Example violation:**
-  ```jsonc
+  ```text
   "connections": [
     { "id": "conn-001", ... },
     { "id": "conn-001", ... }  // Duplicate
@@ -9223,7 +9245,7 @@ These rules ensure that identifiers are unique and well-formed:
 - **Rule:** Every group `id` **MUST** be unique within the document
 - **Level:** Error
 - **Example violation:**
-  ```jsonc
+  ```text
   "groups": [
     { "id": "grp-prod", "type": "administrative", ... },
     { "id": "grp-prod", "type": "network.vpc", ... }  // Duplicate
@@ -9234,7 +9256,7 @@ These rules ensure that identifiers are unique and well-formed:
 - **Rule:** Resource, connection and group IDs **MUST** be non-empty strings
 - **Level:** Error
 - **Example violation:**
-  ```jsonc
+  ```text
   { "id": "", "type": "compute.vm", ... }  // Empty ID
   ```
 
@@ -9242,7 +9264,7 @@ These rules ensure that identifiers are unique and well-formed:
 - **Rule:** Resource IDs **SHOULD** use `provider::native-id` format when applicable
 - **Level:** Warning
 - **Example recommendation:**
-  ```jsonc
+  ```text
   // Recommended
   { "id": "aws::i-0abc123", ... }
   
@@ -9254,7 +9276,7 @@ These rules ensure that identifiers are unique and well-formed:
 - **Rule:** Resource, connection and group IDs occupy separate namespaces
 - **Guidance:** Same ID string **MAY** be used for a resource, connection and group without conflict
 - **Example (valid):**
-  ```jsonc
+  ```text
   "resources": [ { "id": "vpc-001", ... } ],
   "groups": [ { "id": "vpc-001", ... } ]  // Valid (different namespaces)
   ```
@@ -9270,7 +9292,7 @@ These rules ensure that ID references resolve correctly:
 - **Rule:** Connection `source` **MUST** reference an existing resource `id`
 - **Level:** Error
 - **Example violation:**
-  ```jsonc
+  ```text
   "resources": [
     { "id": "aws::i-0abc123", ... }
   ],
@@ -9283,7 +9305,7 @@ These rules ensure that ID references resolve correctly:
 - **Rule:** Connection `target` **MUST** reference an existing resource `id`
 - **Level:** Error
 - **Example violation:**
-  ```jsonc
+  ```text
   "resources": [
     { "id": "aws::i-0abc123", ... }
   ],
@@ -9296,7 +9318,7 @@ These rules ensure that ID references resolve correctly:
 - **Rule:** Each group `members` entry **MUST** reference an existing resource `id`
 - **Level:** Error
 - **Example violation:**
-  ```jsonc
+  ```text
   "resources": [
     { "id": "aws::i-0abc123", ... }
   ],
@@ -9314,7 +9336,7 @@ These rules ensure that ID references resolve correctly:
 - **Rule:** Each group `children` entry **MUST** reference an existing group `id`
 - **Level:** Error
 - **Example violation:**
-  ```jsonc
+  ```text
   "groups": [
     { "id": "grp-parent", "children": ["grp-child"] },
     // grp-child doesn't exist
@@ -9325,7 +9347,7 @@ These rules ensure that ID references resolve correctly:
 - **Rule:** Group hierarchies **MUST NOT** contain cycles
 - **Level:** Error
 - **Example violation:**
-  ```jsonc
+  ```text
   "groups": [
     { "id": "grp-a", "children": ["grp-b"] },
     { "id": "grp-b", "children": ["grp-a"] }  // Circular reference
@@ -9429,7 +9451,7 @@ These rules ensure provider information is well-formed:
 - **Rule:** Provider `name` **MUST** be lowercase
 - **Level:** Error
 - **Example violations:**
-  ```jsonc
+  ```text
   "provider": { "name": "AWS" }      // Uppercase
   "provider": { "name": "Azure" }    // Mixed case
   ```
@@ -9440,7 +9462,7 @@ These rules ensure provider information is well-formed:
 - **Not allowed:** Hyphens, underscores, spaces, uppercase
 - **Level:** Error
 - **Example violations:**
-  ```jsonc
+  ```text
   "provider": { "name": "amazon-aws" }   // Hyphen
   "provider": { "name": "cisco_aci" }    // Underscore
   ```
@@ -9450,7 +9472,7 @@ These rules ensure provider information is well-formed:
 - **Canonical names:** aws, azure, gcp, oci, vmware, proxmox, dell, hpe, cisco, arista, juniper, paloalto, fortinet, etc.
 - **Level:** Warning
 - **Example recommendations:**
-  ```jsonc
+  ```text
   // Recommended
   "provider": { "name": "aws" }
   
@@ -9473,7 +9495,7 @@ These rules ensure extensions follow the namespace conventions defined in Chapte
 - **Rule:** Extension fields **MUST** use `osiris.<namespace>` prefix
 - **Level:** Error
 - **Example:**
-  ```jsonc
+  ```text
   // Valid
   "extensions": {
     "osiris.aws": { ... },
@@ -9491,7 +9513,7 @@ These rules ensure extensions follow the namespace conventions defined in Chapte
 - **Rule:** Extension namespaces **MUST** match pattern: `^osiris\.[a-z][a-z0-9]*(\.[a-z][a-z0-9]*)*$`
 - **Level:** Error
 - **Example violations:**
-  ```jsonc
+  ```text
   "extensions": {
     "osiris.AWS": { ... },          // Uppercase
     "osiris.my-company": { ... },   // Hyphen
@@ -9740,7 +9762,7 @@ Producers and consumers **SHOULD** use or provide validation libraries that impl
 
 ### 9.4.3 Invalid document (missing required field)
 
-```jsonc
+```text
 {
   "$schema": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
   "version": "1.0.0",
@@ -9771,7 +9793,7 @@ Producers and consumers **SHOULD** use or provide validation libraries that impl
 
 ### 9.4.4 Invalid document (dangling reference)
 
-```jsonc
+```text
 {
   "version": "1.0.0",
   "metadata": {
@@ -9810,7 +9832,7 @@ Producers and consumers **SHOULD** use or provide validation libraries that impl
 
 ### 9.4.5 Invalid document (invalid type format)
 
-```jsonc
+```text
 {
   "version": "1.0.0",
   "metadata": {
@@ -9885,6 +9907,7 @@ https://github.com/osirisjson/osiris/tree/main/examples/v1.0
 - Illustrative and intended to be schema-valid for testing and reference
 - Informative where examples conflict with the specification, the specification is authoritative.
 
+
 ## 10.1 IT Minimal Cloud Provider infrastructure
 ### 10.1.0 Overview
 This example demonstrates the absolute minimum valid OSIRIS document for a cloud provider. Showcasing alternative example of cloud platforms beyond the major hyperscalers.
@@ -9895,6 +9918,7 @@ It showcases:
 - Simple droplet with required fields only
 - Different provider naming and ID format
 
+
 ### 10.1.1 Scenario
 A simplest cloud infrastructure on DigitalOcean:
 - Single droplet (virtual machine)
@@ -9902,8 +9926,10 @@ A simplest cloud infrastructure on DigitalOcean:
 - NYC3 region
 - Used for: demonstrating non-hyperscaler providers, validation testing
 
+
 ### 10.1.2 Example
 [View](../../examples/v1.0/IT/cloud/osiris_minimal_cloud_provider_infrastructure.json)
+
 
 ### 10.1.3 Key features demonstrated
 **Cloud provider:**
@@ -9928,6 +9954,7 @@ It showcases:
 - Essential provider attribution
 - Bare minimum metadata
 
+
 ### 10.2.1 Scenario
 The simplest possible cloud infrastructure representation:
 - Single EC2 instance (or equivalent VM)
@@ -9936,8 +9963,10 @@ The simplest possible cloud infrastructure representation:
 - No connections or groups
 - Used for: testing, validation, learning the basic structure
 
+
 ### 10.2.2 Example
 [View](../../examples/v1.0/IT/hyperscalers/osiris_minimal_hyperscalers_infrastructure.json)
+
 
 ### 10.2.3 Key features demonstrated
 **Absolute minimum fields:**
@@ -9964,12 +9993,14 @@ It showcases:
 - Standard cloud provider attribution
 - Minimal but complete metadata
 
+
 ### 10.3.1 Scenario
 A production web application with:
 - Application Load Balancer (public-facing)
 - EC2 instance running the web application
 - RDS PostgreSQL database
 - Direct dependencies: ALB > EC2 > RDS
+
 
 ### 10.3.2 Example
 [View](../../examples/v1.0/IT/hyperscalers/osiris_simple_hyperscaler_infrastructure.json)
@@ -10002,6 +10033,7 @@ A production web application with:
 ### 10.4.0 Overview
 Hyperscaler environments often have hierarchical containers (e.g. Azure Resource Groups, GCP Projects, AWS VPCs). OSIRIS can represent this belonging using groups (recommended for inventory/reporting) without requiring traversal semantics.
 
+
 ### 10.4.1 Scenario
 This example represents a **multi-hyperscaler environment** where infrastructure resources originate from different providers (e.g. AWS, Azure, GCP) but are described in a **single OSIRIS document**.
 
@@ -10009,6 +10041,7 @@ It demonstrates:
 - How a single topology can include heterogeneous resources across multiple providers.
 - How cross-provider dependencies can be expressed using explicit connections.
 - How cloud “ownership / belonging” containers (e.g. Resource Groups, Projects, VPC/VNet) can be represented for documentation purposes.
+
 
 ### 10.4.2 Example
 [View](../../examples/v1.0/IT/hyperscalers/osiris_hyperscaler_infrastructure_belonging.json)
@@ -10031,6 +10064,7 @@ This example demonstrates infrastructure spanning AWS and Azure, showcasing:
 - Provider-specific native types
 - Unified representation of diverse infrastructure
 
+
 ### 10.5.1 Scenario
 A distributed application with:
 - Azure front-end (App Service)
@@ -10038,8 +10072,10 @@ A distributed application with:
 - Azure database (SQL Database)
 - Cross-cloud dependencies and data flows
 
+
 ### 10.5.2 Example
 [View](../../examples/v1.0/IT/hyperscalers/osiris_multi_hyperscaler_environment.json)
+
 
 ### 10.5.3 Key features demonstrated
 **Multi-provider resources:**
@@ -10072,6 +10108,7 @@ This example demonstrates a hybrid environment combining cloud and on-premise in
 - Custom provider for on-premise equipment
 - Hybrid connectivity and dependencies
 
+
 ### 10.6.1 Scenario
 An enterprise hybrid deployment:
 - AWS public cloud for web tier
@@ -10082,6 +10119,7 @@ An enterprise hybrid deployment:
 
 ### 10.6.2 Example
 [View](../../examples/v1.0/IT/hybrid/osiris_hybrid_hyperscaler_on_premise.json)
+
 
 ### 10.6.3 Key features demonstrated
 **Hybrid topology:**
@@ -10120,6 +10158,7 @@ It showcases:
 - Physical server resource type (not virtual machine)
 - Site-based identification pattern
 
+
 ### 10.7.1 Scenario
 The simplest on-premise infrastructure representation:
 - Single physical server in MXP datacenter
@@ -10129,8 +10168,10 @@ The simplest on-premise infrastructure representation:
 - Minimal metadata (timestamp only)
 - Used for: learning on-premise modeling, validation testing, template for datacenter exports
 
+
 ### 10.7.2 Example
 [View](../../examples/v1.0/IT/on-premise/osiris_minimal_on_premise_infrastructure.json)
+
 
 ### 10.7.3 Key features demonstrated
 **Custom provider requirements:**
@@ -10173,6 +10214,7 @@ This example demonstrates detailed network infrastructure with:
 - Network hierarchy and segmentation
 - Complex connection properties
 
+
 ### 10.8.1 Scenario
 A datacenter network spine-leaf architecture:
 - Spine switches (high-capacity core)
@@ -10181,8 +10223,10 @@ A datacenter network spine-leaf architecture:
 - Server network interfaces
 - Detailed transceiver and cable specifications
 
+
 ### 10.8.2 Example
 [View](../../examples/v1.0/IT/on-premise/osiris_on_premise_network_topology.json)
+
 
 ### 10.8.3 Key features demonstrated
 **Detailed network equipment:**
@@ -10227,6 +10271,7 @@ It showcases:
 - Physical facility monitoring device
 - Bridge between IT documentation and OT systems
 
+
 ### 10.9.1 Scenario
 The simplest OT infrastructure representation:
 - Single environmental sensor in MXP datacenter
@@ -10243,6 +10288,7 @@ Environmental sensors are ubiquitous in:
 - Industrial facilities (environmental control)
 - Building management systems (HVAC monitoring)
 - Cold storage facilities (temperature tracking)
+
 
 ### 10.9.2 Example
 [View](../../examples/v1.0/OT/osiris_minimal_ot_infrastructure.json)
@@ -10289,13 +10335,16 @@ Environmental sensors are ubiquitous in:
 - SCADA equipment
 - Secure cross-segment connectivity
 
+
 ### 10.10.1 Scenario
 - IT Zone: Enterprise servers, users
 - OT Zone: SCADA, PLCs, HMI
 - Firewall: Paloalto at boundary
 
+
 ### 10.10.2 Example
 [View](../../examples/v1.0/OT/osiris_it_ot_cross_network_topology.json)
+
 
 ### 10.10.3 Key features demonstrated
 - Zone-based segmentation
@@ -10310,14 +10359,17 @@ Environmental sensors are ubiquitous in:
 ### 10.11.0 Overview
 **Zebra ZT620** industrial printer connected to network infrastructure.
 
+
 ### 10.11.1 Scenario
 Warehouse label printing:
 - Thermal transfer printer
 - Network connectivity
 - Integration with WMS
 
+
 ### 10.11.2 Example
 [View](../../examples/v1.0/OT/osiris_industrial_printer.json)
+
 
 ### 10.11.3 Key features demonstrated
 - Industrial equipment specifications
@@ -10334,13 +10386,16 @@ IP **security camera system** with:
 - Network Video Recorder (NVR)
 - PoE network switches
 
+
 ### 10.12.1 Scenario
 - Multiple cameras (entrance, server room)
 - Central NVR for storage
 - RTSP video streams
 
+
 ### 10.12.2 Example
 [View](../../examples/v1.0/OT/osiris_security_camera.json)
+
 
 ### 10.12.3 Key features demonstrated
 - PoE power requirements (class 4)
@@ -10357,13 +10412,16 @@ Physical security **access control system** with:
 - Door card readers
 - Network-connected locks
 
+
 ### 10.13.1 Scenario
 - `ot.access.controller` - Central panel
 - `ot.access.reader` - Card/biometric readers
 - `ot.access.lock` - Electronic door locks
 
+
 ### 10.13.2 Example
 [View](../../examples/v1.0/OT/osiris_door_access_control.json)
+
 
 ### 10.13.3 Key features demonstrated
 - OT-specific resource types
@@ -10419,3 +10477,517 @@ To create your own parsers follow the implementation guidelines on chapter 11.
 - Type-specific properties in `properties` object
 - Vendor extensions in `extensions` object
 - Labels and metadata in `tags` object
+
+---
+
+# 11 Implementation guidelines
+## 11.0 Overview
+This chapter provides practical guidance for implementing OSIRIS **producers** (parsers) and **consumers** (tools that read and process OSIRIS documents). These guidelines are intended to improve interoperability, stability and long-term maintainability across implementations.
+
+OSIRIS is designed for real-world infrastructure exports that may be incomplete or partially discoverable. Implementations **SHOULD** prioritize correctness, determinism and forward compatibility.
+
+---
+
+## 11.1 Parser development
+### 11.1.1 Core responsibilities
+A parser (also called a **producer**) is any component that generates OSIRIS documents from a source system (API, inventory database, CLI outputs, telemetry snapshots etc.).
+
+A producer **MUST**:
+- Emit documents that pass **JSON Schema validation** (Chapter 9).
+- Populate required fields (`version`, `metadata.timestamp` and required resource fields).
+- Produce stable, well-formed `id` values and valid references.
+
+A producer **SHOULD**:
+- Provide `metadata.generator` with a stable tool name and version.
+- Describe export boundaries in `metadata.scope` (accounts/projects/subscriptions, regions, environments, sites).
+- Produce deterministic outputs for the same input (see 11.1.3).
+
+
+### 11.1.2 Mapping strategy
+**Type mapping**
+- Producers **SHOULD** map to standard resource types from Chapter 7 whenever possible.
+- When a native object has no suitable standard mapping, producers **MAY**:
+  - Use a custom type following the rules in Chapter 7.
+  - Represent additional semantics developing dedicated `extensions` (Chapter 8).
+
+**Provider attribution**
+- `provider.name` **MUST** identify the originating platform/vendor in lowercase.
+- `provider.native_id` **SHOULD** capture the primary native identifier used by the provider to easily locate the resource.
+- Additional provider context (e.g. `region`, `account`, `subscription`, `project`, `site`) **SHOULD** be included when applicable and stable.
+
+**Properties vs extensions**
+- Generic, cross-vendor attributes **SHOULD** go in `properties`.
+- Vendor-specific or organization-specific details **SHOULD** go in `extensions` using a namespaced key (Chapter 8).
+- Producers **SHOULD NOT** duplicate the same data in both `properties` and `extensions` unless required for interoperability.
+
+
+### 11.1.3 Identity and ID stability
+**Stable identity** is critical for topology merging, diffing and downstream automation.
+
+Producers **MUST** ensure:
+- Resource `id` values are **unique** within the document.
+- Connection/group references resolve to valid resource IDs (Chapter 9 semantic rules).
+- IDs remain stable across exports when the underlying entity is the same.
+
+**Recommended ID patterns (examples)**
+- Cloud and hyperscaler: `provider::native-id`
+  Examples: `aws::i-0abc123`, `azure::/subscriptions/.../virtualMachines/vm01`
+- On-prem: `site::identifier`
+  Examples: `mxp::sw-core-01`, `mxp::srv-r770-001`
+- OT: `site::identifier`
+  Examples: `mxp-plant-01::sensor-temp-01`
+
+**Determinism**
+- If the source provides a stable unique identifier, producers **SHOULD** build `id` from it.
+- Producers **SHOULD NOT** generate random IDs for real resources.
+- If a stable native identifier is not available, producers **MAY** derive a deterministic ID from a stable tuple (e.g. `{site, name, serial}`) and **SHOULD** document the strategy.
+
+
+### 11.1.4 Relationship extraction for connections and groups
+Producers **SHOULD** emit explicit relationships whenever they are known:
+- Network connectivity, dependency, flow, containment, attachment, routing and similar (Chapter 5).
+- Logical boundaries (VPC, subnet, security zone, cluster, rack, availability zone, etc.) as groups (Chapter 6).
+
+Guidance:
+- Use **connections** when the relationship must be traversed as a graph edge (e.g. network path, dependency chain, flow).
+- Use **groups** for classification, organization and boundaries (e.g. ownership, cost center, environment, zone).
+- Producers **SHOULD** avoid encoding relationships implicitly inside `properties` when they can be expressed as `connections` or `groups`.
+
+
+### 11.1.5 Partial data and unknowns
+OSIRIS supports incomplete inventories.
+
+Producers **SHOULD**:
+- Omit optional fields when unknown rather than emitting incorrect values.
+- Prefer conservative modeling: it is better to omit a connection than to invent one.
+- Use `tags` or namespaced metadata to document limitations (e.g. “no routing table available”, “LLDP disabled”).
+
+Producers **MUST NOT**:
+- Emit placeholders that look real in production exports (e.g. fake serials, fake hostnames, fake IPs) unless explicitly flagged as redacted/anonymized.
+
+
+### 11.1.6 Validation workflow for producers
+A producer **MUST** validate the output before publishing:
+
+1. **Level 1 (structural):** JSON Schema validation  
+2. **Level 2 (semantic):** ID uniqueness, reference integrity, type format rules  
+3. **Level 3 (domain):** optional type recognition and best-practice checks
+
+Producers **SHOULD** fail the export pipeline on Level 1 errors.  
+Producers **SHOULD** treat Level 2 errors as export failures unless explicitly configured otherwise.
+
+
+### 11.1.7 Document splitting and export scope
+Large infrastructures may require multiple split documents.
+
+Producers **MAY** split by:
+- Provider hierarchy (account/subscription/project, or subscription/resource group/resources)
+- Region and availability zone
+- Environment (prod/stage/dev)
+- Physical site (data center, plant)
+- Domain boundary (IT vs OT)
+
+When splitting, producers **SHOULD**:
+- Ensure scope is clearly described in `metadata.scope`.
+- Keep IDs consistent across documents (so consumers can merge reliably).
+
+
+### 11.1.8 Logging and telemetry
+Producers are often executed in automated pipelines (CI/CD, scheduled exports, inventory collectors). Consistent logging and basic telemetry greatly improve troubleshooting, reliability and performance tuning.
+
+
+#### 11.1.8.1 What to log during parsing
+Producers **SHOULD** emit structured logs (JSON logs recommended) with a stable set of fields.
+
+Recommended log events:
+- **Run start/end**
+  - Export scope summary (provider, account/subscription/project, region/site, environment)
+  - Input source (API/CLI/file) and collector version
+- **Discovery summary**
+  - Counts: discovered resources, emitted resources, emitted connections, emitted groups
+  - Skipped items and reasons (unsupported type, missing permissions, filtered by scope)
+- **Normalization decisions**
+  - Type mapping used (native type > OSIRIS type) when non-obvious
+  - ID strategy (native ID used vs derived tuple)
+- **Validation results**
+  - Schema validation pass/fail
+  - Semantic validation pass/fail
+  - Rule identifiers and JSONPath for failures (when applicable)
+
+Logs **SHOULD** include:
+- `run_id` (unique per export execution)
+- `generator.name` and `generator.version`
+- `scope` identifiers from `metadata.scope`
+- `severity` (`debug`, `info`, `warn`, `error`)
+- `event` (stable event name)
+- Optional `resource_id` (OSIRIS `id`) and/or `provider.native_id` when a log line is resource-specific
+
+Producers **MUST NOT** log secrets or sensitive values (see Chapter 13).
+
+**Example of a structured log output:**
+```json
+{
+  "timestamp": "2026-01-16T22:23:45Z",
+  "severity": "info",
+  "event": "discovery_complete",
+  "run_id": "20260115-102340-aws-prod",
+  "generator": {
+    "name": "osiris-aws-parser",
+    "version": "1.0.0"
+  },
+  "scope": {
+    "provider": "aws",
+    "account": "123456789012",
+    "regions": ["eu-west-1"]
+  },
+  "counts": {
+    "resources_discovered": 847,
+    "resources_emitted": 842,
+    "connections_emitted": 1203,
+    "groups_emitted": 45,
+    "skipped": 5
+  },
+  "skipped_reasons": {
+    "unsupported_type": 3,
+    "missing_permissions": 2
+  }
+}
+```
+
+
+#### 11.1.8.2 Performance metrics to track
+Producers **SHOULD** track basic metrics to detect regressions and capacity issues:
+
+- **Timing**
+  - Total runtime
+  - Time spent per phase: discovery, normalization, relationship inference, validation, serialization
+- **Volume**
+  - Resources emitted, connections emitted, groups emitted
+  - Input objects fetched/parsed (if different from emitted)
+- **API/IO**
+  - API request count (by endpoint if possible)
+  - API error count and retry count
+  - Rate-limit/backoff occurrences
+- **Quality**
+  - Validation errors and warnings count (by rule ID if available)
+  - Skipped/filtered count (by reason)
+- **Resource usage (optional)**
+  - Peak memory usage
+  - Output document size (bytes)
+
+Metrics **SHOULD** be emitted in a machine-readable form suitable for pipeline dashboards.
+
+
+#### 11.1.8.3 Error reporting best practices
+Producers **SHOULD** classify failures into clear categories:
+
+- **Source access errors**
+  - Authentication/authorization failures, missing permissions, rate limits
+- **Parsing / normalization errors**
+  - Unexpected native formats, unsupported types, missing required source fields
+- **Validation errors**
+  - Level 1 (schema) and Level 2 (semantic) failures
+- **Operational errors**
+  - IO failures, serialization issues, timeouts
+
+When reporting an error, producers **SHOULD** include:
+- A stable error code or rule identifier (when applicable)
+- Human-readable message
+- JSONPath to the failing OSIRIS element (if the error is in emitted data)
+- The smallest useful context (e.g. provider name, native id, OSIRIS id)
+- A remediation hint (e.g. required permission, missing API scope, mapping fix)
+
+Producers **SHOULD**:
+- Exit with non-zero status on Level 1 errors by default.
+- Provide a configurable mode to downgrade selected semantic issues to warnings only when explicitly requested.
+- Avoid cascading failures: continue collecting other resources when safe, but fail the run if the resulting output would be invalid.
+
+Producers **MUST**:
+- Never include credentials, tokens or secrets in logs, error messages or stack traces (see Chapter 13).
+- Avoid logging raw payloads unless explicitly enabled in debug mode and appropriately redacted.
+
+
+#### 11.1.8.4 Observability platforms integration
+
+> [!NOTE]
+> OSIRIS remains a **static snapshot format**.  
+> This subsection describes **optional integration patterns** for shipping OSIRIS snapshots into observability platforms.  
+> The transport, storage, indexing and retention model are implementation concerns and **outside the OSIRIS core scope**.
+
+Producers deployed in production environments **MAY** integrate with observability platforms in two ways:
+
+**Parser operational telemetry** (monitoring the parser itself):
+- **Metrics systems**: Zabbix, Prometheus, Datadog, CloudWatch, Azure Monitor
+  - Track parser performance, API usage, validation results
+- **Log aggregation**: ELK, Splunk, Loki, CloudWatch Logs
+  - Centralize parser logs for troubleshooting
+- **Tracing**: OpenTelemetry, Jaeger, Zipkin
+  - For parsers with complex multi-step flows
+
+**Infrastructure topology snapshots** (OSIRIS documents as observability artifacts):
+- Observability platforms **MAY** ingest OSIRIS documents as a **snapshot series** to enable:
+  - Topology change tracking and visualization
+  - Configuration drift detection
+  - Incident correlation with infrastructure changes
+  - Compliance monitoring across snapshots
+- Platforms with topology/service map capabilities may support this natively or via plugins
+- Producers emitting documents for this purpose **SHOULD** run at consistent intervals and maintain stable IDs across snapshots
+
+When integrating with observability systems, producers **SHOULD**:
+- Use consistent metric names with appropriate prefixes (e.g. `osiris.parser.aws.`)
+- Include standard labels/tags:
+  - `parser_name`, `parser_version`
+  - `scope_provider`, `scope_region`
+  - `snapshot_timestamp`, `document_size_bytes`
+  - `resource_count`, `connection_count`, `group_count`
+- Support sampling/filtering to manage high-volume telemetry
+
+Producers **MUST** ensure that telemetry integration does not expose sensitive data (Chapter 13).
+
+---
+
+## 11.2 Consumer implementation
+### 11.2.1 Version handling and negotiation
+Consumers **MUST** read `version` and apply compatibility rules (Chapter 12).  
+Consumers **MUST** ignore unknown fields as required for forward compatibility.
+
+Consumers **SHOULD**:
+- Support all `1.x.y` documents within the same major version when feasible.
+- Provide clear diagnostics when a document uses an unsupported major version.
+
+
+### 11.2.2 Consumer validation policy
+Consumers **MUST** perform **Level 1** validation (or equivalent structural checks) before processing.
+Consumers **SHOULD** perform **Level 2** validation before building graph structures.
+
+Consumers **MAY** implement configurable strictness:
+- `basic`: Level 1 only
+- `default`: Level 1 + Level 2
+- `strict`: Level 1 + Level 2 + selected Level 3 rules
+
+
+### 11.2.3 Graph construction and traversal
+Consumers **SHOULD** treat:
+- `resources` as nodes
+- `connections` as directed/bidirectional/undirected edges based on `direction`
+- `groups` as membership relations (one-to-many references)
+
+Consumers **SHOULD** build efficient indexes:
+- `resourceById`
+- `connectionsBySource`, `connectionsByTarget`
+- `groupsById`, `membershipsByResource`
+
+Consumers **MUST NOT** assume ordering in arrays is meaningful.
+
+
+### 11.2.4 Unknown types and extensions
+Consumers **MUST** accept unknown:
+- Resource types
+- Group types
+- Connection types (if structurally valid)
+- Extension namespaces
+
+Consumers encountering unknown types **SHOULD**:
+- Preserve them when re-exporting/translating
+- Display type strings verbatim for debugging
+- Continue processing known core fields
+
+
+### 11.2.5 Merging diff and snapshot correlation
+Consumers often process multiple OSIRIS documents over time.
+
+Recommended approach:
+- Treat `metadata.timestamp` as the snapshot point in time.
+- Use stable `resource.id` as the primary key for correlation.
+- If merging multiple documents, namespace collisions **MUST** be prevented (IDs must remain unique in the merged graph).
+
+Consumers **SHOULD** support “soft merge” strategies when duplicates occur (e.g. prefer newest timestamp, or prefer a configured source).
+
+---
+
+## 11.3 Best practices
+This section provides recommended practices for **producers** (parsers/exporters) and **consumers** (readers/ingestion tools) to maximize interoperability, stability and long-term maintainability.
+
+
+### 11.3.1 Best practices for producers
+
+- **Prefer standard types first**  
+  Map native objects to the standard resource types from Chapter 7 whenever possible. Use custom types only when no suitable standard type exists.
+
+- **Use `properties` for generic data and `extensions` for vendor/org specifics**  
+  Put broadly applicable attributes in `properties`. Put vendor-specific or organization-specific details in `extensions` using a namespaced key (Chapter 8). Avoid duplicating the same data in both locations unless required for interoperability.
+
+- **Generate stable, deterministic `id` values**  
+  IDs should remain stable across exports for the same underlying entity. Prefer building `id` from stable provider/native identifiers. Avoid random IDs for real resources.
+
+- **Always include provider traceability**  
+  Populate `provider.name` and strongly prefer `provider.native_id`. Include stable scope context (account/subscription/project, region/site) when available.
+
+- **Model relationships explicitly**  
+  Use `connections` for graph edges that must be traversed (paths, dependencies, flows). Use `groups` to represent boundaries and classification (zones, clusters, environments, ownership). Avoid encoding relationships only inside `properties`.
+
+- **Be conservative when data is incomplete**  
+  Omit unknown optional fields rather than guessing. Prefer missing relationships over invented ones. Document known collection limitations via `tags` or namespaced metadata/extension fields.
+
+- **Validate before publishing**  
+  Integrate validation in the export pipeline: Level 1 (schema) and Level 2 (semantic) should be treated as failures by default. Use Level 3 checks as optional strict mode.
+
+- **Keep exports reproducible**  
+  For the same input snapshot, outputs should be deterministic. Avoid non-deterministic ordering or unstable derived values.
+
+- **Split documents by stable boundaries**  
+  For large infrastructures, split by account/subscription/project, region, environment, site or IT/OT domain boundary. Ensure `metadata.scope` clearly describes what the document contains.
+
+**Recommended minimum `metadata`**
+```json
+"metadata": {
+  "timestamp": "2026-01-01T10:30:00Z",
+  "generator": { 
+    "name": "osiris-aws-parser", 
+    "version": "1.0.0" },
+  "scope": {
+    "provider": "aws",
+    "regions": ["eu-west-1"],
+    "account": "123456789012",
+    "environment": "prod"
+  }
+}
+```
+
+
+### 11.3.2 Best practices for consumers
+
+- **Validate early, fail safely**
+  - Consumers **MUST** perform **Level 1** validation (or equivalent structural checks) before processing.
+  - Consumers **SHOULD** perform **Level 2** validation before building graph structures (IDs, references, type format rules).
+  - Consumers **MAY** offer configurable strictness (e.g. `basic`, `default`, `strict`) to match different use cases.
+
+- **Implement forward compatibility by default**
+  - Consumers **MUST** ignore unknown fields to support newer documents and extensions.
+  - Consumers **MUST** accept unknown resource, connection and group types if the objects are structurally valid.
+  - Consumers **MUST** accept unknown `extensions` namespaces and treat them as opaque data.
+
+- **Do not rely on array ordering**
+  - Consumers **MUST NOT** assume ordering of `resources`, `connections` or `groups` is meaningful.
+  - Consumers **SHOULD** operate using IDs and indexes rather than positions.
+
+- **Build indexes before complex processing**
+  Consumers **SHOULD** build efficient lookup structures such as:
+  - `resourceById`
+  - `connectionsBySource`, `connectionsByTarget`
+  - `groupsById`
+  - `membershipsByResource` (reverse membership index)
+
+- **Preserve fidelity during transformation**
+  - When filtering, translating or re-exporting documents, consumers **SHOULD** preserve:
+    - unknown fields
+    - unknown types
+    - unknown extension namespaces
+  - Consumers **SHOULD NOT** drop or rename data unless explicitly configured.
+
+- **Treat the topology as a graph**
+  - Consumers **SHOULD** interpret:
+    - `resources` as nodes
+    - `connections` as edges (directed/bidirectional/undirected based on `direction`)
+    - `groups` as membership relations (classification/boundaries)
+  - Consumers **SHOULD** keep a clear separation between graph edges (`connections`) and classification (`groups`).
+
+- **Support snapshot correlation and diffing**
+  - Consumers **SHOULD** treat `metadata.timestamp` as the snapshot time.
+  - Consumers **SHOULD** use stable `resource.id` values as primary keys for correlation across snapshots.
+  - When merging documents, consumers **MUST** prevent ID collisions (IDs must be unique in the merged graph).
+
+- **Provide actionable diagnostics**
+  Consumers **SHOULD** emit diagnostics that include:
+  - severity (`error` / `warning` / `info`)
+  - rule identifier when available (from Chapter 9)
+  - JSONPath (or equivalent) to the failing element
+  - a human-readable message
+  - a suggested fix or remediation hint
+
+- **Handle partial data gracefully**
+  - Consumers **SHOULD** continue processing when optional fields are missing.
+  - Consumers **SHOULD** avoid inferring relationships unless explicitly required and clearly marked as derived.
+  - Consumers **MAY** expose confidence or provenance for derived insights.
+
+- **Security-aware ingestion**
+  - Consumers **SHOULD** treat all string fields (including `extensions`) as untrusted input.
+  - Consumers **SHOULD** sanitize or escape data before rendering in UIs or exporting to other formats.
+  - Consumers **SHOULD** support redaction and filtering policies before storing or sharing documents (see Chapter 13).
+
+
+### 11.3.3 Common pitfalls
+This section highlights recurring implementation mistakes and provides practical tips to improve interoperability across exporters, validators, pipelines and visualization tools.
+
+#### Common pitfalls to avoid
+
+- **Unstable resource IDs**
+  - Using random UUIDs for real resources breaks correlation, diffing and merging across snapshots.
+  - **Suggestion:** derive `id` deterministically from stable provider identifiers (`provider.name` + `provider.native_id`) or a stable tuple when native IDs are not available.
+
+- **Duplicate or conflicting identity fields**
+  - Storing the same identifier in multiple places (e.g. `id`, `provider.native_id` and a custom extension) without a clear rule creates ambiguity.
+  - **Suggestion:** keep `id` as the document identifier and `provider.native_id` as the authoritative provider locator; use extensions only for additional native identifiers.
+
+- **Encoding relationships implicitly**
+  - Hiding dependencies or topology relationships in `properties` (strings like `connected_to`, `peer`, `uplink`) prevents graph traversal and consistent tooling.
+  - **Suggestion:** use `connections` for traversable edges and `groups` for classification/boundaries.
+
+- **Misusing groups as topology edges**
+  - Treating group membership as a network link or dependency leads to incorrect graph semantics.
+  - **Suggestion:** groups organize and classify; connections express relationships that can be traversed.
+
+- **Rejecting unknown types or namespaces**
+  - Consumers that fail on unknown resource types or unknown extension namespaces are not forward-compatible.
+  - **Suggestion:** accept unknown types/namespaces if structurally valid; preserve them as opaque data.
+
+- **Assuming array ordering is meaningful**
+  - Depending on the order of `resources`, `connections` or `groups` causes non deterministic behavior across exporters and serializers.
+  - **Suggestion:** always index by `id` and traverse via references.
+
+- **Dropping unknown fields during transformation**
+  - Normalizers and converters that remove fields they do not recognize can silently destroy information.
+  - **Suggestion:** preserve unknown fields by default; only drop data when explicitly configured.
+
+- **Inventing values for unknowns**
+  - Filling missing fields with “fake but plausible” values (serials, IPs, hostnames) contaminates datasets and downstream automation.
+  - **Suggestion:** omit unknown optional fields; if anonymization is required, mark it clearly and use consistent redaction patterns.
+
+- **Merging documents without collision control**
+  - Combining OSIRIS documents can introduce duplicate IDs and broken references.
+  - **Suggestion:** define a merge strategy and enforce uniqueness (e.g. stable global IDs, or deterministic prefixing rules at merge time).
+
+- **Overloading `extensions` with core semantics**
+  - Putting essential cross-tool data only in extensions reduces interoperability.
+  - **Suggestion:** place broadly relevant attributes in core fields (`name`, `provider`, `properties`), use extensions for vendor/org-specific details.
+
+---
+
+### 11.3.4 Interoperability tips and checklist
+
+#### Tips
+- **Normalize identity early**
+  - In ingestion pipelines, build a consistent internal key using `{resource.id}` first and `{provider.name + provider.native_id}` as a secondary correlation hint.
+
+- **Emit and consume explicit scope**
+  - Producers should populate `metadata.scope`; consumers should surface it for users and use it to avoid accidental cross-scope merges.
+
+- **Prefer conservative inference**
+  - If you infer connections or groups (e.g. from naming, subnets, LLDP), mark them as derived (e.g. via `tags` or namespaced metadata) and avoid overwriting explicit data.
+
+- **Use validation levels consistently**
+  - Producers should fail exports on Level 1 and usually Level 2 errors.
+  - Consumers should offer strictness modes and clearly distinguish errors vs warnings.
+
+- **Preserve unknown namespaces end-to-end**
+  - A good ecosystem behavior is: parse > validate > enrich > re-export without losing unknown namespaces or future fields.
+
+#### Practical checklist
+- [ ] Resource IDs are deterministic and stable across exports for the same entity.
+- [ ] All `connections` and `groups` reference valid `resource.id` values.
+- [ ] Provider traceability is present (`provider.name` and preferably `provider.native_id`, plus stable scope context).
+- [ ] Consumers ignore unknown fields, unknown types and unknown extension namespaces without failing.
+- [ ] No implementation assumes array ordering for correctness.
+- [ ] Transformation tools preserve unknown fields unless explicitly configured otherwise.
+- [ ] Merge operations prevent ID collisions and do not break references.
+- [ ] No invented “real-looking” values are emitted for unknown data unless explicitly flagged as redacted/anonymized.

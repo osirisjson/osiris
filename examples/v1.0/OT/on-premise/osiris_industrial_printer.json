@@ -8,118 +8,166 @@
       "version": "1.0.0"
     },
     "scope": {
-      "name": "Industrial label printing system",
-      "description": "Zebra thermal printer controlled by Rockwell PLC for packaging line at FCO facility. This example use ICAO code, FCO is referred to a facility located in Rome.",
-      "providers": ["custom"],
-      "sites": ["fco"],
-      "environments": ["production"]
+      "name": "Industrial printing system",
+      "description": "PLC-controlled industrial label printer connected to OT network at MXP Facility.",
+      "providers": [ "custom" ],
+      "sites": [ "mxp" ],
+      "environments": [ "production" ]
     }
   },
   "topology": {
     "resources": [
       {
-        "id": "fco-facility-01::sw-ot-floor-01",
-        "type": "network.switch",
-        "name": "SW-OT-FLOOR-01",
-        "provider": {
-          "name": "custom",
-          "namespace": "osiris.com.cisco",
-          "native_id": "SW-OT-FLOOR-01",
-          "type": "IE-3400-8T2S",
-          "site": "fco"
-        },
-        "properties": {
-          "model": "Cisco Catalyst IE3400 Rugged Series",
-          "mgmt_ip": "10.50.20.2",
-          "uplinks": [
-            {
-              "port": "Gi1/1",
-              "peer": "ot-fco-core-01",
-              "media": "fiber"
-            }
-          ],
-          "poe": {
-            "supported": false
-          }
-        },
-        "extensions": {
-          "osiris.cisco": {
-            "os_family": "ios-xe",
-            "iosxe_version": "17.9.4",
-            "industrial_protocols": [
-              "profinet"
-            ],
-            "tsn_capable": false
-          }
-        }
-      },
-      {
-        "id": "fco-facility-01::printer-line-a-01",
-        "type": "ot.printer",
-        "name": "Line A Label Printer 01",
-        "provider": {
-          "name": "custom",
-          "namespace": "osiris.com.zebra",
-          "native_id": "ZEBRA-ZT620-0001",
-          "site": "fco"
-        },
-        "properties": {
-          "model": "Zebra ZT620",
-          "mgmt_ip": "10.50.20.10",
-          "print_technology": "thermal_transfer",
-          "dpi": 300
-        },
-        "extensions": {
-          "osiris.zebra": {
-            "firmware": "96.21.46Z",
-            "language": [
-              "zpl",
-              "ezpl"
-            ],
-            "snmp_enabled": true
-          }
-        }
-      },
-      {
-        "id": "fco-facility-01::plc-packaging-a-01",
-        "type": "ot.controller.plc",
-        "name": "Packaging PLC A-01",
+        "id": "mxp::plc-line-01",
+        "type": "ot.plc",
+        "name": "PLC-LINE-01",
+        "description": "PLC controlling packaging line and printer trigger signals",
         "provider": {
           "name": "custom",
           "namespace": "osiris.com.rockwell",
-          "native_id": "PLC-A-01",
-          "site": "fco"
+          "native_id": "PLC-0001",
+          "site": "mxp"
+        },
+        "status": "active",
+        "state": "operational",
+        "properties": {
+          "vendor": "Rockwell Automation",
+          "model": "Allen-Bradley CompactLogix 5380",
+          "ip_address": "10.50.10.20",
+          "mac_address": "02:AA:BB:CC:FF:20",
+          "protocols": [
+            "ethernet_ip",
+            "modbus_tcp"
+          ],
+          "connected_switch": "mxp::sw-ot-printing-01",
+          "switch_port": "Gi1/0/4",
+          "location": {
+            "site": "mxp",
+            "building": "plant",
+            "line": "packaging_line_01"
+          }
+        },
+        "tags": {
+          "environment": "production",
+          "domain": "ot",
+          "function": "plc_control"
+        }
+      },
+      {
+        "id": "mxp::printer-label-01",
+        "type": "ot.printer.industrial",
+        "name": "PRINTER-LABEL-01",
+        "description": "Industrial label printer receiving print jobs from PLC",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.zebra",
+          "native_id": "PRN-0001",
+          "site": "mxp"
+        },
+        "status": "active",
+        "state": "operational",
+        "properties": {
+          "vendor": "Zebra",
+          "model": "ZT610",
+          "printer_type": "label",
+          "ip_address": "10.50.10.30",
+          "mac_address": "02:AA:BB:CC:FF:30",
+          "protocols": [
+            "tcp9100",
+            "snmp"
+          ],
+          "connected_switch": "mxp::sw-ot-printing-01",
+          "switch_port": "Gi1/0/5",
+          "location": {
+            "site": "mxp",
+            "building": "plant",
+            "line": "packaging_line_01",
+            "station": "labeling_station"
+          }
+        },
+        "tags": {
+          "environment": "production",
+          "domain": "ot",
+          "function": "label_printing"
+        },
+        "extensions": {
+          "osiris.zebra": {
+            "firmware_version": "V75.20.3Z",
+            "dpi": 600,
+            "max_width_mm": 104,
+            "head_temp": 20
+          }
+        }
+      },
+      {
+        "id": "mxp::sw-ot-printing-01",
+        "type": "network.switch",
+        "name": "SW-OT-PRINTING-01",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.cisco",
+          "native_id": "SW-OT-PRINTING-01",
+          "type": "IE-3300-8P2S-E",
+          "site": "mxp"
         },
         "properties": {
-          "protocols": [
-            "ethernetip"
-          ],
-          "mgmt_ip": "10.50.20.20"
+          "model": "Cisco Catalyst IE3300 Rugged Series",
+          "mgmt_ip": "10.50.10.1",
+          "ports_total": 8,
+          "ports_poe": 8
+        },
+        "tags": {
+          "environment": "production",
+          "domain": "ot"
         }
       }
     ],
     "connections": [
       {
-        "id": "conn-sw-floor-01-to-printer",
-        "type": "network",
-        "source": "fco-facility-01::sw-ot-floor-01",
-        "target": "fco-facility-01::printer-line-a-01",
-        "direction": "bidirectional",
-        "properties": {
-          "vlan": 52
-        }
-      },
-      {
         "id": "conn-plc-to-printer",
-        "type": "flow",
-        "source": "fco-facility-01::plc-packaging-a-01",
-        "target": "fco-facility-01::printer-line-a-01",
+        "type": "dataflow.tcp",
+        "source": "mxp::plc-line-01",
+        "target": "mxp::printer-label-01",
         "direction": "forward",
         "properties": {
           "protocol": "tcp",
-          "application": "zpl_over_tcp",
-          "port": 9100
+          "port": 9100,
+          "application": "zpl_over_tcp"
         }
+      },
+      {
+        "id": "conn-plc-to-switch",
+        "type": "network",
+        "source": "mxp::plc-line-01",
+        "target": "mxp::sw-ot-printing-01",
+        "direction": "bidirectional",
+        "properties": {
+          "interface": "Gi1/0/4",
+          "link_speed": "1G"
+        }
+      },
+      {
+        "id": "conn-printer-to-switch",
+        "type": "network",
+        "source": "mxp::printer-label-01",
+        "target": "mxp::sw-ot-printing-01",
+        "direction": "bidirectional",
+        "properties": {
+          "interface": "Gi1/0/5",
+          "link_speed": "1G"
+        }
+      }
+    ],
+    "groups": [
+      {
+        "id": "grp-mxp-printing-zone",
+        "type": "logical.production.zone",
+        "name": "MXP Packaging Line 01 Printing Zone",
+        "members": [
+          "mxp::plc-line-01",
+          "mxp::printer-label-01",
+          "mxp::sw-ot-printing-01"
+        ]
       }
     ]
   }

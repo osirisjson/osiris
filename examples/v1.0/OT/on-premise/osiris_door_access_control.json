@@ -8,15 +8,123 @@
       "version": "1.0.0"
     },
     "scope": {
-      "name": "Physical access control system",
-      "description": "HID door access controller with RFID reader and electric lock at MXP facility.  This example use ICAO code, MXP is referred to a Datacenter located in Milan.",
-      "providers": ["custom"],
-      "sites": ["mxp"],
-      "environments": ["production"]
+      "name": "Door access control system",
+      "description": "Access control panel, RFID reader and door lock at MXP Facility.",
+      "providers": [ "custom" ],
+      "sites": [ "mxp" ],
+      "environments": [ "production" ]
     }
   },
   "topology": {
     "resources": [
+      {
+        "id": "mxp::access-panel-01",
+        "type": "ot.access.control.panel",
+        "name": "ACCESS-PANEL-01",
+        "description": "Central access control panel managing building entry points",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.hid",
+          "native_id": "ACP-0001",
+          "site": "mxp"
+        },
+        "status": "active",
+        "state": "operational",
+        "properties": {
+          "vendor": "HID",
+          "model": "VertX EVO V1000",
+          "ip_address": "10.40.10.10",
+          "mac_address": "02:AA:BB:CC:EE:10",
+          "protocols": [
+            "osdp",
+            "wiegand"
+          ],
+          "connected_switch": "mxp::sw-ot-access-01",
+          "switch_port": "Gi1/0/3",
+          "location": {
+            "site": "mxp",
+            "building": "facility",
+            "floor": "1",
+            "room": "security_room"
+          }
+        },
+        "tags": {
+          "environment": "production",
+          "domain": "ot",
+          "function": "access_control"
+        },
+        "extensions": {
+          "osiris.hid": {
+            "firmware_version": "2.3.1",
+            "doors_managed": 4,
+            "controllers": [
+              "door-entrance-01"
+            ]
+          }
+        }
+      },
+      {
+        "id": "mxp::rfid-reader-01",
+        "type": "ot.access.reader",
+        "name": "RFID-READER-01",
+        "description": "RFID badge reader for main entrance door",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.hid",
+          "native_id": "READER-0001",
+          "site": "mxp"
+        },
+        "status": "active",
+        "state": "operational",
+        "properties": {
+          "vendor": "HID",
+          "model": "iCLASS SE R10",
+          "reader_type": "rfid",
+          "protocol": "osdp",
+          "door_id": "door-entrance-01",
+          "location": {
+            "site": "mxp",
+            "building": "facility",
+            "entrance": "main"
+          }
+        },
+        "tags": {
+          "environment": "production",
+          "domain": "ot",
+          "function": "badge_reader"
+        }
+      },
+      {
+        "id": "mxp::door-lock-01",
+        "type": "ot.access.lock",
+        "name": "DOOR-LOCK-01",
+        "description": "Electromagnetic lock controlling main entrance door",
+        "provider": {
+          "name": "custom",
+          "namespace": "osiris.com.assaabloy",
+          "native_id": "LOCK-0001",
+          "site": "mxp"
+        },
+        "status": "active",
+        "state": "operational",
+        "properties": {
+          "vendor": "ASSA ABLOY",
+          "model": "Electromagnetic Lock 1200lb",
+          "lock_type": "magnetic",
+          "door_id": "door-entrance-01",
+          "power_supply": "12VDC",
+          "location": {
+            "site": "mxp",
+            "building": "facility",
+            "entrance": "main"
+          }
+        },
+        "tags": {
+          "environment": "production",
+          "domain": "ot",
+          "function": "door_lock"
+        }
+      },
       {
         "id": "mxp::sw-ot-access-01",
         "type": "network.switch",
@@ -25,126 +133,69 @@
           "name": "custom",
           "namespace": "osiris.com.cisco",
           "native_id": "SW-OT-ACCESS-01",
-          "type": "IE-3300-8T2S-E",
+          "type": "IE-3300-8P2S-E",
           "site": "mxp"
         },
         "properties": {
           "model": "Cisco Catalyst IE3300 Rugged Series",
-          "mgmt_ip": "10.50.10.2",
-          "uplinks": [
-            {
-              "port": "Gi1/1",
-              "peer": "ot-mxp-core-01",
-              "media": "fiber"
-            }
-          ],
-          "poe": {
-            "supported": true,
-            "budget_w": 240
-          }
+          "mgmt_ip": "10.40.10.1",
+          "ports_total": 8,
+          "ports_poe": 8
         },
-        "extensions": {
-          "osiris.cisco": {
-            "os_family": "ios-xe",
-            "iosxe_version": "17.12.1",
-            "industrial_protocols": [
-              "profinet",
-              "mrp"
-            ],
-            "ring_protocol": "mrp",
-            "ptp_boundary_clock": true
-          }
-        }
-      },
-      {
-        "id": "mxp::access-panel-01",
-        "type": "ot.access.controller",
-        "name": "Door Access Panel 01",
-        "provider": {
-          "name": "custom",
-          "namespace": "osiris.com.hid",
-          "native_id": "VERTX-V100-0001",
-          "site": "mxp"
-        },
-        "properties": {
-          "model": "HID VertX V1000",
-          "mgmt_ip": "10.50.10.20",
-          "firmware": "3.0.1",
-          "doors_supported": 2
-        },
-        "extensions": {
-          "osiris.hid": {
-            "panel_family": "vertx",
-            "encryption_enabled": true,
-            "event_buffer_size": 10000
-          }
-        }
-      },
-      {
-        "id": "mxp::door-01-reader-01",
-        "type": "ot.access.reader",
-        "name": "Door 01 Reader",
-        "provider": {
-          "name": "custom",
-          "namespace": "osiris.com.hid",
-          "native_id": "READER-01",
-          "site": "mxp"
-        },
-        "properties": {
-          "reader_type": "rfid",
-          "protocol": "osdp",
-          "mounting": "wall"
-        }
-      },
-      {
-        "id": "mxp::door-01-lock-01",
-        "type": "ot.access.lock",
-        "name": "Door 01 Electric Strike",
-        "provider": {
-          "name": "custom",
-          "namespace": "osiris.com.acme",
-          "native_id": "LOCK-01",
-          "site": "mxp"
-        },
-        "properties": {
-          "lock_type": "electric_strike",
-          "fail_secure": true
+        "tags": {
+          "environment": "production",
+          "domain": "ot"
         }
       }
     ],
     "connections": [
       {
-        "id": "conn-sw-access-01-to-panel-01",
-        "type": "network",
-        "source": "mxp::sw-ot-access-01",
-        "target": "mxp::access-panel-01",
-        "direction": "bidirectional",
-        "properties": {
-          "vlan": 50,
-          "ip_subnet": "10.50.10.0/24"
-        }
-      },
-      {
         "id": "conn-panel-01-to-reader-01",
-        "type": "control",
+        "type": "dataflow.control.osdp",
         "source": "mxp::access-panel-01",
-        "target": "mxp::door-01-reader-01",
+        "target": "mxp::rfid-reader-01",
         "direction": "bidirectional",
         "properties": {
+          "protocol": "osdp",
           "interface": "rs485",
-          "protocol": "osdp"
+          "baud_rate": 9600
         }
       },
       {
         "id": "conn-panel-01-to-lock-01",
-        "type": "control",
+        "type": "dataflow.control.relay",
         "source": "mxp::access-panel-01",
-        "target": "mxp::door-01-lock-01",
+        "target": "mxp::door-lock-01",
         "direction": "forward",
         "properties": {
-          "signal": "relay",
-          "normal_state": "closed"
+          "signal_type": "relay_control",
+          "power": "12VDC"
         }
+      },
+      {
+        "id": "conn-panel-01-to-switch",
+        "type": "network",
+        "source": "mxp::access-panel-01",
+        "target": "mxp::sw-ot-access-01",
+        "direction": "bidirectional",
+        "properties": {
+          "interface": "Gi1/0/3",
+          "link_speed": "1G",
+          "power": "poe"
+        }
+      }
+    ],
+    "groups": [
+      {
+        "id": "grp-mxp-access-zone",
+        "type": "logical.security.zone",
+        "name": "MXP Main Entrance Access Zone",
+        "members": [
+          "mxp::access-panel-01",
+          "mxp::rfid-reader-01",
+          "mxp::door-lock-01",
+          "mxp::sw-ot-access-01"
+        ]
       }
     ]
   }

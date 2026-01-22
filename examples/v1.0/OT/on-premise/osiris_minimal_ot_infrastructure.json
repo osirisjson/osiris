@@ -22,7 +22,7 @@
         "type": "ot.sensor.environmental",
         "provider": {
           "name": "custom",
-          "namespace": "osiris.it.mxp.dc",
+          "namespace": "osiris.com.acme",
           "native_id": "SENS-TEMP-001",
           "site": "mxp"
         },

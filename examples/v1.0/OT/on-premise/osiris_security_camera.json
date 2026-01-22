@@ -10,9 +10,9 @@
     "scope": {
       "name": "Video surveillance system",
       "description": "IP security camera with NVR and PoE network infrastructure at MXP Datacenter.",
-      "providers": ["custom"],
-      "sites": ["mxp"],
-      "environments": ["production"]
+      "providers": [ "custom" ],
+      "sites": [ "mxp" ],
+      "environments": [ "production" ]
     }
   },
   "topology": {
@@ -30,97 +30,156 @@
         },
         "properties": {
           "model": "Cisco Catalyst IE3300 Rugged Series",
-          "mgmt_ip": "10.50.30.2",
+          "mgmt_ip": "10.30.20.10",
+          "ports_total": 8,
+          "ports_poe": 8,
           "uplinks": [
             {
-              "port": "Gi1/1",
               "peer": "ot-mxp-core-01",
-              "media": "fiber"
+              "interface": "Gi1/0/1",
+              "speed": "1G"
             }
-          ],
-          "poe": {
-            "supported": true,
-            "budget_w": 180
-          }
+          ]
         },
-        "extensions": {
-          "osiris.cisco": {
-            "os_family": "ios-xe",
-            "iosxe_version": "17.12.1",
-            "industrial_protocols": [],
-            "port_security_enabled": true
-          }
+        "tags": {
+          "environment": "production",
+          "domain": "ot"
         }
       },
       {
         "id": "mxp::cam-perimeter-01",
         "type": "ot.camera",
-        "name": "Perimeter Camera 01",
+        "name": "CAM-PERIMETER-01",
+        "description": "Axis IP security camera monitoring perimeter entrance",
         "provider": {
           "name": "custom",
           "namespace": "osiris.com.axis",
           "native_id": "AXIS-Q3515-0001",
           "site": "mxp"
         },
+        "status": "active",
+        "state": "operational",
         "properties": {
-          "model": "AXIS Q3515-LVE",
-          "mgmt_ip": "10.50.30.10",
+          "model": "Axis Q3515-LVE",
+          "serial_number": "AXQ3515-0001",
+          "ip_address": "10.30.20.50",
+          "mac_address": "02:AA:BB:CC:DD:10",
           "resolution": "1080p",
-          "fps": 25,
-          "poe_required": true
+          "fps": 30,
+          "protocols": [
+            "rtsp",
+            "https"
+          ],
+          "power": "poe",
+          "connected_switch": "mxp::sw-ot-security-01",
+          "switch_port": "Gi1/0/5",
+          "location": {
+            "site": "mxp",
+            "zone": "perimeter",
+            "position": "entrance_gate"
+          }
+        },
+        "tags": {
+          "environment": "production",
+          "domain": "ot",
+          "function": "security_camera"
         },
         "extensions": {
           "osiris.axis": {
-            "firmware": "10.12.221",
-            "rtsp_enabled": true,
-            "onvif_profile": [
-              "S",
-              "T"
-            ],
-            "analytics": {
-              "motion_detection": true
-            }
+            "firmware_version": "10.12.1",
+            "stream_profiles": [
+              {
+                "name": "MainStream",
+                "codec": "H.264",
+                "bitrate_kbps": 4000
+              }
+            ]
           }
         }
       },
       {
         "id": "mxp::nvr-01",
-        "type": "compute.server",
-        "name": "Security NVR 01",
+        "type": "ot.nvr",
+        "name": "NVR-SECURITY-01",
+        "description": "Network video recorder collecting video streams",
         "provider": {
           "name": "custom",
-          "namespace": "osiris.com.acme",
-          "native_id": "NVR-01",
+          "namespace": "osiris.com.milestone",
+          "native_id": "NVR-SEC-01",
           "site": "mxp"
         },
+        "status": "active",
+        "state": "operational",
         "properties": {
-          "mgmt_ip": "10.50.30.20",
-          "os": "linux",
-          "role": "video_recorder"
+          "vendor": "Milestone",
+          "model": "XProtect Corporate",
+          "ip_address": "10.30.20.60",
+          "storage_capacity_tb": 24,
+          "retention_days": 30,
+          "connected_switch": "mxp::sw-ot-security-01",
+          "switch_port": "Gi1/0/6",
+          "location": {
+            "site": "mxp",
+            "room": "security_room",
+            "rack": "R12",
+            "rack_unit": "U10-U12"
+          }
+        },
+        "tags": {
+          "environment": "production",
+          "domain": "ot",
+          "function": "video_recording"
         }
       }
     ],
     "connections": [
       {
-        "id": "conn-sw-security-01-to-cam",
-        "type": "network",
-        "source": "mxp::sw-ot-security-01",
-        "target": "mxp::cam-perimeter-01",
-        "direction": "bidirectional",
-        "properties": {
-          "vlan": 53
-        }
-      },
-      {
         "id": "conn-cam-to-nvr",
-        "type": "flow",
+        "type": "dataflow.rtsp",
         "source": "mxp::cam-perimeter-01",
         "target": "mxp::nvr-01",
         "direction": "forward",
         "properties": {
           "protocol": "rtsp",
-          "port": 554
+          "port": 554,
+          "stream_profile": "MainStream",
+          "codec": "H.264"
         }
+      },
+      {
+        "id": "conn-cam-to-switch",
+        "type": "network",
+        "source": "mxp::cam-perimeter-01",
+        "target": "mxp::sw-ot-security-01",
+        "direction": "bidirectional",
+        "properties": {
+          "interface": "Gi1/0/5",
+          "link_speed": "1G",
+          "power": "poe"
+        }
+      },
+      {
+        "id": "conn-nvr-to-switch",
+        "type": "network",
+        "source": "mxp::nvr-01",
+        "target": "mxp::sw-ot-security-01",
+        "direction": "bidirectional",
+        "properties": {
+          "interface": "Gi1/0/6",
+          "link_speed": "1G"
+        }
+      }
+    ],
+    "groups": [
+      {
+        "id": "grp-mxp-security-zone",
+        "type": "logical.security.zone",
+        "name": "MXP Security Perimeter Zone",
+        "members": [
+          "mxp::sw-ot-security-01",
+          "mxp::cam-perimeter-01",
+          "mxp::nvr-01"
+        ]
       }
     ]
   }
