@@ -4,7 +4,7 @@
 | Authors   | Tia Zanella [skhell](https://github.com/skhell) |
 | Revision  | 1.0.0-DRAFT |
 | Creation date      | 14 December 2025 |
-| Last revision date | 22 January 2026 |
+| Last revision date | 26 January 2026 |
 | Status    | Draft |
 | Specification ID | OSIRIS-1.0 |
 | Schema URI | [OSIRIS-1.0](https://osirisjson.org/schema/v1.0/osiris.schema.json) |
@@ -73,8 +73,8 @@
     - [2.4.5 Metadata vs. resource properties](#245-metadata-vs-resource-properties)
     - [2.4.6 Metadata and change tracking](#246-metadata-and-change-tracking)
     - [2.4.7 Metadata stability](#247-metadata-stability)
-- [3 Schema Structure](#3-schema-structure)
-  - [3.1 Top-Level Object](#31-top-level-object)
+- [3 Schema structure](#3-schema-structure)
+  - [3.1 Top-Level object](#31-top-level-object)
     - [3.1.1 Structure](#311-structure)
     - [3.1.2 Required fields](#312-required-fields)
     - [3.1.3 Additional top-level fields](#313-additional-top-level-fields)
@@ -407,6 +407,24 @@
     - [11.3.2 Best practices for consumers](#1132-best-practices-for-consumers)
     - [11.3.3 Common pitfalls](#1133-common-pitfalls)
     - [11.3.4 Interoperability tips and checklist](#1134-interoperability-tips-and-checklist)
+- [12 Versioning and compatibility](#12-versioning-and-compatibility)
+  - [12.1 Version numbering](#121-version-numbering)
+    - [12.1.1 Specification versioning](#1211-specification-versioning)
+    - [12.1.2 Document version field](#1212-document-version-field)
+    - [12.1.3 Pre-release and draft versions](#1213-pre-release-and-draft-versions)
+    - [12.1.4 Version discovery](#1214-version-discovery)
+    - [12.1.5 Version negotiation](#1215-version-negotiation)
+  - [12.2 Backwards compatibility](#122-backwards-compatibility)
+    - [12.2.1 Compatibility guarantees](#1221-compatibility-guarantees)
+    - [12.2.2 Breaking changes (MAJOR version increments)](#1222-breaking-changes-major-version-increments)
+    - [12.2.3 Forward compatibility rules](#1223-forward-compatibility-rules)
+    - [12.2.4 Backwards compatibility testing](#1224-backwards-compatibility-testing)
+  - [12.3 Deprecation policy](#123-deprecation-policy)
+    - [12.3.1 Deprecation process](#1231-deprecation-process)
+    - [12.3.2 Deprecation notices](#1232-deprecation-notices)
+    - [12.3.3 Handling deprecated features](#1233-handling-deprecated-features)
+    - [12.3.4 Extension deprecation](#1234-extension-deprecation)
+    - [12.3.5 Standard type deprecation](#1235-standard-type-deprecation)
 
 
 ## Preface
@@ -485,7 +503,7 @@ Rather than requiring each consuming application to implement and maintain vendo
 
 This decouples data sources from consuming applications, reducing integration complexity from S×C (S sources × C consumers) to P+C (P producers + C consumers)
 
-This decouples data sources from consuming applications. In environments with **S** source systems and **C** consumer applications, the number of required integrations is reduced from potentially **S×C** vendor-to-tool mappings to **S** producer mappings (source > OSIRIS) plus **C** consumer mappings (OSIRIS > application).
+This decouples data sources from consuming applications. In environments with **S** source systems and **C** consuming applications, the number of required integrations is reduced from potentially **S×C** vendor-to-tool mappings to **S** producer mappings (source > OSIRIS) plus **C** consumer mappings (OSIRIS > application).
 
 
 ### 1.2.1 Core capabilities
@@ -663,7 +681,7 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**, **
 
 
 ### 1.5.3 Domain-specific terms
-**Hyperscaler:** A large-scale provider offering a broad portfolio of infrastructure services (e.g. AWS, Azure, GCP oracle Cloud, IBM Cloud, Alibaba Cloud, Tencent Cloud).
+**Hyperscaler:** A large-scale provider offering a broad portfolio of infrastructure services (e.g. AWS, Azure, Cloudflare, GCP oracle Cloud, IBM Cloud, Alibaba Cloud, Tencent Cloud).
 
 **Cloud provider:** A minor provider offering cloud services such as IaaS, PaaS, SaaS or NaaS.
 
@@ -1079,14 +1097,14 @@ Consumers **SHOULD** validate metadata before processing topology content to det
 
 ---
 
-# 3 Schema Structure
+# 3 Schema structure
 This section defines the structure of an OSIRIS document at the JSON schema level. It describes the top-level object, required fields and the organization of topology data.
 
 OSIRIS documents are JSON objects that conform to [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259.html). The schema is formally defined using JSON Schema (see Appendix A).
 
 ---
 
-## 3.1 Top-Level Object
+## 3.1 Top-Level object
 ### 3.1.1 Structure
 An OSIRIS document **MUST** be a JSON object containing **at least** the following top-level fields:
 
@@ -1220,8 +1238,8 @@ The following fields are **OPTIONAL** but **RECOMMENDED**:
 ```json
   {
     "name": "osiris-aws-parser",
-    "version": "1.2.3",
-    "url": "https://github.com/osirisjson/hyperscaler-parser/aws/osiris-aws-parser"
+    "version": "1.0.0",
+    "url": "https://github.com/osirisjson/osiris-producers/hyperscalers/aws/"
   }
 ```
 
@@ -2031,6 +2049,7 @@ Producers **MUST** use canonical lowercase identifiers for well-known providers:
 |----------|----------------------|-------------------|
 | Amazon Web Services | `aws` | `AWS`, `Amazon`, `amazon-web-services` |
 | Microsoft Azure | `azure` | `Azure`, `Microsoft Azure`, `msazure` |
+| Cloudflare | `cloudflare` | `Cloudflare` |
 | Google Cloud Platform | `gcp` | `GCP`, `Google`, `googlecloud` |
 | Oracle Cloud | `oci` | `OCI`, `Oracle`, `oraclecloud` |
 | IBM Cloud | `ibm` | `IBM`, `ibmcloud` |
@@ -2423,7 +2442,11 @@ The value associated with each `osiris.<namespace>` key **MUST** be a JSON objec
 ```json
 {
   "extensions": {
-    "osiris.aws": { "security.groups": ["sg-0abc123"] },
+    "osiris.aws": { 
+      "security": {
+        "groups": ["sg-0abc123"]
+      } 
+    },
     "osiris.com.acme": { "owner_team": "software-development" }
   }
 }
@@ -2452,12 +2475,9 @@ The value associated with each `osiris.<namespace>` key **MUST** be a JSON objec
   },
   "extensions": {
     "osiris.aws": {
-      "security.groups": [
-        {
-          "id": "sg-0abc123",
-          "name": "web-tier"
-        }
-      ],
+      "security": {
+        "groups": ["sg-0abc123"]
+      },
       "iam_role": "arn:aws:iam::123456789012:role/web-server-role",
       "placement": {
         "availability_zone": "us-east-1a",
@@ -2573,7 +2593,9 @@ If a platform has richer label/annotation concepts (e.g. Kubernetes), producers 
   "extensions": {
     "osiris.aws": {
       "subnet_id": "subnet-0abc1234def567",
-      "security.groups": ["sg-0123456789abcdef0"]
+      "security": {
+        "groups": ["sg-0abc123"]
+      }
     }
   },
   "tags": {
@@ -3944,6 +3966,7 @@ Producers **MAY** use deterministic ID generation based on:
 **Recommended provider codes (non-normative):**
 - `aws` (Amazon Web Services)
 - `az` (Microsoft Azure)
+- `cloudflare` (Cloudflare)
 - `gcp` (Google Cloud Platform)
 - `oci` (Oracle Cloud Infrastructure)
 - `ibm` (IBM Cloud)
@@ -4723,7 +4746,9 @@ Groups use the same metadata pattern as resources and connections:
     "osiris.aws": {
       "vpc_id": "vpc-0abc123def4567890",
       "dhcp_options_set": "dopt-0123456789abcdef",
-      "default_security.group": "sg-0abc123def4567890"
+      "security": {
+        "default_security_group": "sg-0abc123"
+      }
     }
   }
 }
@@ -5612,6 +5637,7 @@ Producers **SHOULD** include these properties when available:
 |----------|-------------|----------------|
 | AWS | `AWS::EC2::Instance` | `compute.vm` |
 | Azure | `Microsoft.Compute/virtualMachines` | `compute.vm` |
+| Cloudflare | `cloudflare_worker_script` | `compute.function.serverless` |
 | GCP | `compute#instance` | `compute.vm` |
 | Oracle Cloud (OCI) | `oci_core_instance` | `compute.vm` |
 | IBM Cloud | `ibm_is_instance` | `compute.vm` |
@@ -5809,7 +5835,7 @@ Use `compute.function.serverless` for:
 | AWS | `AWS::Lambda::Function` | `compute.function.serverless` |
 | Azure | `Microsoft.Web/sites (Function App)` | `compute.function.serverless` |
 | GCP | `cloudfunctions#function` | `compute.function.serverless` |
-| Cloudflare | Workers Function | `compute.function.serverless` |
+| Cloudflare | `cloudflare_worker_script` | `compute.function.serverless` |
 
 **Example:**
 ```json
@@ -7443,6 +7469,25 @@ The examples below use canonical provider names as defined in Chapter 4, section
 | `Microsoft.ServiceBus/namespaces` | `application.queue` | Service Bus |
 | `Microsoft.Cache/redis` | `application.cache` | Azure Cache for Redis |
 
+#### Cloudflare Resource mappings
+| Provider Native Resource Type | OSIRIS Standard Type | Notes |
+|-------------------|---------------------|-------|
+| `cloudflare_worker_script` | `compute.function.serverless` | Edge serverless functions |
+| `cloudflare_workers_kv_namespace` | `storage.keyvalue` | Edge key-value storage |
+| `cloudflare_r2_bucket` | `storage.bucket` | S3-compatible object storage |
+| `cloudflare_d1_database` | `application.database` | SQLite edge database |
+| `cloudflare_zone` | `network.dns.zone` | DNS zone |
+| `cloudflare_record` | `network.dns.record` | DNS record |
+| `cloudflare_load_balancer` | `network.loadbalancer` | Global load balancer |
+| `cloudflare_load_balancer_pool` | `network.loadbalancer.pool` | Load balancer backend pool |
+| `cloudflare_waf_rule` | `network.security.firewall.rule` | WAF rule |
+| `cloudflare_firewall_rule` | `network.security.firewall.rule` | Firewall rule |
+| `cloudflare_access_application` | `network.security.access` | Zero Trust application |
+| `cloudflare_tunnel` | `network.tunnel` | Cloudflare Tunnel (Argo) |
+| `cloudflare_pages_project` | `application.web` | Static site hosting |
+| `cloudflare_spectrum_application` | `network.proxy` | TCP/UDP proxy |
+| `cloudflare_certificate_pack` | `network.security.certificate` | SSL/TLS certificate |
+
 #### Google Cloud Platform (GCP) Resource mappings
 | Provider Native Resource Type | OSIRIS Standard Type | Notes |
 |-------------------|---------------------|-------|
@@ -8459,13 +8504,13 @@ The following vendor namespaces are **registered** as well-known prefixes to enc
 |-----------|--------------|--------|
 | `osiris.aws` | Amazon Web Services | Registered |
 | `osiris.azure` | Microsoft Azure | Registered |
+| `osiris.cloudflare` | Cloudflare | Registered |
 | `osiris.gcp` | Google Cloud Platform | Registered |
 | `osiris.oci` | Oracle Cloud Infrastructure | Registered |
 | `osiris.ibm` | IBM Cloud | Registered |
 | `osiris.ali` | Alibaba Cloud | Registered |
 | `osiris.tc` | Tencent Cloud | Registered |
 | `osiris.openstack` | OpenStack | Registered |
-| `osiris.cloudflare` | Cloudflare | Registered |
 | `osiris.digitalocean` | DigitalOcean | Registered |
 | `osiris.linode` | Linode | Registered |
 | `osiris.leaseweb` | Leaseweb | Registered |
@@ -10442,6 +10487,7 @@ Examples are hand-crafted for documentation and validation.
 The OSIRIS project will begin developing reference parsers for well known hyperscalers and brands:
 - AWS (osiris-aws-parser)
 - Azure (osiris-azure-parser)
+- Cloudflare (osiris-cloudflare-parser)
 - GCP (osiris-gcp-parser)
 - OCI (osiris-oci-parser)
 - IBM (osiris-ibm-parser)
@@ -10991,3 +11037,317 @@ This section highlights recurring implementation mistakes and provides practical
 - [ ] Transformation tools preserve unknown fields unless explicitly configured otherwise.
 - [ ] Merge operations prevent ID collisions and do not break references.
 - [ ] No invented “real-looking” values are emitted for unknown data unless explicitly flagged as redacted/anonymized.
+
+---
+
+# 12 Versioning and compatibility
+This chapter defines the versioning strategy for the OSIRIS specification, compatibility guarantees and the deprecation policy for features and fields across specification versions.
+
+
+## 12.1 Version numbering
+### 12.1.1 Specification versioning
+The OSIRIS specification uses **Semantic Versioning 2.0.0** (SemVer) to communicate the nature of changes across releases.
+
+**Version format:**
+```text
+MAJOR.MINOR.PATCH
+```
+
+**Semantic meaning:**
+- **MAJOR version** increments indicate incompatible changes that break backwards compatibility with consumers or producers implementing prior versions.
+- **MINOR version** increments indicate backwards-compatible additions (new optional fields, new standard types, new validation rules that do not invalidate existing documents).
+- **PATCH version** increments indicate backwards-compatible clarifications, corrections and non-normative improvements to the specification text without changing behavior.
+
+**Examples:**
+- `1.0.0` > Initial stable release
+- `1.1.0` > Added new optional resource types, new connection types
+- `1.0.1` > Clarified ambiguous wording in validation rules
+- `2.0.0` > Changed required field structure (breaking change)
+
+> [!NOTE]
+> The specification version is **independent** from the document version field. The `version` field in an OSIRIS document (e.g. `"version": "1.0.0"`) declares which specification version the document conforms to, not the version of the document itself.
+
+
+### 12.1.2 Document version field
+The `version` field in an OSIRIS document **MUST** match the specification version the document conforms to.
+
+**Example:**
+```json
+{
+  "version": "1.0.0",
+  "metadata": { ... },
+  "topology": { ... }
+}
+```
+
+Producers emitting documents conforming to OSIRIS v1.0 **MUST** set `"version": "1.0.0"`.
+Future specification versions (e.g. OSIRIS v1.1 or v2.0) will define their own version string values.
+
+
+### 12.1.3 Pre-release and draft versions
+During specification development, pre-release versions **MAY** be designated using SemVer pre-release notation:
+
+```text
+1.0.0-alpha
+1.0.0-beta
+1.0.0-rc.1
+1.0.0-DRAFT
+```
+
+Pre-release versions:
+- **MUST NOT** be considered stable
+- **MAY** change incompatibly between pre-release iterations
+- **SHOULD NOT** be used in production systems
+- Are intended for community review and implementation feedback
+
+Documents conforming to pre-release specifications **SHOULD** include the pre-release suffix in the `version` field:
+
+```text
+{
+  "version": "1.0.0-DRAFT",
+  ...
+}
+```
+
+Once a version is declared stable (e.g. `1.0.0` without suffix), its behavior and requirements **MUST NOT** change except via a new version increment.
+
+
+### 12.1.4 Version discovery
+Consumers **MUST** read the `version` field to determine document conformance.
+
+Consumers **SHOULD**:
+- Accept documents with versions they fully support
+- Accept documents with higher PATCH versions within the same MAJOR.MINOR series
+- Optionally accept documents with higher MINOR versions if forward-compatible
+- Warn or reject documents with unknown MAJOR versions
+
+**Decision matrix:**
+
+| Consumer supports | Document version | Action |
+|-------------------|------------------|--------|
+| 1.0.0 | 1.0.0 | Accept (exact match) |
+| 1.0.0 | 1.0.1 | Accept (patch update, compatible) |
+| 1.0.0 | 1.1.0 | Accept with warnings (minor update, may have unknown fields) |
+| 1.0.0 | 2.0.0 | Reject or warn (major version incompatibility) |
+
+Consumers implementing forward compatibility (ignoring unknown fields and types) **MAY** accept documents with higher MINOR versions.
+
+
+### 12.1.5 Version negotiation
+In systems where producers and consumers interact directly (e.g. APIs, pipelines), version negotiation **MAY** be implemented:
+
+**Producer capabilities:**
+Producers **SHOULD** advertise supported output versions:
+```json
+{
+  "supported_versions": ["1.0.0", "1.1.0"]
+}
+```
+
+**Consumer preferences:**
+Consumers **SHOULD** request their preferred version:
+```json
+{
+  "accept_versions": ["1.0.0"]
+}
+```
+
+If no common version exists, the system **SHOULD** fail gracefully with a clear error message.
+
+---
+
+## 12.2 Backwards compatibility
+### 12.2.1 Compatibility guarantees
+OSIRIS provides the following compatibility guarantees within MAJOR version series (e.g. all 1.x.y versions):
+
+**Producers (documents generators):**
+- Documents valid under v1.0.0 **MUST** remain valid under v1.x.y
+- Required fields **MUST NOT** be added
+- Field semantics **MUST NOT** change incompatibly
+- Validation rules **MUST NOT** become stricter for existing fields
+
+**Consumers (documents processors):**
+- Consumers implementing v1.0.0 **MUST** accept documents from v1.x.y without error (if following forward-compatibility rules)
+- Unknown optional fields **MUST** be ignored
+- Unknown types (resource, connection, group) **MUST** be accepted if structurally valid
+- Unknown extension namespaces **MUST** be accepted
+
+**Stability across MINOR versions:**
+- New optional fields **MAY** be added
+- New standard types **MAY** be added to the taxonomy
+- New validation rules **MAY** be added (Level 3 domain rules only)
+- Documentation clarifications **MAY** be made
+
+
+### 12.2.2 Breaking changes (MAJOR version increments)
+Breaking changes require a MAJOR version increment (e.g. 1.x > 2.0).
+
+**Examples of breaking changes:**
+- Adding a new required field to resources, connections or groups
+- Changing the structure of existing required fields (e.g. making `provider` an array instead of an object)
+- Removing support for previously valid field values
+- Changing type naming conventions (e.g. from `compute.vm` to `compute/vm`)
+- Changing namespace prefix rules (e.g. from `osiris.*` to `osiris:*`)
+- Making previously optional validation rules mandatory (e.g. requiring Level 2 validation)
+
+When a MAJOR version increment occurs:
+- The specification **MUST** document all breaking changes clearly
+- A migration guide **SHOULD** be provided
+- Deprecation warnings **SHOULD** have been issued in prior MINOR releases where feasible
+
+
+### 12.2.3 Forward compatibility rules
+To maximize forward compatibility, consumers **MUST** implement these behaviors:
+
+**Unknown fields:**
+Consumers **MUST** ignore unknown fields at all levels (top-level, metadata, topology, resource, connection, group).
+
+**Example:** A v1.1 document introduces `metadata.generator.platform`:
+```jsonc
+{
+  "version": "1.1.0",
+  "metadata": {
+    "timestamp": "2026-01-23T18:15:00Z",
+    "generator": {
+      "name": "manual",
+      "version": "1.0.0",
+      "platform": "linux"  // Added in v1.1
+    }
+  }
+}
+```
+
+A v1.0 consumer **MUST** accept this document and ignore the `platform` field.
+
+**Unknown types:**
+Consumers **MUST** accept unknown resource, connection and group types if the objects are structurally valid.
+
+**Example:** A v1.2 document introduces `compute.edgefunction`:
+```jsonc
+{
+  "id": "edge-fn-001",
+  "type": "compute.edgefunction",  // Added in v1.2
+  "provider": { "name": "cloudflare" }
+}
+```
+
+A v1.0 consumer **MUST** accept this resource even if `compute.edgefunction` is not recognized.
+
+**Unknown extensions:**
+Consumers **MUST** accept unknown extension namespaces.
+
+**Example:**
+```jsonc
+"extensions": {
+  "osiris.newvendor": { ... }  // Unknown namespace
+}
+```
+
+Consumers **MUST** preserve unknown namespaces when re-exporting documents.
+
+
+### 12.2.4 Backwards compatibility testing
+Specification maintainers **SHOULD**:
+- Maintain a test suite of v1.0 documents
+- Verify that all v1.0 documents remain valid in v1.x releases
+- Automate compatibility testing in the release pipeline
+- Document any exceptions or edge cases
+
+Implementers **SHOULD**:
+- Test their parsers and consumers against documents from multiple specification versions
+- Validate forward-compatibility by accepting documents with unknown fields and types
+- Provide configuration options for strictness levels (permissive, standard, strict)
+
+---
+
+## 12.3 Deprecation policy
+### 12.3.1 Deprecation process
+Features, fields or patterns **MAY** be deprecated but **MUST NOT** be removed within a MAJOR version.
+
+**Deprecation lifecycle:**
+1. **Announcement:** Feature is marked as deprecated in specification release notes
+2. **Documentation:** Specification includes deprecation warnings and migration guidance
+3. **Transition period:** Feature remains supported for at least one full MINOR version cycle
+4. **Removal:** Feature is removed only in the next MAJOR version
+
+**Example timeline:**
+- v1.0.0: Feature `X` is fully supported
+- v1.1.0: Feature `X` is deprecated (warning added)
+- v1.2.0: Feature `X` remains deprecated (still valid)
+- v2.0.0: Feature `X` is removed (breaking change)
+
+
+### 12.3.2 Deprecation notices
+Deprecated features **MUST** be clearly marked in the specification.
+
+**Specification markup:**
+```markdown
+> [!WARNING]
+> **DEPRECATED in v1.1.0:** The `legacy_field` is deprecated and will be removed in v2.0.0.
+> Use `new_field` instead. See migration guide in Appendix E.
+```
+
+**Migration guidance:**
+Deprecation notices **SHOULD** include:
+- Version when deprecation was introduced
+- Version when removal is planned
+- Replacement feature or migration path
+- Rationale for deprecation
+- Code examples showing old and new patterns
+
+
+### 12.3.3 Handling deprecated features
+**Producers:**
+- **SHOULD** avoid emitting deprecated fields in new documents
+- **MAY** continue to emit deprecated fields for backwards compatibility
+- **SHOULD** provide configuration to disable deprecated field emission
+
+**Consumers:**
+- **MUST** continue to accept deprecated fields until they are removed
+- **MAY** log warnings when deprecated fields are encountered
+- **SHOULD** support migration by accepting both old and new patterns
+
+**Example: Deprecated field support**
+```jsonc
+{
+  "id": "srv-001",
+  "type": "compute.server",
+  "legacy_identifier": "SRV001",  // Deprecated in v1.1
+  "provider": {
+    "name": "custom",
+    "native_id": "SRV001"  // Preferred in v1.1+
+  }
+}
+```
+
+A v1.1+ consumer **MUST** accept both `legacy_identifier` and `provider.native_id`, even though `legacy_identifier` is deprecated.
+
+
+### 12.3.4 Extension deprecation
+Custom extensions and vendor-specific namespaces follow their own lifecycle and are not governed by the OSIRIS deprecation policy.
+
+However, **well-known registered namespaces** (e.g. `osiris.aws`, `osiris.azure`) **SHOULD**:
+- Maintain compatibility within their own versioning schemes
+- Document deprecations clearly
+- Provide migration paths when changing semantics
+
+Consumers **MUST** treat deprecated extensions as valid and preserve them during re-export.
+
+
+### 12.3.5 Standard type deprecation
+Standard resource, connection and group types **MAY** be deprecated if:
+- A superior replacement type is introduced
+- The type was found to be poorly defined or ambiguous
+- The type duplicates functionality of another type
+
+Deprecated types:
+- **MUST** remain valid for the remainder of the MAJOR version
+- **MUST** be documented with replacement guidance
+- **MAY** be removed in the next MAJOR version
+
+**Example:**
+```markdown
+> [!WARNING]
+> **DEPRECATED in v1.2.0:** The type `network.loadbalancer.classic` is deprecated.
+> Use `network.loadbalancer` with `properties.type = "classic"` instead.
+```
