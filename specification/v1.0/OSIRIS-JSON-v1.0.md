@@ -4,7 +4,7 @@
 | Authors   | Tia Zanella [skhell](https://github.com/skhell) |
 | Revision  | 1.0.0-DRAFT |
 | Creation date      | 14 December 2025 |
-| Last revision date | 26 January 2026 |
+| Last revision date | 28 January 2026 |
 | Status    | Draft |
 | Specification ID | OSIRIS-1.0 |
 | Schema URI | [OSIRIS-1.0](https://osirisjson.org/schema/v1.0/osiris.schema.json) |
@@ -425,6 +425,27 @@
     - [12.3.3 Handling deprecated features](#1233-handling-deprecated-features)
     - [12.3.4 Extension deprecation](#1234-extension-deprecation)
     - [12.3.5 Standard type deprecation](#1235-standard-type-deprecation)
+- [13 Security considerations](#13-security-considerations)
+  - [13.1 Sensitive data handling](#131-sensitive-data-handling)
+    - [13.1.1 Overview](#1311-overview)
+    - [13.1.2 Data classification](#1312-data-classification)
+    - [13.1.3 Data minimization](#1313-data-minimization)
+    - [13.1.4 Redaction and anonymization](#1314-redaction-and-anonymization)
+    - [13.1.5 Encryption in transit and at rest](#1315-encryption-in-transit-and-at-rest)
+    - [13.1.6 Retention and deletion](#1316-retention-and-deletion)
+  - [13.2 Credential secrets or authentication material exclusion](#132-credential-secrets-or-authentication-material-exclusion)
+    - [13.2.1 Overview](#1321-overview)
+    - [13.2.2 Producer responsibilities](#1322-producer-responsibilities)
+    - [13.2.3 Detection patterns](#1323-detection-patterns)
+    - [13.2.4 Consumer validation](#1324-consumer-validation)
+    - [13.2.5 Alternative credential management](#1325-alternative-credential-management)
+  - [13.3 Access Control metadata](#133-access-control-metadata)
+    - [13.3.1 Overview](#1331-overview)
+    - [13.3.2 Classification metadata](#1332-classification-metadata)
+    - [13.3.3 Audience and purpose metadata](#1333-audience-and-purpose-metadata)
+    - [13.3.4 Retention metadata](#1334-retention-metadata)
+    - [13.3.5 External access control systems](#1335-external-access-control-systems)
+    - [13.3.6 Audit logging](#1336-audit-logging)
 
 
 ## Preface
@@ -1252,6 +1273,8 @@ The following fields are **OPTIONAL** but **RECOMMENDED**:
     - `environments` (array of strings): Environment designations (e.g. `["production", "staging"]`)
     - `sites` (array of strings): On-premises sites or facility identifiers (e.g. `["MXP-DC-1", "AGP-DC-2"]`)
     - `clusters` (array of strings): Cluster identifiers (e.g. `["proxmox-prod"]`, `["vsphere-cluster-a"]`)
+    - `intended_audience` (array of strings): Indicate the intended teams or an external auditor (e.g. `["compliance-team", "infrastructure-team", "SGS", "BSI"]`)
+    - `purpose` (string): Indicate the purpose of the document (e.g. `"compliance"`)
 
 
 > [!NOTE] 
@@ -11351,3 +11374,416 @@ Deprecated types:
 > **DEPRECATED in v1.2.0:** The type `network.loadbalancer.classic` is deprecated.
 > Use `network.loadbalancer` with `properties.type = "classic"` instead.
 ```
+
+---
+
+# 13 Security considerations
+This chapter provides guidance on security-sensitive aspects of OSIRIS document creation, transmission, storage and consumption. OSIRIS documents often contain infrastructure topology information that **MAY** be considered sensitive in certain contexts.
+
+---
+
+## 13.1 Sensitive data handling
+### 13.1.1 Overview
+OSIRIS documents describe infrastructure topologies, which inherently contain information that **MAY** be sensitive depending on organizational policies, regulatory requirements or threat models.
+
+**Potentially sensitive data includes:**
+- Network topology and segmentation details
+- IP address assignments (public and private)
+- Resource identifiers and naming conventions
+- Physical locations (datacenter addresses, rack positions)
+- Software versions and patch levels
+- Provider account identifiers and subscription IDs
+- Access control configurations
+- Security group rules and firewall policies
+
+
+### 13.1.2 Data classification
+Organizations **SHOULD** classify OSIRIS documents according to their internal data classification policies.
+
+**Recommended classification factors:**
+- **Public vs. internal infrastructure:** Public-facing resources may be less sensitive than internal-only infrastructure
+- **Production vs. development:** Production topologies may contain more sensitive configuration details
+- **Level of detail:** Minimal documents with only resource types may be less sensitive than documents with detailed properties, IP addresses and security configurations
+
+Organizations **SHOULD** apply appropriate access controls, encryption and retention policies based on classification.
+
+
+### 13.1.3 Data minimization
+Producers **SHOULD** include only the minimum data necessary for the intended use case.
+
+**Guidance:**
+- For high-level documentation or visualization purposes, consider omitting detailed IP addresses, serial numbers and configuration specifics
+- For compliance or audit purposes, include sufficient detail to satisfy requirements but avoid including extraneous sensitive data
+- Use the `scope` field in metadata to clearly indicate the intended audience and purpose
+
+**Example: Minimal vs. detailed**
+
+**Minimal (documentation-focused):**
+```json
+{
+  "$schema": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
+  "version": "1.0.0",
+  "metadata": {
+    "timestamp": "2026-01-27T19:50:00Z",
+    "generator": {
+      "name": "osiris-aws-parser",
+      "version": "1.0.0"
+    },
+    "scope": {
+      "name": "Production web tier (documentation)",
+      "providers": ["aws"],
+      "regions": ["us-east-1"],
+      "accounts": ["123456789012"],
+      "environments": ["prod"],
+      "intended_audience": ["costcenter-team"],
+      "purpose": "documentation"
+    }
+  },
+  "topology": {
+    "resources": [
+      {
+        "id": "aws::i-0abc123def456",
+        "type": "compute.vm",
+        "name": "web-server-prod-01",
+        "provider": {
+          "name": "aws",
+          "native_id": "i-0abc123def456",
+          "region": "us-east-1",
+          "account": "123456789012"
+        }
+      }
+    ],
+    "connections": [],
+    "groups": []
+  }
+}
+
+```
+
+**Detailed (audit-focused):**
+```json
+{
+  "$schema": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
+  "version": "1.0.0",
+  "metadata": {
+    "timestamp": "2026-01-27T20:02:00Z",
+    "generator": {
+      "name": "osiris-aws-parser",
+      "version": "1.0.0"
+    },
+    "scope": {
+      "name": "Production infrastructure audit",
+      "description": "Infrastructure topology for SOC 2 compliance audit",
+      "providers": ["aws"],
+      "regions": ["us-east-1"],
+      "accounts": ["123456789012"],
+      "environments": ["prod"],
+      "intended_audience": ["compliance-team", "infrastructure-team", "SGS", "BSI"],
+      "purpose": "compliance"
+    }
+  },
+  "topology": {
+    "resources": [
+      {
+        "id": "aws::i-0abc123def456",
+        "type": "compute.vm",
+        "name": "web-server-prod-01",
+        "provider": {
+          "name": "aws",
+          "type": "AWS::EC2::Instance",
+          "native_id": "i-0abc123def456",
+          "region": "us-east-1",
+          "account": "123456789012",
+          "zone": "us-east-1a"
+        },
+        "properties": {
+          "private_ip": "10.0.1.10",
+          "public_ip": "203.0.113.10",
+          "security_groups": ["sg-0def456"],
+          "iam_role": "web-server-role"
+        }
+      }
+    ],
+    "connections": [],
+    "groups": []
+  }
+}
+
+```
+
+Producers **SHOULD** provide configuration options to control the level of detail emitted.
+
+
+### 13.1.4 Redaction and anonymization
+For scenarios requiring data sharing with third parties or publication, producers **MAY** implement redaction or anonymization.
+
+**Redaction strategies:**
+
+**1. Placeholder substitution:**
+Replace sensitive values with clearly marked placeholders:
+```json
+{
+  "private_ip": "REDACTED",
+  "account": "REDACTED",
+  "serial_number": "REDACTED"
+}
+```
+
+**2. Synthetic data:**
+Replace real values with realistic but fictional data, good for testing purposes but **SHOULD** be avoided in production environment to avoid targeting potential real systems:
+```json
+{
+  "private_ip": "10.0.0.1",
+  "account": "000000000000",
+  "serial_number": "XXXXXX001"
+}
+```
+
+**3. Field omission:**
+Omit sensitive optional fields entirely:
+No evidence of IP addresses, serial numbers or sensitive informations.
+```json
+{
+  "id": "srv-001",
+  "type": "compute.server",
+  "name": "web-server"
+}
+```
+
+**Redaction markers:**
+When using redaction, producers **SHOULD** mark redacted documents clearly in metadata:
+
+```json
+{
+  "metadata": {
+    "timestamp": "2026-01-27T21:00:00Z",
+    "generator": {
+      "name": "manual",
+      "version": "1.0.0"
+    },
+    "redacted": true,
+    "redaction_policy": "Sensitive fields replaced with placeholders"
+  }
+}
+```
+
+Consumers **MUST NOT** assume redacted values are accurate or complete.
+
+
+### 13.1.5 Encryption in transit and at rest
+OSIRIS documents containing sensitive topology information **SHOULD** be:
+- **Transmitted over encrypted channels** (TLS 1.2+, HTTPS, SSH, VPN)
+- **Stored with encryption at rest** when persisted to disk or databases
+- **Access-controlled** using appropriate authentication and authorization mechanisms
+
+Organizations **SHOULD** follow their standard data protection policies for sensitive documents.
+
+
+### 13.1.6 Retention and deletion
+Organizations **SHOULD** define retention policies for OSIRIS documents:
+- Determine how long documents should be retained based on use case (audit, compliance, documentation)
+- Implement automated deletion after retention periods expire
+- Ensure deletion methods are secure (e.g. secure erase, not just unlinking)
+
+For compliance purposes, retention policies **SHOULD** align with regulatory requirements (e.g. SOC 2, GDPR, HIPAA).
+
+---
+
+## 13.2 Credential secrets or authentication material exclusion
+### 13.2.1 Overview
+OSIRIS documents **MUST NOT** contain credentials, secrets or authentication material.
+
+**Prohibited content:**
+- Passwords (plaintext, hashed or encoded)
+- API keys and tokens
+- SSH private keys or certificates
+- Database connection strings with embedded credentials
+- Access keys and secret keys
+- Service account credentials
+- OAuth client secrets
+- Encryption keys or certificates (private keys)
+
+
+### 13.2.2 Producer responsibilities
+Producers **MUST**:
+- Scan document content for common credential patterns before emission
+- Refuse to export fields known to contain credentials
+- Provide warnings or errors if credential-like patterns are detected
+- Document clearly which fields are excluded for security reasons
+
+**Example: Connection string sanitization**
+
+**WRONG (includes password):**
+```json
+{
+  "properties": {
+    "connection_string": "postgresql://user:password123@db.example.com:5432/app"
+  }
+}
+```
+
+**CORRECT (password omitted):**
+```json
+{
+  "properties": {
+    "endpoint": "db.example.com:5432",
+    "database": "app",
+    "username": "user"
+  }
+}
+```
+
+
+### 13.2.3 Detection patterns
+Producers **SHOULD** implement heuristics to detect credential-like patterns:
+
+**Common patterns:**
+- Keys matching `password`, `secret`, `token`, `key`, `credential`
+- Values matching patterns like:
+  - `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`
+  - `AKIA...` (AWS access key format)
+  - `ghp_...` (GitHub token format)
+  - `Bearer ...`
+  - `Basic ...` (Base64 encoded credentials)
+  - SSH private key markers (`-----BEGIN RSA PRIVATE KEY-----`)
+
+**Example validation:**
+```python
+CREDENTIAL_PATTERNS = [
+    r'password',
+    r'secret',
+    r'token',
+    r'AKIA[0-9A-Z]{16}',  # AWS access key
+    r'-----BEGIN .* PRIVATE KEY-----'
+]
+
+def scan_for_credentials(value):
+    for pattern in CREDENTIAL_PATTERNS:
+        if re.search(pattern, value, re.IGNORECASE):
+            raise SecurityError(f"Potential credential detected: {pattern}")
+```
+
+Producers **SHOULD** fail exports if credentials are detected unless explicitly overridden by configuration.
+
+
+### 13.2.4 Consumer validation
+Consumers receiving OSIRIS documents **SHOULD**:
+- Treat all string fields as potentially untrusted
+- Validate fields before using them in automation or infrastructure provisioning
+- Never extract and use credential-like values from documents
+- Log warnings if credential patterns are detected in received documents
+
+
+### 13.2.5 Alternative credential management
+For use cases requiring automation or provisioning, credentials **SHOULD** be:
+- Stored in dedicated secret management systems (HashiCorp Vault, AWS Secrets Manager, Azure Key Vault)
+- Referenced by identifier rather than embedded in documents
+- Retrieved at runtime using secure authentication mechanisms
+
+**Example: Reference to external secret**
+```json
+{
+  "properties": {
+    "database_endpoint": "db.example.com:5432",
+    "credential_reference": "vault://secrets/prod/db-password"
+  }
+}
+```
+
+The consumer retrieves `vault://secrets/prod/db-password` from the secret management system at runtime using appropriate authentication.
+
+---
+
+## 13.3 Access Control metadata
+### 13.3.1 Overview
+OSIRIS documents **MAY** include metadata indicating intended access controls, classification or handling requirements.
+
+While OSIRIS does not enforce access control directly, metadata fields enable downstream systems to apply appropriate policies.
+
+
+### 13.3.2 Classification metadata
+Producers **MAY** include classification metadata in the `metadata` object:
+
+```json
+{
+  "metadata": {
+    "timestamp": "2026-01-28T18:16:00Z",
+    "generator": { ... },
+    "classification": "internal",
+    "sensitivity": "medium",
+    "handling_instructions": "Restricted to infrastructure team only"
+  }
+}
+```
+
+**Common classification levels:**
+- `public` – Suitable for public disclosure
+- `internal` – Internal use only, not for external sharing
+- `confidential` – Restricted to authorized personnel
+- `restricted` – Highly sensitive, strict access controls required
+
+
+### 13.3.3 Audience and purpose metadata
+The `scope` object **SHOULD** be used to indicate intended audience and purpose:
+
+```json
+{
+  "metadata": {
+    "scope": {
+      "name": "Production infrastructure audit",
+      "description": "Infrastructure topology for SOC 2 compliance audit",
+      "intended_audience": ["compliance-team", "auditors"],
+      "purpose": "compliance"
+    }
+  }
+}
+```
+
+Consumers **MAY** use this metadata to enforce policy-based access controls.
+
+
+### 13.3.4 Retention metadata
+Producers **MAY** include retention guidance:
+
+```json
+{
+  "metadata": {
+    "timestamp": "2026-01-28T19:05:00Z",
+    "retention_policy": "90-days",
+    "expires_at": "2026-04-28T19:05:00Z"
+  }
+}
+```
+
+Consumers and storage systems **SHOULD** respect retention policies where feasible.
+
+
+### 13.3.5 External access control systems
+OSIRIS documents **MAY** be protected by external access control systems:
+- **Role-Based Access Control (RBAC):** Restrict access to documents based on user roles
+- **Attribute-Based Access Control (ABAC):** Apply policies based on document metadata (classification, scope, providers)
+- **Encryption at rest with key management:** Encrypt documents and manage decryption keys separately
+
+Organizations **SHOULD** integrate OSIRIS document storage and transmission with their existing IAM and data governance frameworks.
+
+
+### 13.3.6 Audit logging
+Systems handling OSIRIS documents **SHOULD** implement audit logging:
+- Log document creation, access, modification and deletion events
+- Include user identity, timestamp and action type
+- Retain logs according to organizational policies
+- Protect logs from tampering
+
+**Example log entry:**
+```json
+{
+  "timestamp": "2026-01-28T19:12:00Z",
+  "event": "document_accessed",
+  "user": "tia@example.com",
+  "document_id": "topology-prod-2026-01-28",
+  "classification": "confidential",
+  "action": "read"
+}
+```
+
+Audit logs enable detection of unauthorized access and support compliance requirements.

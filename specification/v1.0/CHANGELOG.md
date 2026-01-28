@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+# [1.0.0-draft.15] - 2026-01-28
+### Added
+- Chapter 13: (13.1-13.3)
+
+### Updated
+- Section 3.3.3 added "intended_audience" and "purpose" this aligns with examples of section 13.1.3
+
+
 # [1.0.0-draft.14] - 2026-01-26
 ### Added
 - Chapter 12: (12.1-12.3)
