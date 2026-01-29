@@ -4,7 +4,7 @@
 | Authors   | Tia Zanella [skhell](https://github.com/skhell) |
 | Revision  | 1.0.0-DRAFT |
 | Creation date      | 14 December 2025 |
-| Last revision date | 28 January 2026 |
+| Last revision date | 29 January 2026 |
 | Status    | Draft |
 | Specification ID | OSIRIS-1.0 |
 | Schema URI | [OSIRIS-1.0](https://osirisjson.org/schema/v1.0/osiris.schema.json) |
@@ -446,6 +446,23 @@
     - [13.3.4 Retention metadata](#1334-retention-metadata)
     - [13.3.5 External access control systems](#1335-external-access-control-systems)
     - [13.3.6 Audit logging](#1336-audit-logging)
+- [14 References](#14-references)
+  - [14.1 Normative references](#141-normative-references)
+    - [RFC2119](#rfc2119)
+    - [RFC8259](#rfc8259)
+    - [RFC3339](#rfc3339)
+    - [JSON-SCHEMA](#json-schema)
+    - [SEMVER](#semver)
+  - [14.2 Informative references](#142-informative-references)
+    - [OPENAPI](#openapi)
+    - [TOSCA OASIS](#tosca-oasis)
+    - [CNCF GLOSSARY](#cncf-glossary)
+    - [NETCONF](#netconf)
+    - [YANG](#yang)
+    - [BACNET](#bacnet)
+    - [IEC-62443](#iec-62443)
+    - [GDPR](#gdpr)
+    - [SOC2](#soc2)
 
 
 ## Preface
@@ -614,7 +631,7 @@ OSIRIS v1.0 prioritizes:
 
 3. **Practical extensibility:** The extension mechanism enables representation of vendor-specific or specialized resources without requiring immediate schema updates.
 
-4. **OT integration as secondary objective:** While OT resources are architecturally feseable and supported conceptually, comprehensive OT taxonomy and relationship modeling may evolve in subsequent versions based on community feedback.
+4. **OT integration as secondary objective:** While OT resources are architecturally feasible and supported conceptually, comprehensive OT taxonomy and relationship modeling may evolve in subsequent versions based on community feedback.
 
 
 ### 1.3.4 Future Extensibility
@@ -863,7 +880,7 @@ Resources that no longer exist in source systems **SHOULD NOT** appear in subseq
 
 ## 2.2 Connections
 ### 2.2.1 Definition
-A **Connection** represents an explicit relationship between two resources. Connectios are the edges in the OSIRIS topology graph and describe how resources interact depend on each other or are organized hierarchically.
+A **Connection** represents an explicit relationship between two resources. Connections are the edges in the OSIRIS topology graph and describe how resources interact depend on each other or are organized hierarchically.
 
 Connections capture relationships that **MAY** include (non-exhaustive examples):
 
@@ -1129,7 +1146,7 @@ OSIRIS documents are JSON objects that conform to [RFC 8259](https://www.rfc-edi
 ### 3.1.1 Structure
 An OSIRIS document **MUST** be a JSON object containing **at least** the following top-level fields:
 
-```json
+```text
 {
   "version": "1.0.0",
   "metadata": { ... },
@@ -1257,11 +1274,11 @@ The following fields are **OPTIONAL** but **RECOMMENDED**:
 
 **Example:**
 ```json
-  {
-    "name": "osiris-aws-parser",
-    "version": "1.0.0",
-    "url": "https://github.com/osirisjson/osiris-producers/hyperscalers/aws/"
-  }
+{
+  "name": "osiris-aws-parser",
+  "version": "1.0.0",
+  "url": "https://github.com/osirisjson/osiris-producers/hyperscalers/aws/"
+}
 ```
 
 - **`scope`** (object): Description of what infrastructure is represented in this document. The scope object **MAY** contain:
@@ -1282,13 +1299,13 @@ The following fields are **OPTIONAL** but **RECOMMENDED**:
 
 **Hyperscaler example:**
 ```json
-  {
-    "name": "Production Infrastructure - US East",
-    "providers": ["aws"],
-    "regions": ["us-east-1", "us-east-2"],
-    "accounts": ["1234567890"],
-    "environments": ["production"]
-  }
+{
+  "name": "Production Infrastructure - US East",
+  "providers": ["aws"],
+  "regions": ["us-east-1", "us-east-2"],
+  "accounts": ["1234567890"],
+  "environments": ["production"]
+}
 ```
 
 
@@ -1717,13 +1734,13 @@ A resource object **MAY** include the following optional fields:
 
 **Example:**
 ```json
-  {
-    "tags": {
-      "environment": "production",
-      "owner": "software-development-team",
-      "cost_center": "sw-development"
-    }
+{
+  "tags": {
+    "environment": "production",
+    "owner": "software-development-team",
+    "cost_center": "sw-development"
   }
+}
 ```
 
 > [!NOTE]
@@ -2913,7 +2930,7 @@ When encountering unknown status values, consumers **SHOULD**:
 
 #### Validation
 Consumers **MAY**:
-- Emits warnings for unrecognized status values (but **MUST NOT** fail parsing)
+- Emit warnings for unrecognized status values (but **MUST NOT** fail parsing)
 - Validate status against the recommended vocabulary in non-strict mode
 - Apply heuristic to infer status category from state (e.g. "stopped" state > "inactive" status)
 
@@ -3118,7 +3135,7 @@ Every connection **MUST** include:
 Producers **SHOULD** construct connection IDs using one of these strategies:
 
 1. **Sequential numbering:**
-```json
+```text
 {
     "id": "conn-001",
     "id": "conn-002",
@@ -3127,7 +3144,7 @@ Producers **SHOULD** construct connection IDs using one of these strategies:
 ```
 
 2. **Descriptive naming (recommended):**
-```json
+```text
 {
     "id": "conn-aws-vpc-subnet-001",
     "id": "conn-aws-web-db-dependency",
@@ -3137,7 +3154,7 @@ Producers **SHOULD** construct connection IDs using one of these strategies:
 ```
 
 3. **Type-prefixed descriptive:**
-```json
+```text
 {
     "id": "network-vpc-to-subnet-001",
     "id": "dependency-web-to-db",
@@ -3146,14 +3163,14 @@ Producers **SHOULD** construct connection IDs using one of these strategies:
 ```
 
 4. **Hash-based (for reproducibility):**
-```json
+```text
 {
     "id": "conn-a1b2c3d4e5f6"
 }
 ```
 
 5. **UUID (for guaranteed uniqueness on large infrastructures):**
-```json
+```text
 {
     "id": "550e8400-e29b-41d4-a716-446655440000"
 }
@@ -3177,7 +3194,7 @@ Connections **MAY** include:
 Following examples show how OSIRIS can at minimum allow you to represent objects within the infrastructure.
 
 Hyperscaler (AWS) EC2 dependency to Postgres DB:
-```json
+```text
 {
   "id": "conn-aws-web-db-dependency",
   "source": "aws::i-0abc123def4567890",
@@ -3190,7 +3207,7 @@ Hyperscaler (AWS) EC2 dependency to Postgres DB:
 **Additional examples:**
 
 Hyperscaler (AWS) network containment:
-```json
+```text
 {
   "id": "conn-aws-ec2-subnet-001",
   "source": "aws::subnet-0abc123",
@@ -3201,7 +3218,7 @@ Hyperscaler (AWS) network containment:
 ```
 
 Multi-vendor hybrid network connection:
-```json
+```text
 {
   "id": "conn-aws-vpc-subnet-001",
   "source": "aws::vpc-0abc123",
@@ -3832,7 +3849,7 @@ Group identifiers are **document-scoped**: they **MUST** be unique within a sing
 Groups do not have vendor-assigned "native IDs" since they represent logical or physical collections defined by parsers or infrastructure operators. Producers **SHOULD** construct group IDs using one of these strategies:
 
 1. **Sequential numbering:**
-```json
+```text
 {
    "id": "group-001",
    "id": "group-002"
@@ -3840,7 +3857,7 @@ Groups do not have vendor-assigned "native IDs" since they represent logical or 
 ```
 
 2. **Descriptive naming (recommended):**
-```json
+```text
 {
    "id": "group-aws-vpc-production",
    "id": "group-mxp-datacenter",
@@ -3850,7 +3867,7 @@ Groups do not have vendor-assigned "native IDs" since they represent logical or 
 ```
 
 3. **Type-prefixed descriptive:**
-```json
+```text
 {
    "id": "environment-production",
    "id": "datacenter-mxp",
@@ -3859,14 +3876,14 @@ Groups do not have vendor-assigned "native IDs" since they represent logical or 
 ```
 
 4. **Hash-based (for reproducibility):**
-```json
+```text
 {
    "id": "group-a1b2c3d4e5f6"
 }
 ```
 
 5. **UUID (for guaranteed uniqueness on large infrastructures):**
-```json
+```text
 {
    "id": "550e8400-e29b-41d4-a716-446655440000"
 }
@@ -4166,7 +4183,7 @@ Consumers **MUST NOT** reject documents containing unknown group types.
 ## 6.3 Membership
 ### 6.3.1 Members array
 The `members` field is an array of resource IDs:
-```json
+```text
 "members": [
   "aws::i-0abc123def4567890",
   "aws::db-prod-postgres-01",
@@ -4560,7 +4577,7 @@ Groups use the same metadata pattern as resources and connections:
 > A group may have both `members` (leaf resources) and `children` (nested subgroups).
 
 > [!NOTE]
-> **Resource IDs:** Resource and group IDs in these examples are producer-defined and may follow different conventions (human-readable names, provider native IDs, deterministic hashes). OSIRIS does not mandate a specific ID format; producers **SHOUL** prioritize stability and uniqueness within each document.
+> **Resource IDs:** Resource and group IDs in these examples are producer-defined and may follow different conventions (human-readable names, provider native IDs, deterministic hashes). OSIRIS does not mandate a specific ID format; producers **SHOULD** prioritize stability and uniqueness within each document.
 
 
 #### 6.5.1.1 On-premise infrastructure groups
@@ -7764,7 +7781,7 @@ Is this data universally applicable across vendors?
 Extension objects **MUST** be nested under the `osiris.<namespace>` key. Producers **MUST NOT** place extension data directly under `extensions` without a namespace prefix.
 
 **Correct:**
-```json
+```text
 "extensions": {
   "osiris.aws": {
     "detailed_monitoring": true
@@ -7773,7 +7790,7 @@ Extension objects **MUST** be nested under the `osiris.<namespace>` key. Produce
 ```
 
 **Incorrect:**
-```json
+```text
 "extensions": {
   "detailed_monitoring": true
 }
@@ -7791,7 +7808,7 @@ Extension objects **SHOULD** follow these key naming conventions:
 - **Use consistent naming within a namespace:** Maintain style across all extensions in the same namespace
 
 **GOOD example: Recommended style**
-```json
+```text
 "extensions": {
   "osiris.aws": {
     "detailed_monitoring": true,      
@@ -7808,7 +7825,7 @@ Extension objects **SHOULD** follow these key naming conventions:
 ```
 
 **BAD example: Discouraged dotted keys**
-```json
+```text
 "extensions": {
   "osiris.aws": {
     "placement.availability_zone": "us-east-1a",
@@ -7822,7 +7839,7 @@ Extension objects **SHOULD** follow these key naming conventions:
 **Exception: Vendor-native shapes**
 When exporting lossless representations of vendor APIs, producers **MAY** preserve the vendor's native key style (camelCase, PascalCase, etc.) if explicitly documented:
 
-```json
+```text
 "extensions": {
   "osiris.aws.raw": {
     "DetailedMonitoring": true,
@@ -7873,7 +7890,7 @@ Each namespace is processed independently. A consumer that understands `osiris.v
 The `provider` object contains metadata about the resource's origin (provider name, native ID, region, account). The `extensions` object contains additional vendor-specific **properties or features** of the resource itself.
 
 **Provider object (origin metadata):**
-```json
+```text
 "provider": {
   "name": "aws",
   "type": "AWS::EC2::Instance",
@@ -7884,7 +7901,7 @@ The `provider` object contains metadata about the resource's origin (provider na
 ```
 
 **Extensions object (vendor-specific features):**
-```json
+```text
 "extensions": {
   "osiris.aws": {
     "detailed_monitoring": true,
@@ -8243,7 +8260,7 @@ Physical infrastructure from vendors like Dell, Arista, or Cisco may include har
 Extension values **MAY** be any valid JSON type: strings, numbers, booleans, objects, arrays, or null. Producers **SHOULD** use appropriate JSON types that reflect the data semantics.
 
 **Type examples:**
-```json
+```text
 "extensions": {
   "osiris.aws": {
     "detailed_monitoring": true,
@@ -8274,7 +8291,7 @@ Extension schemas **MAY** evolve independently of the core OSIRIS specification.
 
 If breaking changes to an extension schema are unavoidable, producers **MAY** version the extension namespace:
 
-```json
+```text
 "extensions": {
   "osiris.aws.v1": { ... },
   "osiris.aws.v2": { ... }
@@ -8551,6 +8568,7 @@ The following vendor namespaces are **registered** as well-known prefixes to enc
 #### Networking & security
 | Namespace | Intended for | Status |
 |-----------|--------------|--------|
+| `osiris.sonic` | SONiC Network Operating System (open NOS) | Registered |
 | `osiris.arista` | Arista Networks | Registered |
 | `osiris.ciena` | Ciena | Registered |
 | `osiris.cisco` | Cisco | Registered |
@@ -8562,6 +8580,9 @@ The following vendor namespaces are **registered** as well-known prefixes to enc
 | `osiris.fortinet` | Fortinet | Registered |
 | `osiris.checkpoint` | Check Point | Registered |
 | `osiris.f5` | F5 Networks | Registered |
+
+> [!NOTE]
+> For systems where hardware and software are decoupled (e.g. SONiC running on white-box hardware), producers SHOULD use the software/NOS namespace (e.g. `osiris.sonic`) for vendor extensions and record the physical platform under `properties.hardware_vendor`, `properties.model`, and `properties.platform` (e.g. `x86_64-accton_as7326_56x-r0`) when available.
 
 #### Compute & storage vendors
 | Namespace | Intended for | Status |
@@ -8645,7 +8666,7 @@ For short-lived experiments or early community drafts, producers **MAY** use the
 - **Production/persistent:** `osiris.com.<org>.*` (collision-resistant)
 
 **Example: Experimental extension (temporary)**
-```json
+```text
 "extensions": {
   "osiris.custom.draft.monitoring": {
     "experimental_metric": true,
@@ -8655,7 +8676,7 @@ For short-lived experiments or early community drafts, producers **MAY** use the
 ```
 
 **Example: Production extension (recommended)**
-```json
+```text
 "extensions": {
   "osiris.com.acme.monitoring": {
     "alert_policy": "critical",
@@ -8699,7 +8720,7 @@ Namespace collisions occur when multiple parties use the same namespace with dif
 ### 8.4.7 Namespace versioning
 If extension semantics change significantly, producers **MAY** version namespaces:
 
-```json
+```text
 "extensions": {
   "osiris.aws.v1": {
     "detailed_monitoring": true
@@ -8778,7 +8799,7 @@ This forward compatibility ensures that new extensions do not break existing con
 
 ### 8.5.3 Common patterns
 **Pattern 1: Vendor-specific feature flags**
-```json
+```text
 "extensions": {
   "osiris.aws": {
     "detailed_monitoring": true,
@@ -8788,7 +8809,7 @@ This forward compatibility ensures that new extensions do not break existing con
 ```
 
 **Pattern 2: Organization metadata**
-```json
+```text
 "extensions": {
   "osiris.com.acme.billing": {
     "cost_center": "engineering",
@@ -8802,7 +8823,7 @@ This forward compatibility ensures that new extensions do not break existing con
 ```
 
 **Pattern 3: Provider console/management references (non-primary identity)**
-```json
+```text
 "extensions": {
   "osiris.azure": {
     "portal_url": "https://portal.azure.com/#@/resource/subscriptions/.../resourceGroups/.../providers/...",
@@ -8815,7 +8836,7 @@ This forward compatibility ensures that new extensions do not break existing con
 > Provider identifiers used to locate the resource (subscription/project/account, region, native resource ID) **SHOULD** be placed in `provider`. Use extensions for vendor UX links, secondary references, or tool-specific foreign keys.
 
 **Pattern 4: Hardware management interfaces**
-```json
+```text
 "extensions": {
   "osiris.dell": {
     "idrac_ip": "10.0.100.10",
@@ -8885,7 +8906,7 @@ https://osirisjson.org/schema/v1.0/osiris.schema.json
 Examples in Chapter 10 are intended to conform to this canonical schema.
 OSIRIS documents **SHOULD** reference the schema using the `$schema` field at the top level:
 
-```json
+```text
 {
   "$schema": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
   "version": "1.0.0",
@@ -8960,7 +8981,7 @@ Every OSIRIS document **MUST** be a JSON object containing:
 - **V-DOC-001:** Document **MUST** be a JSON object (not array, string, number, etc.)
 - **V-DOC-002:** Document **MUST** contain `version`, `metadata` and `topology` fields
 - **V-DOC-003:** `version` **MUST** be a string matching `^\d+\.\d+\.\d+$` (SemVer format)
-- **V-DOC-004:** For OSIRIS v1.0 documents, `version` **MUST** be `"1.0.0"` or later v1.x.y versions
+- **V-DOC-004:** For OSIRIS documents, `version` **MUST** be `"1.0.0"` or later v1.x.y versions
 
 **Valid example:**
 ```json
@@ -9052,7 +9073,7 @@ The `topology` object **MUST** contain:
 ```
 
 **Topology with all fields:**
-```json
+```text
 {
   "resources": [ ... ],
   "connections": [ ... ],
@@ -9947,8 +9968,9 @@ OSIRIS validation operates at three levels:
 
 **Validation workflow:**
 1. Producers **MUST** validate before emission and fix errors before publishing
-3. Consumers **MUST** validate on receipt and reject or flag invalid documents (per their policy)
-5. Unknown extensions **MUST** be accepted (forward compatibility)
+2. Consumers **MUST** validate on receipt and reject or flag invalid documents (per their policy)
+3. Unknown extensions **MUST** be accepted (forward compatibility)
+
 
 **Implementation guidance:**
 - Use JSON Schema for Level 1 validation
@@ -10908,16 +10930,16 @@ This section provides recommended practices for **producers** (parsers/exporters
   For large infrastructures, split by account/subscription/project, region, environment, site or IT/OT domain boundary. Ensure `metadata.scope` clearly describes what the document contains.
 
 **Recommended minimum `metadata`**
-```json
+```text
 "metadata": {
   "timestamp": "2026-01-01T10:30:00Z",
   "generator": { 
     "name": "osiris-aws-parser", 
     "version": "1.0.0" },
   "scope": {
-    "provider": "aws",
+    "providers": "aws",
     "regions": ["eu-west-1"],
-    "account": "123456789012",
+    "accounts": "123456789012",
     "environment": "prod"
   }
 }
@@ -11095,7 +11117,7 @@ MAJOR.MINOR.PATCH
 The `version` field in an OSIRIS document **MUST** match the specification version the document conforms to.
 
 **Example:**
-```json
+```text
 {
   "version": "1.0.0",
   "metadata": { ... },
@@ -11260,7 +11282,7 @@ A v1.0 consumer **MUST** accept this resource even if `compute.edgefunction` is 
 Consumers **MUST** accept unknown extension namespaces.
 
 **Example:**
-```jsonc
+```text
 "extensions": {
   "osiris.newvendor": { ... }  // Unknown namespace
 }
@@ -11521,7 +11543,7 @@ For scenarios requiring data sharing with third parties or publication, producer
 
 **1. Placeholder substitution:**
 Replace sensitive values with clearly marked placeholders:
-```json
+```text
 {
   "private_ip": "REDACTED",
   "account": "REDACTED",
@@ -11531,7 +11553,7 @@ Replace sensitive values with clearly marked placeholders:
 
 **2. Synthetic data:**
 Replace real values with realistic but fictional data, good for testing purposes but **SHOULD** be avoided in production environment to avoid targeting potential real systems:
-```json
+```text
 {
   "private_ip": "10.0.0.1",
   "account": "000000000000",
@@ -11542,7 +11564,7 @@ Replace real values with realistic but fictional data, good for testing purposes
 **3. Field omission:**
 Omit sensitive optional fields entirely:
 No evidence of IP addresses, serial numbers or sensitive informations.
-```json
+```text
 {
   "id": "srv-001",
   "type": "compute.server",
@@ -11614,7 +11636,7 @@ Producers **MUST**:
 **Example: Connection string sanitization**
 
 **WRONG (includes password):**
-```json
+```text
 {
   "properties": {
     "connection_string": "postgresql://user:password123@db.example.com:5432/app"
@@ -11623,7 +11645,7 @@ Producers **MUST**:
 ```
 
 **CORRECT (password omitted):**
-```json
+```text
 {
   "properties": {
     "endpoint": "db.example.com:5432",
@@ -11704,7 +11726,7 @@ While OSIRIS does not enforce access control directly, metadata fields enable do
 ### 13.3.2 Classification metadata
 Producers **MAY** include classification metadata in the `metadata` object:
 
-```json
+```text
 {
   "metadata": {
     "timestamp": "2026-01-28T18:16:00Z",
@@ -11787,3 +11809,88 @@ Systems handling OSIRIS documents **SHOULD** implement audit logging:
 ```
 
 Audit logs enable detection of unauthorized access and support compliance requirements.
+
+---
+
+# 14 References
+This chapter lists normative and informative references used in the OSIRIS specification.
+
+---
+
+## 14.1 Normative references
+The following documents are referenced normatively in this specification. Implementers **MUST** consult these references to fully understand OSIRIS requirements.
+
+### RFC2119
+**Key words for use in RFCs to indicate requirement levels**
+[https://www.rfc-editor.org/rfc/rfc2119](https://www.rfc-editor.org/rfc/rfc2119)
+Defines the normative keywords MUST, MUST NOT, REQUIRED, SHALL, SHALL NOT, SHOULD, SHOULD NOT, RECOMMENDED, MAY and OPTIONAL used throughout this specification.
+
+### RFC8259
+**The JavaScript Object Notation (JSON) data interchange format**
+[https://www.rfc-editor.org/rfc/rfc8259](https://www.rfc-editor.org/rfc/rfc8259)
+Defines the JSON data format used as the foundation for OSIRIS documents.
+
+### RFC3339
+**Date and time on the internet: Timestamps**
+[https://www.rfc-editor.org/rfc/rfc3339](https://www.rfc-editor.org/rfc/rfc3339)
+Defines the timestamp format used in the `metadata.timestamp` field.
+
+### JSON-SCHEMA
+**JSON Schema: A Media Type for Describing JSON Documents**
+[https://json-schema.org/draft/2020-12/json-schema-core](https://json-schema.org/draft/2020-12/json-schema-core)
+Defines the JSON Schema format used for structural validation of OSIRIS documents. The OSIRIS JSON Schema is defined in Appendix A.
+
+### SEMVER
+**Semantic versioning 2.0.0**
+[https://semver.org/spec/v2.0.0.html](https://semver.org/spec/v2.0.0.html)
+Defines the versioning scheme used for OSIRIS specification versions (see Chapter 12).
+
+---
+
+## 14.2 Informative references
+The following documents are referenced informatively for context, comparison or additional guidance. They are not required for implementing OSIRIS but may provide useful background.
+
+### OPENAPI
+**OpenAPI specification v3.1.0**
+[https://spec.openapis.org/oas/v3.1.0](https://spec.openapis.org/oas/v3.1.0)
+OpenAPI defines API specifications using JSON/YAML. OSIRIS shares similar goals of standardizing data exchange for interoperability.
+
+### TOSCA OASIS
+**OASIS Topology and Orchestration Specification for Cloud Applications (TOSCA) version 2.0**
+[https://docs.oasis-open.org/tosca/TOSCA/v2.0/TOSCA-v2.0.html](https://docs.oasis-open.org/tosca/TOSCA/v2.0/TOSCA-v2.0.html)
+TOSCA is an OASIS standard for cloud application topology and orchestration. While TOSCA focuses on application orchestration and lifecycle management, OSIRIS focuses on topology description and interchange.
+
+### CNCF GLOSSARY
+**Cloud native glossary**
+[https://glossary.cncf.io/](https://glossary.cncf.io/)
+Defines terminology for cloud-native technologies referenced in OSIRIS examples and type taxonomy.
+
+### NETCONF
+**Network configuration protocol (NETCONF)**
+[https://www.rfc-editor.org/rfc/rfc6241](https://www.rfc-editor.org/rfc/rfc6241)
+NETCONF is a network management protocol. OSIRIS may be used to represent network topologies exported from NETCONF-capable devices.
+
+### YANG
+**The YANG 1.1 data modeling language**
+[https://www.rfc-editor.org/rfc/rfc7950](https://www.rfc-editor.org/rfc/rfc7950)
+YANG is a data modeling language used with NETCONF. OSIRIS differs by providing a simpler, JSON-based interchange format rather than a modeling language.
+
+### BACNET
+**BACnet data communication protocol for building automation and control networks**
+[https://www.ashrae.org/technical-resources/bookstore/standard-135](https://www.ashrae.org/technical-resources/bookstore/standard-135)
+BACnet is a protocol for building automation. OSIRIS examples includes OT resource types (e.g. `ot.hvac`, `ot.sensor.environmental`) to represent BACnet-controlled devices.
+
+### IEC-62443
+**Security for industrial automation and control systems**  
+[https://webstore.iec.ch/publication/7030](https://webstore.iec.ch/publication/7030)
+IEC 62443 defines security standards for OT/ICS environments. OSIRIS security considerations (Chapter 13) align with defense-in-depth principles from IEC 62443.
+
+### GDPR
+**General Data Protection Regulation (EU) 2016/679**  
+[https://gdpr-info.eu/](https://gdpr-info.eu/)
+GDPR governs data protection and privacy in the EU. OSIRIS documents containing infrastructure topology may be subject to GDPR if they include personal data or locations that could identify individuals.
+
+### SOC2
+**Service Organization Control 2**
+[https://www.aicpa.org/interestareas/frc/assuranceadvisoryservices/serviceorganizationmanagement.html](https://www.aicpa.org/interestareas/frc/assuranceadvisoryservices/serviceorganizationmanagement.html)
+SOC 2 is a compliance framework for service organizations. OSIRIS documents may serve as audit evidence for infrastructure topology documentation audit.

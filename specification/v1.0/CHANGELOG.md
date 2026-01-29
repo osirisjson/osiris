@@ -1,6 +1,18 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+# [1.0.0-draft.16] - 2026-01-29
+### Added
+- Chapter 14: (14.1-14.2)
+ 
+### Updated
+- Section 8.4.2 added reference and registered namespace for SONiC Network Operating System (open NOS)
+ 
+### Fixed
+- Minor grammar fixes in some sections
+- Minor refinements to markdown code fences
+
+
 # [1.0.0-draft.15] - 2026-01-28
 ### Added
 - Chapter 13: (13.1-13.3)
