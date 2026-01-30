@@ -4,7 +4,7 @@
 | Authors   | Tia Zanella [skhell](https://github.com/skhell) |
 | Revision  | 1.0.0-DRAFT |
 | Creation date      | 14 December 2025 |
-| Last revision date | 29 January 2026 |
+| Last revision date | 30 January 2026 |
 | Status    | Draft |
 | Specification ID | OSIRIS-1.0 |
 | Schema URI | [OSIRIS-1.0](https://osirisjson.org/schema/v1.0/osiris.schema.json) |
@@ -92,7 +92,7 @@
     - [3.3.4 Extension fields](#334-extension-fields)
     - [3.3.5 Metadata object size](#335-metadata-object-size)
     - [3.3.6 Complete metadata example](#336-complete-metadata-example)
-  - [3.4 Topology Object](#34-topology-object)
+  - [3.4 Topology object](#34-topology-object)
     - [3.4.1 Structure](#341-structure)
     - [3.4.2 Required fields](#342-required-fields)
     - [3.4.3 Optional fields](#343-optional-fields)
@@ -463,6 +463,31 @@
     - [IEC-62443](#iec-62443)
     - [GDPR](#gdpr)
     - [SOC2](#soc2)
+- [Appendices](#appendices)
+  - [Appendix A: JSON Schema definition](#appendix-a-json-schema-definition)
+    - [A.1 Schema overview](#a1-schema-overview)
+    - [A.2 Schema structure (excerpt/top-level outline)](#a2-schema-structure-excerpttop-level-outline)
+    - [A.3 Using the schema](#a3-using-the-schema)
+    - [A.4 Schema evolution](#a4-schema-evolution)
+    - [A.5 Complete schema](#a5-complete-schema)
+  - [Appendix B: Complete examples](#appendix-b-complete-examples)
+    - [B.1 Example categories](#b1-example-categories)
+    - [B.2 Example validation](#b2-example-validation)
+    - [B.3 Using examples](#b3-using-examples)
+  - [Appendix C: Resource type registry](#appendix-c-resource-type-registry)
+    - [C.1 Compute resources](#c1-compute-resources)
+    - [C.2 Network resources](#c2-network-resources)
+    - [C.3 Storage resources](#c3-storage-resources)
+    - [C.4 Application resources](#c4-application-resources)
+    - [C.5 Container and organization resources](#c5-container-and-organization-resources)
+    - [C.6 Operational Technology (OT) resources](#c6-operational-technology-ot-resources)
+    - [C.7 Type evolution](#c7-type-evolution)
+  - [Appendix D: Comparison with related standards](#appendix-d-comparison-with-related-standards)
+    - [D.1 OSIRIS vs TOSCA (Topology and Orchestration Specification for Cloud Applications)](#d1-osiris-vs-tosca-topology-and-orchestration-specification-for-cloud-applications)
+    - [D.2 OSIRIS vs Terraform / AWS CloudFormation / Azure ARM Templates](#d2-osiris-vs-terraform--aws-cloudformation--azure-arm-templates)
+    - [D.4 OSIRIS vs OpenAPI Specification](#d4-osiris-vs-openapi-specification)
+    - [D.5 OSIRIS vs NETCONF/YANG](#d5-osiris-vs-netconfyang)
+    - [D.6 OSIRIS vs CMDB schemas (ServiceNow, BMC, etc.)](#d6-osiris-vs-cmdb-schemas-servicenow-bmc-etc)
 
 
 ## Preface
@@ -595,7 +620,7 @@ OSIRIS defines an **Open Standard JSON schema** for describing infrastructure re
 
 - **Application resources:** Application components, services, containers and repositories relevant to infrastructure topology.
 
-- **Operational technology (OT initial support):** Building automation systems (BAS), industrial control systems and physical infrastructure components where integration with IT systems is relevant with the goal of providing an holistic end-to-end interchange visibility.
+- **Operational technology (OT initial support):** Building automation systems (BAS), industrial control systems and physical infrastructure components where integration with IT systems is relevant with the goal of providing a holistic end-to-end interchange visibility.
 
 
 #### OSIRIS represents the following topology elements:
@@ -922,7 +947,8 @@ Consumers **MUST** be able to process connections with unknown types by treating
 Connections **MAY** specify directionality to indicate the orientation or flow of the relationship:
 
 - **Bidirectional:** The relationship applies equally in both directions (e.g. a Layer 2 network link, peering relationships).
-- **Directed (source > target):** The relationship flows from source to target (e.g. a service depends on a database, traffic flows from client to server).
+- **Forward (source > target):** The relationship flows from source to target (e.g. a service depends on a database, traffic flows from client to server).
+- **Reverse (target > source):** The relationship flows from target to source (e.g. telemetry or logs flow from a workload/agent to a monitoring or logging system)
 
 If directionality is unspecified, consumers **SHOULD** treat the connection as bidirectional unless the connection type definition explicitly specifies otherwise.
 
@@ -1159,16 +1185,14 @@ An OSIRIS document **MUST** be a JSON object containing **at least** the followi
 The following fields are **REQUIRED** at the top level:
 
 - **`version`** (string): The OSIRIS specification version to which this document conforms. See section 3.2 for version string format and semantics.
-
 - **`metadata`** (object): Contextual information about the document's origin, scope and generation. See section 3.3 for metadata object structure.
-
 - **`topology`** (object): The infrastructure topology data, including resources, connections and groups. See section 3.4 for topology object structure.
 
 
 ### 3.1.3 Additional top-level fields
 OSIRIS v1.0 defines only `version`, `metadata` and `topology` at the top level.
 
-Producers **SHOULD NOT** emit additional top-level fields in v1.0 documents.
+Producers **MAY** include `$schema`. Other top-level fields **SHOULD NOT** be emitted.
 
 Consumers **MUST** ignore unknown top-level fields and **MAY** emit warnings about unrecognized fields. This ensures forward compatibility if future OSIRIS versions introduce additional top-level constructs (e.g. signatures, links, fragments).
 
@@ -1375,7 +1399,7 @@ Metadata objects **SHOULD** be concise. Large amounts of auxiliary data (e.g. fu
 
 ---
 
-## 3.4 Topology Object
+## 3.4 Topology object
 ### 3.4.1 Structure
 The `topology` field is a **REQUIRED** object at the top level of every OSIRIS document. It contains the infrastructure topology data: resources, connections between resources and logical or physical groupings.
 
@@ -2191,7 +2215,7 @@ When `provider.name` is set to `"custom"`, the `namespace` field **MUST** be pro
   "name": "legacy-payroll-server",
   "provider": {
     "name": "custom",
-    "namespace": "acme-internal-cmdb",
+    "namespace": "osiris.com.acme",
     "system": "legacy-inventory-v2",
     "native_id": "legacy-app-server-03"
   },
@@ -2357,7 +2381,7 @@ Producers **SHOULD** preserve `provider.native_id` when available, as it provide
   "name": "legacy-app-server",
   "provider": {
     "name": "custom",
-    "namespace": "acme-corp",
+    "namespace": "osiris.com.acme",
     "system": "asset-management-db",
     "native_id": "ASSET-EU-04567"
   },
@@ -2562,7 +2586,7 @@ Use `properties` for attributes intrinsic to the resource (configuration, capaci
 Use `extensions` for contextual metadata specific to a vendor, tool or organization:
 - **Vendor extensions** (`osiris.aws`, `osiris.cisco`): Provider-native structures not in core OSIRIS model
 - **Tool extensions** (`osiris.terraform`, `osiris.ansible`): Automation/management tool metadata
-- **Organization extensions** (`osiris.com.acme"`): Internal tracking, ownership, compliance data
+- **Organization extensions** (`osiris.com.acme`): Internal tracking, ownership, compliance data
 
 **Example decision:**
 - `properties.instance_type` - intrinsic AWS attribute
@@ -2702,8 +2726,7 @@ If a platform has richer label/annotation concepts (e.g. Kubernetes), producers 
     "name": "kubernetes",
     "type": "Pod",
     "native_id": "nginx-7d8f9c-abcde",
-    "cluster": "prod-cluster-1",
-    "namespace": "production"
+    "cluster": "prod-cluster-1"
   },
   "properties": {
     "image": "nginx:1.21",
@@ -2742,7 +2765,7 @@ If a platform has richer label/annotation concepts (e.g. Kubernetes), producers 
   "name": "apm-monitor-mxp",
   "provider": {
     "name": "custom",
-    "namespace": "acme-monitoring",
+    "namespace": "osiris.com.acme",
     "system": "observability-platform",
     "native_id": "monitor-01"
   },
@@ -3050,8 +3073,7 @@ Consumers **MAY**:
     "name": "kubernetes",
     "type": "Pod",
     "native_id": "nginx-deployment-abc123",
-    "cluster": "prod-cluster-1",
-    "namespace": "production"
+    "cluster": "prod-cluster-1"
   },
   "status": "active",
   "state": "Running",
@@ -3085,7 +3107,7 @@ Consumers **MAY**:
   "name": "legacy-database",
   "provider": {
     "name": "custom",
-    "namespace": "legacy-systems",
+    "namespace": "osiris.com.acme",
     "native_id": "DB-001"
   },
   "status": "unknown",
@@ -3426,7 +3448,7 @@ Consumers **MUST** accept connections with unknown types. When encountering unkn
 
 ## 5.3 Directionality
 ### 5.3.1 Overview
-The `direction` field indicates whether a connection represents a symmetric relationship or a directed relationship with a specific orientation.
+The `direction` field indicates whether a connection represents a symmetric relationship or a forward or reverse relationship with a specific orientation.
 
 
 ### 5.3.2 Direction values
@@ -3988,7 +4010,7 @@ Producers **MAY** use deterministic ID generation based on:
 - Physical rack: `grp-MXP-F1-R01` (datacenter-floor-rack)
 - Logical environment: `grp-prod` or `grp-env-production`
 
-- Hyperscalers and Cloud provider netwrok groups: `grp-<provider.name>-net-<id>`
+- Hyperscalers and Cloud provider network groups: `grp-<provider.name>-net-<id>`
   - AWS VPC: `grp-aws-net-vpc-0abc123def4567890`
   - Azure VNet: `grp-az-net-vnet-prod-weu-01`
   - GCP VPC: `grp-gcp-net-vpc-prod-eu-01`
@@ -4250,39 +4272,96 @@ This enables flexible filtering and navigation:
     {
       "id": "aws::i-0abc123def4567890",
       "type": "compute.vm",
-      "name": "billing-api-prod-01"
+      "name": "billing-api-prod-01",
+      "description": "Primary EC2 instance hosting the Billing API (production). Serves internal billing requests and exposes HTTPS endpoints behind an Application Load Balancer.",
+      "provider": {
+        "name": "aws",
+        "type": "AWS::EC2::Instance",
+        "native_id": "i-0abc123def4567890",
+        "region": "us-east-1",
+        "account": "123456789012",
+        "zone": "us-east-1a"
+      },
+      "status": "active",
+      "state": "running",
+      "properties": {
+        "instance_type": "t3.large",
+        "platform": "linux",
+        "private_ip": "10.10.1.10",
+        "public_ip": "203.0.113.10",
+        "vpc_id": "vpc-hybrid-001",
+        "subnet_id": "subnet-prod-web-a"
+      },
+      "tags": {
+        "environment": "production",
+        "location": "cloud",
+        "tier": "web",
+        "application": "billing",
+        "managed_by": "terraform"
+      }
+    },
+    {
+      "id": "aws::i-0def4567890abc1234",
+      "type": "compute.vm",
+      "name": "billing-api-prod-02",
+      "description": "Secondary EC2 instance hosting the Billing API (production). Used for horizontal scaling and high availability behind the load balancer.",
+      "provider": {
+        "name": "aws",
+        "type": "AWS::EC2::Instance",
+        "native_id": "i-0def4567890abc1234",
+        "region": "us-east-1",
+        "account": "123456789012",
+        "zone": "us-east-1b"
+      },
+      "status": "active",
+      "state": "running",
+      "properties": {
+        "instance_type": "t3.large",
+        "platform": "linux",
+        "private_ip": "10.10.2.10",
+        "public_ip": "203.0.113.11",
+        "vpc_id": "vpc-hybrid-001",
+        "subnet_id": "subnet-prod-web-b"
+      },
+      "tags": {
+        "environment": "production",
+        "location": "cloud",
+        "tier": "web",
+        "application": "billing",
+        "managed_by": "terraform"
+      }
     }
   ],
   "groups": [
     {
-      "id": "group-aws-production-web-app",
+      "id": "group-aws-production",
       "type": "logical.environment",
       "name": "Production Environment",
-      "members": ["aws::i-0abc123def4567890", "aws::i-0def456"]
+      "members": ["aws::i-0abc123def4567890", "aws::i-0def4567890abc1234"]
     },
     {
       "id": "group-web-tier",
       "type": "logical.tier",
       "name": "Web Tier",
-      "members": ["aws::i-0abc123def4567890", "aws::i-0def456"]
+      "members": ["aws::i-0abc123def4567890", "aws::i-0def4567890abc1234"]
     },
     {
       "id": "group-billing-application",
       "type": "logical.application",
       "name": "Billing Application",
-      "members": ["aws::i-0abc123def4567890", "aws::i-0def456"]
+      "members": ["aws::i-0abc123def4567890", "aws::i-0def4567890abc1234"]
     },
     {
       "id": "group-team-software-development",
       "type": "org.team",
       "name": "Software Development Team",
-      "members": ["aws::i-0abc123def4567890", "aws::i-0def456"]
+      "members": ["aws::i-0abc123def4567890", "aws::i-0def4567890abc1234"]
     },
     {
-      "id": "group-mxp-rack-r01",
-      "type": "physical.rack",
-      "name": "MXP Datacenter Rack R01",
-      "members": ["aws::i-0abc123def4567890", "aws::i-0def456"]
+      "id": "group-aws-site-us-east-1",
+      "type": "logical.site",
+      "name": "AWS us-east-1",
+      "members": ["aws::i-0abc123def4567890", "aws::i-0def4567890abc1234"]
     }
   ]
 }
@@ -5558,7 +5637,7 @@ Use `application.service` for but not limited to:
     "name": "kubernetes",
     "type": "Deployment",
     "native_id": "payment-api-deployment",
-    "namespace": "production"
+    "namespace": "osiris.com.acme"
   },
   "properties": {
     "service_type": "api",
@@ -7149,7 +7228,7 @@ Use `physical.datacenter` for:
     "name": "custom",
     "type": "Enterprise Datacenter",
     "native_id": "MXP-DC-01",
-    "namespace": "acme-infrastructure"
+    "namespace": "osiris.com.acme"
   },
   "properties": {
     "site_code": "MXP",
@@ -7203,7 +7282,7 @@ Use `physical.building` for:
     "name": "custom",
     "type": "Datacenter Building",
     "native_id": "MXP-BLDG-01",
-    "namespace": "acme-infrastructure"
+    "namespace": "osiris.com.acme"
   },
   "properties": {
     "building_number": "01",
@@ -7251,7 +7330,7 @@ Use `physical.floor` for:
     "name": "custom",
     "type": "Datacenter Floor",
     "native_id": "MXP-F1",
-    "namespace": "acme-infrastructure"
+    "namespace": "osiris.com.acme"
   },
   "properties": {
     "floor_number": 1,
@@ -7303,7 +7382,7 @@ Use `physical.room` for:
     "name": "custom",
     "type": "Server Room",
     "native_id": "MXP-F1-R105",
-    "namespace": "acme-infrastructure"
+    "namespace": "osiris.com.acme"
   },
   "properties": {
     "room_number": "105",
@@ -10860,7 +10939,10 @@ Consumers **MAY** implement configurable strictness:
 ### 11.2.3 Graph construction and traversal
 Consumers **SHOULD** treat:
 - `resources` as nodes
-- `connections` as directed/bidirectional/undirected edges based on `direction`
+- `connections` as edges where: 
+  - `bidirectional` treat as undirected for traversal
+  - `forward` source to target
+  - `reverse` target to source
 - `groups` as membership relations (one-to-many references)
 
 Consumers **SHOULD** build efficient indexes:
@@ -10979,7 +11061,10 @@ This section provides recommended practices for **producers** (parsers/exporters
 - **Treat the topology as a graph**
   - Consumers **SHOULD** interpret:
     - `resources` as nodes
-    - `connections` as edges (directed/bidirectional/undirected based on `direction`)
+    - `connections` as edges where: 
+      - `bidirectional` treat as undirected for traversal
+      - `forward` source to target
+      - `reverse` target to source
     - `groups` as membership relations (classification/boundaries)
   - Consumers **SHOULD** keep a clear separation between graph edges (`connections`) and classification (`groups`).
 
@@ -11126,16 +11211,14 @@ The `version` field in an OSIRIS document **MUST** match the specification versi
 ```
 
 Producers emitting documents conforming to OSIRIS v1.0 **MUST** set `"version": "1.0.0"`.
-Future specification versions (e.g. OSIRIS v1.1 or v2.0) will define their own version string values.
+Future specification versions (e.g. OSIRIS v1.x.y) will define their own version string values.
+The v1.0 schema endpoint MAY validate any `1.x.y` for forward compatibility, but OSIRIS v1.0.0 producers **MUST** emit `1.0.0`.
 
 
 ### 12.1.3 Pre-release and draft versions
-During specification development, pre-release versions **MAY** be designated using SemVer pre-release notation:
+During OSIRIS specification development (prior to the stable OSIRIS v1.0.0 release), pre-release builds were sometimes labeled using SemVer pre-release notation such as:
 
 ```text
-1.0.0-alpha
-1.0.0-beta
-1.0.0-rc.1
 1.0.0-DRAFT
 ```
 
@@ -11145,16 +11228,7 @@ Pre-release versions:
 - **SHOULD NOT** be used in production systems
 - Are intended for community review and implementation feedback
 
-Documents conforming to pre-release specifications **SHOULD** include the pre-release suffix in the `version` field:
-
-```text
-{
-  "version": "1.0.0-DRAFT",
-  ...
-}
-```
-
-Once a version is declared stable (e.g. `1.0.0` without suffix), its behavior and requirements **MUST NOT** change except via a new version increment.
+OSIRIS v1.0 documents **MUST NOT** include pre-release suffixes in the version field.
 
 
 ### 12.1.4 Version discovery
@@ -11248,7 +11322,7 @@ To maximize forward compatibility, consumers **MUST** implement these behaviors:
 Consumers **MUST** ignore unknown fields at all levels (top-level, metadata, topology, resource, connection, group).
 
 **Example:** A v1.1 document introduces `metadata.generator.platform`:
-```jsonc
+```text
 {
   "version": "1.1.0",
   "metadata": {
@@ -11268,7 +11342,7 @@ A v1.0 consumer **MUST** accept this document and ignore the `platform` field.
 Consumers **MUST** accept unknown resource, connection and group types if the objects are structurally valid.
 
 **Example:** A v1.2 document introduces `compute.edgefunction`:
-```jsonc
+```text
 {
   "id": "edge-fn-001",
   "type": "compute.edgefunction",  // Added in v1.2
@@ -11353,7 +11427,7 @@ Deprecation notices **SHOULD** include:
 - **SHOULD** support migration by accepting both old and new patterns
 
 **Example: Deprecated field support**
-```jsonc
+```text
 {
   "id": "srv-001",
   "type": "compute.server",
@@ -11894,3 +11968,364 @@ GDPR governs data protection and privacy in the EU. OSIRIS documents containing 
 **Service Organization Control 2**
 [https://www.aicpa.org/interestareas/frc/assuranceadvisoryservices/serviceorganizationmanagement.html](https://www.aicpa.org/interestareas/frc/assuranceadvisoryservices/serviceorganizationmanagement.html)
 SOC 2 is a compliance framework for service organizations. OSIRIS documents may serve as audit evidence for infrastructure topology documentation audit.
+
+---
+
+# Appendices
+## Appendix A: JSON Schema definition
+The OSIRIS JSON Schema provides structural validation for OSIRIS documents.
+
+**Schema location URI:**
+[OSIRIS JSON Schema](https://osirisjson.org/schema/v1.0/osiris.schema.json)
+
+**Schema reference in documents:**
+```json
+{
+  "$schema": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
+  "version": "1.0.0"
+}
+```
+
+
+### A.1 Schema overview
+The OSIRIS JSON Schema validates:
+- Top-level document structure (version, metadata, topology)
+- Required fields at each level
+- Field data types (string, number, boolean, object, array)
+- Enum constraints (e.g. `direction` must be `bidirectional`, `forward` or `reverse`)
+- Format constraints (e.g. `timestamp` must be ISO 8601 / RFC 3339)
+
+The schema **does not** validate:
+- Referential integrity (connections referencing resources)
+- Type semantics (e.g. whether a type is ‘recognized’ or appropriate for the domain)
+- Domain-specific semantics (Chapter 9, Level 2 and Level 3 validation)
+
+
+### A.2 Schema structure (excerpt/top-level outline)
+
+> [!NOTE] 
+> This is a top-level OSIRIS schema outline. $defs are omitted here for top-level readability, refer to the canonical URI for the full schema.
+
+The schema defines:
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema#",
+  "$id": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
+  "title": "Core OSIRIS JSON Schema v1.0",
+  "description": "OSIRIS Open Standard for Infrastructure Resource Interchange Schema. This schema encodes baseline interoperability requirements; additional semantic rules (e.g. referential integrity, uniqueness) are validated by tooling.",
+  "type": "object",
+  "required": [
+    "version",
+    "metadata",
+    "topology"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Optional JSON Schema dialect reference for OSIRIS documents.",
+      "format": "uri"
+    },
+    "version": {
+      "type": "string",
+      "description": "OSIRIS specification version of this document (semver). For the v1.0 schema endpoint, any 1.x.y is allowed.",
+      "pattern": "^1\\.[0-9]+\\.[0-9]+$"
+    },
+    "metadata": {
+      "$ref": "#/$defs/metadata"
+    },
+    "topology": {
+      "$ref": "#/$defs/topology"
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "osirisType": { },
+    "providerName": { },
+    "namespaceKey": { },
+    "tags": { },
+    "freeformObject": { },
+    "extensions": { },
+    "provider": { },
+    "resource": { },
+    "connectionDirection": { },
+    "connectionType": { },
+    "connection": { },
+    "group": { },
+    "topology": { },
+    "metadataGenerator": { },
+    "metadataScope": { },
+    "metadata": { }
+  }
+}
+```
+
+### A.3 Using the schema
+**Validation tools:**
+- [Validate OSIRIS JSON Document](https://osirisjson.org/validate)
+
+
+### A.4 Schema evolution
+The OSIRIS JSON Schema evolves with the specification:
+- **v1.0.0 schema:** Validates OSIRIS v1.0.0 documents
+- **v1.1.0 schema:** Adds optional fields introduced in v1.1.0 but remains backwards-compatible
+- **v2.0.0 schema:** May introduce breaking changes aligned with specification v2.0.0
+
+Consumers **SHOULD** use the schema version matching their target specification version.
+
+### A.5 Complete schema
+The complete JSON Schema is available at:
+- **Canonical URI:** [https://osirisjson.org/schema/v1.0/osiris.schema.json](https://osirisjson.org/schema/v1.0/osiris.schema.json)
+- **GIT Repository:** [https://github.com/osirisjson/osiris/tree/main/schema](https://github.com/osirisjson/osiris/tree/main/schema)
+
+---
+
+## Appendix B: Complete examples
+Complete, validated examples demonstrating OSIRIS v1.0 are available in the OSIRIS GitHub repository:
+- **Canonical URI:** [https://osirisjson.org/examples/v1.0/](https://osirisjson.org/examples/v1.0/)
+- **GIT Repository:** [https://github.com/osirisjson/osiris/tree/main/examples/v1.0](https://github.com/osirisjson/osiris/tree/main/examples/v1.0)
+
+
+### B.1 Example categories
+Examples are organized by domain:
+
+**IT/Cloud examples:**
+- `IT/cloud/osiris_minimal_cloud_provider_infrastructure.json`
+- `IT/hyperscalers/osiris_minimal_hyperscalers_infrastructure.json`
+- `IT/hyperscalers/osiris_simple_hyperscaler_infrastructure.json`
+- `IT/hyperscalers/osiris_hyperscaler_infrastructure_belonging.json`
+- `IT/hyperscalers/osiris_multi_hyperscaler_environment.json`
+- `IT/hyperscalers/osiris_hybrid_hyperscaler_on_premise.json`
+
+**IT/On-Premise examples:**
+- `IT/on-premise/osiris_minimal_on_premise_infrastructure.json`
+- `IT/on-premise/osiris_on_premise_network_topology.json`
+
+**OT (Operational Technology) examples:**
+- `OT/osiris_minimal_ot_infrastructure.json`
+- `OT/osiris_it_ot_cross_network_topology.json`
+- `OT/osiris_industrial_printer.json`
+- `OT/osiris_security_camera.json`
+- `OT/osiris_door_access_control.json`
+
+
+### B.2 Example validation
+All examples are validated against:
+- **JSON Schema (Level 1):** Structural correctness
+- **Referential integrity (Level 2):** All IDs resolve, no dangling references
+- **Domain rules (Level 3):** Type format, naming conventions
+
+Examples are automatically validated in the repository CI/CD pipeline.
+
+
+### B.3 Using examples
+Examples serve multiple purposes:
+- **Learning:** Understand OSIRIS structure and patterns
+- **Testing:** Validate parser and consumer implementations
+- **Templates:** Starting points for new documents
+- **Reference:** Demonstrate best practices
+
+Implementers **SHOULD** test their tools against the complete example set.
+
+---
+
+## Appendix C: Resource type registry
+This appendix provides a comprehensive listing of all standard resource types defined in OSIRIS v1.0.
+
+
+### C.1 Compute resources
+| Type | Description | Common providers |
+|------|-------------|------------------|
+| `compute.vm` | Virtual machine instance | AWS, Azure, GCP, VMware, Proxmox |
+| `compute.server` | Physical server | Dell, HPE, Lenovo, Supermicro |
+| `compute.container` | Container runtime instance | Docker, Kubernetes, AWS ECS |
+| `compute.cluster` | Compute cluster (e.g. Kubernetes cluster) | AWS EKS, GKE, AKS |
+| `compute.function` | Serverless function | AWS Lambda, Azure Functions, GCP Cloud Functions |
+
+
+### C.2 Network resources
+| Type | Description | Common providers |
+|------|-------------|------------------|
+| `network.switch` | Network switch | Cisco, Arista, Juniper |
+| `network.router` | Network router | Cisco, Juniper, MikroTik |
+| `network.firewall` | Network firewall | Palo Alto, Fortinet, Cisco ASA |
+| `network.loadbalancer` | Load balancer | AWS ALB/NLB, Azure Load Balancer, F5 |
+| `network.vnet` | Virtual network | Azure VNet, AWS VPC, GCP VPC |
+| `network.subnet` | Network subnet | Cloud providers, network gear |
+| `network.vpn` | VPN connection | AWS VPN, Azure VPN, WireGuard |
+| `network.interface` | Network interface | NICs, ENIs |
+| `network.endpoint` | Network endpoint (e.g. private endpoint) | Azure Private Endpoint, AWS PrivateLink |
+| `network.gateway` | Network gateway (e.g. NAT gateway, internet gateway) | AWS IGW, Azure NAT Gateway |
+| `network.securitygroup` | Network security group / ACL | AWS Security Groups, Azure NSGs |
+
+
+### C.3 Storage resources
+| Type | Description | Common providers |
+|------|-------------|------------------|
+| `storage.volume` | Block storage volume | AWS EBS, Azure Disk, GCP Persistent Disk |
+| `storage.bucket` | Object storage bucket | AWS S3, Azure Blob, GCP Cloud Storage |
+| `storage.filesystem` | File system / file share | AWS EFS, Azure Files, NFS |
+| `storage.array` | Storage array | NetApp, Pure Storage, Dell PowerStore |
+| `storage.disk` | Physical disk | SSD, HDD |
+
+
+### C.4 Application resources
+| Type | Description | Common providers |
+|------|-------------|------------------|
+| `application.database` | Database instance | AWS RDS, Azure SQL, PostgreSQL, MySQL |
+| `application.cache` | Cache service | Redis, Memcached, AWS ElastiCache |
+| `application.queue` | Message queue | AWS SQS, RabbitMQ, Kafka |
+| `application.repository` | Code/artifact repository | GitHub, GitLab, Artifactory |
+| `application.service` | Application service | Custom apps, microservices |
+
+
+### C.5 Container and organization resources
+| Type | Description | Common providers |
+|------|-------------|------------------|
+| `container.resourcegroup` | Resource group / organizational container | Azure Resource Groups |
+| `container.project` | Project / billing container | GCP Projects |
+| `container.account` | Account / subscription | AWS Accounts, Azure Subscriptions |
+
+
+### C.6 Operational Technology (OT) resources
+| Type | Description | Common providers |
+|------|-------------|------------------|
+| `ot.sensor.environmental` | Environmental sensor (temp, humidity) | Emerson, Vaisala, IFM |
+| `ot.sensor.industrial` | Industrial sensor (pressure, flow, vibration) | Endress+Hauser, Siemens, ABB |
+| `ot.camera` | IP camera / video surveillance | Axis, Hikvision, Dahua |
+| `ot.controller.plc` | Programmable Logic Controller | Siemens, Rockwell, Schneider |
+| `ot.controller.dcs` | Distributed Control System | Honeywell, Emerson, ABB |
+| `ot.printer` | Industrial printer (label, thermal) | Zebra, Datamax, SATO |
+| `ot.access.controller` | Access control panel | HID, Lenel, Genetec |
+| `ot.access.reader` | RFID/card reader | HID, Suprema |
+| `ot.access.lock` | Electronic lock | Assa Abloy, Allegion |
+| `ot.hvac` | HVAC system controller | Trane, Carrier, Johnson Controls |
+| `ot.power` | Power distribution unit | APC, Eaton, Schneider |
+| `ot.ups` | Uninterruptible Power Supply | APC, Eaton, Vertiv |
+
+
+### C.7 Type evolution
+New types **MAY** be added in MINOR version updates (e.g. v1.1.0).
+
+To propose a new standard type:
+1. Open an issue in the OSIRIS GitHub repository
+2. Provide use case justification and examples
+3. Demonstrate that existing types are insufficient
+4. Propose type name following naming conventions (lowercase, dot notation)
+
+---
+
+## Appendix D: Comparison with related standards
+This appendix compares OSIRIS with related standards and formats for infrastructure topology and configuration.
+
+### D.1 OSIRIS vs TOSCA (Topology and Orchestration Specification for Cloud Applications)
+
+| Aspect | OSIRIS | TOSCA |
+|--------|--------|-------|
+| **Purpose** | Infrastructure description and interchange | Application orchestration and lifecycle management |
+| **Focus** | What exists and how it's connected | How to provision, configure and manage |
+| **Format** | JSON | YAML (primarily) |
+| **Complexity** | Simple, flat resource/connection/group model | Complex node templates, relationships, policies, workflows |
+| **Scope** | IT and OT infrastructure designed for On-Premise, cloud and hyperscalers | Cloud applications and services |
+| **Orchestration** | Not included | Core feature (workflows, policies) |
+| **Vendor neutrality** | Strong (pure interchange) | Moderate (templates often vendor-specific) |
+| **Adoption** | New (2025) | Mature (OASIS standard since 2013) |
+
+**When to use OSIRIS:**
+- Documenting existing infrastructure
+- Exporting topology snapshots for visualization
+- Cross-platform inventory and CMDB integration
+- Lightweight interchange between tools
+
+**When to use TOSCA:**
+- Application provisioning and orchestration
+- Infrastructure-as-code with lifecycle management
+- Complex dependency modeling with workflows
+
+**Interoperability:**
+OSIRIS documents **MAY** be generated from TOSCA topologies by extracting instantiated resources and relationships.
+
+
+### D.2 OSIRIS vs Terraform / AWS CloudFormation / Azure ARM Templates
+
+| Aspect | OSIRIS | Terraform/CloudFormation/ARM |
+|--------|--------|------------------------------|
+| **Purpose** | Infrastructure description | Infrastructure provisioning (IaC) |
+| **Direction** | Read-only export/snapshot | Write (create/update/delete) |
+| **State** | Describes current state | Describes desired state |
+| **Provider** | Vendor-neutral (multi-provider in one doc) | Provider-specific (AWS, Azure, GCP) or multi (Terraform) |
+| **Format** | JSON | HCL (Terraform), JSON/YAML (CloudFormation, ARM) |
+| **Dependencies** | Explicit connections and groups | Implicit and explicit dependencies |
+| **Use case** | Documentation, audit, visualization | Provisioning, automation, GitOps |
+
+**When to use OSIRIS:**
+- Documenting infrastructure that already exists
+- Exporting topology from multiple providers in a single document
+- Creating provider-agnostic documentation
+
+**When to use IaC tools:**
+- Provisioning new infrastructure
+- Managing infrastructure lifecycle
+- Implementing GitOps workflows
+
+**Interoperability:**
+OSIRIS documents **MAY** be generated from Terraform state or CloudFormation stacks to document provisioned infrastructure.
+
+
+### D.4 OSIRIS vs OpenAPI Specification
+
+| Aspect | OSIRIS | OpenAPI |
+|--------|--------|---------|
+| **Domain** | Infrastructure topology and description | API definitions |
+| **Purpose** | Describe infrastructure resources | Describe API endpoints and schemas |
+| **Format** | JSON | JSON/YAML |
+| **Schemas** | JSON Schema for validation | JSON Schema for request/response validation |
+| **Evolution** | SemVer for specification | SemVer for specification |
+
+**Relationship:**
+Both OSIRIS and OpenAPI define JSON-based interchange formats with JSON Schema validation. OSIRIS focuses on infrastructure, OpenAPI focuses on APIs.
+OSIRIS documents **MAY** include references to OpenAPI specifications in resource properties (e.g. an `application.service` resource with `api_spec_url: "https://api.example.com/openapi.json"`).
+
+
+### D.5 OSIRIS vs NETCONF/YANG
+
+| Aspect | OSIRIS | NETCONF/YANG |
+|--------|--------|--------------|
+| **Domain** | Infrastructure topology (IT and OT) | Network configuration |
+| **Purpose** | Interchange and documentation | Configuration management and state retrieval |
+| **Format** | JSON | XML (NETCONF), data modeling language (YANG) |
+| **Scope** | Multi-domain (cloud, on-prem, OT) | Network devices primarily |
+| **Operations** | Read-only topology export | Read/write configuration |
+
+**When to use OSIRIS:**
+- Documenting heterogeneous infrastructure (not just network)
+- Multi-vendor topology snapshots
+- Lightweight JSON interchange
+
+**When to use NETCONF/YANG:**
+- Network device configuration management
+- Standardized network state retrieval
+- Network automation requiring write operations
+
+**Interoperability:**
+OSIRIS documents **MAY** be generated from NETCONF data by transforming YANG-modeled state into OSIRIS resources and connections.
+
+
+### D.6 OSIRIS vs CMDB schemas (ServiceNow, BMC, etc.)
+
+| Aspect | OSIRIS | CMDB Schemas |
+|--------|--------|--------------|
+| **Purpose** | Portable interchange format | Internal CMDB data model |
+| **Vendor neutrality** | High (designed for multi-tool) | Low (vendor-specific) |
+| **Format** | JSON | Vendor-specific (SQL, proprietary) |
+| **Scope** | Topology snapshot | Full asset lifecycle, incidents, changes |
+| **Relationships** | Explicit connections | CMDB relationship tables |
+
+**Relationship:**
+OSIRIS can serve as an **export format** from CMDBs and as an **import format** into CMDBs.
+
+**Workflow:**
+1. Export infrastructure from sources (cloud APIs, network devices, OT systems)
+2. Generate OSIRIS document
+3. Import OSIRIS document into CMDB (ServiceNow, BMC, etc.)
+4. CMDB enriches with additional lifecycle data (ownership, contracts, incidents)

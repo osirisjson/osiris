@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+# [1.0.0-draft.17] - 2026-01-30
+### Added
+- Appendices (A-D)
+
+### Fixed
+- Minor grammar fixes across multiple sections
+- Minor refinements to OSIRIS schema semantics
+- Minor refinements to topology directionality rules
+
+
 # [1.0.0-draft.16] - 2026-01-29
 ### Added
 - Chapter 14: (14.1-14.2)
