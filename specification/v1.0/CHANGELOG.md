@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+# [1.0.0] - 2026-02-01
+### Updated
+- Specification to Stable release
+- README
+- CODE_OF_CONDUCT
+- CONTRIBUTING
+
+
 # [1.0.0-draft.17] - 2026-01-30
 ### Added
 - Appendices (A-D)

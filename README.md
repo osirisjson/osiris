@@ -1,32 +1,46 @@
-# OSIRIS JSON Format Specification
+# OSIRIS JSON format specification
 OSIRIS (Open Standard for Infrastructure Resource Interchange Schema) defines a vendor-neutral JSON format for describing infrastructure resources, their properties and their topological relationships across heterogeneous IT and OT environments.
 
-OSIRIS is designed to normalize infrastructure data exported from diverse domains, including public hyperscalers, cloud platforms, private Data Centers, network devices, virtualization platforms and where applicable Operational Technology (OT) assets. OSIRIS focuses on describing what exists and how it relates, enabling cross-platform visibility and portable consumption by tools without requiring consumers to implement vendor-specific parsers.
+---
 
-OSIRIS is an interchange schema and is not intended to be:
-- A real-time monitoring or telemetry protocol
-- An infrastructure-as-code deployment language
-- A configuration management system
+## The challenge
+Modern infrastructure spans multiple stacks and providers: hyperscalers (AWS, Azure, GCP etc.), public clouds providers, on-prem datacenters, hybrid networks and complex OT environments integration.
 
-Instead, OSIRIS is optimized for interchange scenarios where infrastructure topology must be communicated between systems: 
-- generating high quality documentation
-- producing accurate diagrams
-- feeding CMDBs, IPAMs or DCIMs
-- supporting audit workflows
-- enabling cross-platform analytics
-
-By providing a stable interchange schema, OSIRIS allows the ecosystem to develop reusable parsers (vendor > OSIRIS) and consumers (OSIRIS > application-specific models) independently as an Open Standard, fostering interoperability and reducing duplicate and complexity effort.
+While some platforms export inventories (often as JSON), the representations are inconsistent across vendors even for equivalent concepts like identity, properties and relationships.
+Accurate topology documentation is expensive and fragile. Teams rely on partial, inaccurate documentation and hand-drawn diagrams. Critical context lives in people's heads.
 
 
-## What problem this solves
-The modern infrastructure landscape span multiple technology stacks and providers, including hyperscalers and continuously evolving private and public cloud platforms, on-premises data centers featuring compute virtualization platforms, storage and network systems and continuously increasing OT integration. While many systems started offering a comprehensible export format for resource inventories and configurations, the exported representations differ significantly across vendors and products, even when JSON is used. In OT environments the gap is even bigger due to legacy systems and vendor specific protocols.
+## The solution
+OSIRIS normalizes exports from hyperscalers and cloud providers, on-prem datacenters (compute, storage, network) and supports OT inclusion where applicable (initial v1.0 scope).
+Designed for cross-platform visibility and portable consumption by tools (diagramming, inventory, audit) without requiring each consumer to implement vendor-specific parsers.
 
-The absence of a vendor-neutral interchange format means the infrastructure management ecosystem lacks a common language and producing a comprehensible hybrid cross-platform view typically requires bespoke translation layers that are costly to build and difficult to sustain.
+---
+
+## Design principles
+OSIRIS is a static snapshot interchange format. It captures what exists and how it relates at a point in time. It was not designed as a real-time monitoring system, a deployment tool, or an Infrastructure-as-Code engine.
+
+#### What OSIRIS IS
+Optimized for scenarios where documentation and topology must be exchanged between systems and teams.
+
+- **Reliable, flexible infrastructure snapshots**
+Capture “what exists” and “how it relates” at a point in time.
+
+- **Documentation-ready outputs**
+Enable consistent inventories, technical summaries and system context.
+
+- **Diagram-friendly topology**
+Provide normalized relationships for automated visualization and diagram generation.
+
+- **Feeding CMDB / IPAM / DCIM workflows**
+Export normalized data into systems of record and asset management tools.
+
+- **Audit support**
+Assist evidence collection and traceability by standardizing structure and relationships.
 
 
 ## Get started
-Visit https://osirisjson.org/en/get-started for more informations
+Visit https://osirisjson.org/docs for more informations.
 
 
 ## Contribute
-Visit https://osirisjson.org/en/get-involved for more informations
+OSIRIS is developed in public and warmly welcomes contributions of any size, visit https://osirisjson.org/docs/en/get-involved/community for more informations.

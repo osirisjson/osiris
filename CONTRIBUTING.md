@@ -1,5 +1,5 @@
 # CONTRIBUTING.md
-Thanks for your interest in contributing to OSIRIS! This project is maintained by volunteers; please help keep the signal high and the workload sustainable.
+OSIRIS is developed in public and warmly welcomes contributions of any size: questions, clarifications, examples, reviews and tooling improvements. As an open source project, we believe in giving back to our contributors and are happy to help with guidance on PRs, technical writing and turning any feature idea into a reality.
 
 ## Quick principles
 - **Quality > volume.** A few well-scoped contributions beat many low-impact issues/PRs.
@@ -8,37 +8,39 @@ Thanks for your interest in contributing to OSIRIS! This project is maintained b
 
 ---
 
-## Ways to contribute
-### 1. Improve docs (high impact)
-- Fix unclear sections that block users
-- Add examples that are minimal, correct and validated
-- Add diagrams or troubleshooting notes
+## What you can contribute
+### Documentation (recommended starting point)
+Documentation improvements are always valuable and usually the fastest to review:
+- fixing typos and broken links
+- clarifying wording where the spec is ambiguous
+- improving explanations and navigation between pages
+- expanding “how to validate” or “how to read an OSIRIS document” guidance
 
-### 2. Report bugs (actionable issues only)
-Before opening an issue:
-- Search existing issues/PRs first
-- Confirm it’s reproducible on the latest version (or `main`)
-- Reduce to a minimal reproducible case
 
-**A good bug report includes:**
-- What you expected to happen
-- What actually happened (include exact error output)
-- Steps to reproduce (minimal)
-- Environment (OS, versions, runtime, etc.)
-- Any relevant logs/config/files (redact secrets)
+### Examples
+You can contribute by:
+- proposing new example scenarios
+- improving readability and consistency of existing examples
+- adding comments or accompanying notes that help readers understand why certain fields are present
 
-### 3. Propose enhancements
-For anything non-trivial, open a discussion first (or an issue) that includes:
-- Problem statement
-- Why it matters (who benefits / what pain it removes)
-- Proposed solution(s)
-- Tradeoffs and alternatives
+### Specification and schema
+For spec/schema-related contributions:
+- open an issue describing the change and motivation
+- include a minimal example that demonstrates the problem
+- propose the smallest change that preserves compatibility
 
-### 4. Code contributions
-- Pick an existing issue or open one first for alignment
-- Keep PRs small and focused (one concern per PR)
-- Add/update tests where applicable
-- Update docs/examples if behavior changes
+## How to keep contributions easy to review
+- Prefer small, focused PRs.
+- Avoid mixing unrelated changes (e.g., refactor + new feature in the same PR).
+- Keep language precise (normative statements should use MUST/SHOULD/MAY only where appropriate).
+- If a change could affect compatibility, call it out explicitly in the PR description.
+
+## Contributors
+This project is currently maintained by a single lead maintainer. Contributors will be listed here and in the maintainer page over time.
+
+## Code of Conduct
+Participation in the OSIRIS community is governed by the Code of Conduct.  
+[Read the Code of Conduct](https://github.com/osirisjson/osiris/tree/main/CODE_OF_CONDUCT.md)
 
 ---
 

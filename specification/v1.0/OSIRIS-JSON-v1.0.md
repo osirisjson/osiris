@@ -2,10 +2,10 @@
 | Field     | Value |
 | --------- | ----- |
 | Authors   | Tia Zanella [skhell](https://github.com/skhell) |
-| Revision  | 1.0.0-DRAFT |
+| Revision  | 1.0.0 |
 | Creation date      | 14 December 2025 |
-| Last revision date | 30 January 2026 |
-| Status    | Draft |
+| Last revision date | 01 February 2026 |
+| Status    | Stable |
 | Specification ID | OSIRIS-1.0 |
 | Schema URI | [OSIRIS-1.0](https://osirisjson.org/schema/v1.0/osiris.schema.json) |
 | License   | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
@@ -1355,7 +1355,7 @@ Metadata objects **SHOULD** be concise. Large amounts of auxiliary data (e.g. fu
   "timestamp": "2025-12-18T14:30:00Z",
   "generator": {
     "name": "osiris-aws-parser",
-    "version": "2.1.0"
+    "version": "1.0.0"
   },
   "scope": {
     "name": "Production multi Hyperscalers topology",
@@ -1378,7 +1378,7 @@ Metadata objects **SHOULD** be concise. Large amounts of auxiliary data (e.g. fu
   "timestamp": "2025-12-18T14:30:00Z",
   "generator": {
     "name": "osiris-aws-parser",
-    "version": "0.9.0"
+    "version": "1.0.0"
   },
   "scope": {
     "name": "Hybrid production topology",
