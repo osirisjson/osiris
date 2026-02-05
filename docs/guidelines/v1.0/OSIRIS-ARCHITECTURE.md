@@ -5,7 +5,7 @@
 | Revision  | 1.0.0-DRAFT |
 | Creation date      | 04 February 2026 |
 | Last revision date | 04 February 2026 |
-| Status    | Stable |
+| Status    | Draft |
 | Specification ID | OSIRIS-1.0 |
 | Specification URI | [OSIRIS-1.0](https://github.com/osirisjson/osiris/tree/main/specification/v1.0/OSIRIS-JSON-v1.0.md) |
 | Schema URI | [OSIRIS-1.0](https://osirisjson.org/schema/v1.0/osiris.schema.json) |
