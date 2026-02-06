@@ -238,3 +238,80 @@ OSIRIS versioning is designed to keep the ecosystem compatible while allowing ev
 - Breaking changes to diagnostic shapes, rule identifiers, or CLI contract **MUST** be a toolbox MAJOR bump
 
 **Rationale:** a stable major alignment prevents ecosystem “split brain” where producers, editors and CI disagree on what “valid” means.
+
+---
+
+# 3 Logical architecture (Data Flow pipelines)
+## 3.1 The ingestion pipeline (Producer lifecycle)
+The ingestion pipeline describes how producers create an OSIRIS snapshot from source systems.
+It is intentionally described as a **contract-level lifecycle**; implementation details belong in `OSIRIS-PRODUCER-GUIDELINES.md` and `@osirisjson/sdk`.
+
+### 3.1.1 Context and scope
+Producers **MUST** establish explicit export context before emitting an OSIRIS document.
+
+- `metadata.timestamp` reflects when the snapshot was generated (ISO 8601 with timezone).
+- `metadata.generator` identifies the producer/tool name and version.
+- `metadata.scope` describes what the snapshot represents (e.g. providers, accounts/subscriptions, regions, sites, environments) and any known limitations.
+
+**Guidance**
+- If inventory is incomplete, producers **SHOULD** still export what they know and document limitations in `metadata.scope.description` (or equivalent) rather than failing silently.
+- Very large infrastructures **MAY** be split into multiple documents (e.g. per region/environment/account). Scope **MUST** make boundaries explicit.
+
+
+### 3.1.2 Normalization
+Normalization makes documents comparable over time and across producers. It standardizes **representation**, not meaning (normalization must not invent facts).
+
+Producers **SHOULD**:
+- Normalize provider naming and stable identifiers under `provider`.
+- Prefer stable field representations (e.g. consistent casing and units).
+- Avoid embedding volatile, noise-heavy values unless they are essential for the intended use case.
+- Produce diff-friendly output where feasible (e.g. stable ordering of arrays such as sorting by `id`).
+
+---
+
+## 3.2 The validation pipeline (Core engine)
+Validation is executed by `@osirisjson/core` and emits diagnostics. Validation is defined in terms of **levels**; see `OSIRIS-VALIDATION-LEVELS.md` for the full model and catalog.
+
+Validation **profiles** (e.g. default vs strict) may change which checks run and how results are reported, but **MUST NOT** change the meaning of a rule.
+
+### 3.2.1 Stage 1: Structural (Schema)
+| Goal | Check examples | Outcome |
+|---|---|---|
+| Verify JSON Schema compliance | Required fields present (`version`, `metadata`, `topology`) | Diagnostics that point to precise locations and schema expectations |
+|  | Field types and formats (strings, objects, arrays, enums) |  |
+|  | Schema constraints (e.g. `direction` enum) |  |
+
+### 3.2.2 Stage 2: Semantic (Integrity)
+| Goal | Check examples | Outcome |
+|---|---|---|
+| Verify internal consistency beyond what schema can express | Referential integrity: connections and groups reference existing IDs in the same document | Deterministic diagnostics that do not depend on runtime environment |
+|  | ID uniqueness within each array |  |
+|  | Cycle detection where applicable (e.g. group hierarchy) |  |
+|  | Basic canonical constraints (e.g. invalid self-references) |  |
+
+### 3.2.3 Stage 3: Domain (Best practices)
+| Goal | Check examples | Outcome |
+|---|---|---|
+| Optional, opinionated checks that improve quality without changing structural validity | Modeling recommendations (e.g. prefer `properties`/`extensions` over new fields) | Domain rules are not a replacement for a CMDB, a scanner or vendor tooling. They exist to improve interoperability and quality |
+|  | Quality hints (e.g. missing `provider.native_id` where expected) |  |
+|  | Security posture hints when safe and non-invasive |  |
+
+---
+
+## 3.3 The consumption pipeline (CLI and Editors)
+Consumers are responsible for presenting and acting on validation outcomes.
+CLI and editors **MUST** delegate validation behavior to `@osirisjson/core` (no duplicated validators).
+
+**CLI pipeline:**
+- Read files and resolve schema (offline/local).
+- Run `@osirisjson/core` validation with a chosen profile.
+- Emit:
+  - stable exit codes for CI
+  - machine-readable results (JSON)
+  - human-readable summaries
+
+**Editor pipeline (VS Code/VSCodium):**
+- Detect OSIRIS documents (via `$schema` and/or document structure).
+- Validate via `@osirisjson/core` (directly or via LSP).
+- Render diagnostics (squiggles, hovers, quick fixes).
+- Enforce performance constraints (debounce, incremental parsing, avoid UI blocking).
