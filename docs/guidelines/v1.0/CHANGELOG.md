@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-draft.4] - 2025-02-07
+### Added
+- OSIRIS JSON Architecture Development Guidelines, chapter 4, sections (4.1-4.6)
+- OSIRIS JSON Architecture Development Guidelines, chapter 2, section 2.4.
+
+### Fixed
+- Minor grammar fixes across multiple sections
+
+
 ## [1.0.0-draft.3] - 2025-02-06
 ### Added
 - OSIRIS JSON Architecture Development Guidelines, chapter 3, sections (3.1-3.3)

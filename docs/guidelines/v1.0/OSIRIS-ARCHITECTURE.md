@@ -4,7 +4,7 @@
 | Authors   | Tia Zanella [skhell](https://github.com/skhell) |
 | Revision  | 1.0.0-DRAFT |
 | Creation date      | 04 February 2026 |
-| Last revision date | 05 February 2026 |
+| Last revision date | 07 February 2026 |
 | Status    | Draft |
 | Specification ID | OSIRIS-1.0 |
 | Specification URI | [OSIRIS-1.0](https://github.com/osirisjson/osiris/tree/main/specification/v1.0/OSIRIS-JSON-v1.0.md) |
@@ -15,7 +15,6 @@
 
 # Table of Content
 <!-- wip will be done later -->
-
 
 # 1 Introduction
 This document defines the architectural foundation for the OSIRIS ecosystem. It establishes the patterns, principles and repository structures required to build and evolve the OSIRIS core **toolbox**, **producers** and **extensions** in a sustainable and scalable way.
@@ -86,7 +85,7 @@ OSIRIS splits the ecosystem into clear responsibilities to keep scaling sustaina
 ### 2.1.1 Repository layout (Polyrepo vs monorepo)
 OSIRIS is developed across multiple repositories under the `osirisjson` GitHub organization. This structure separates **canonical specification content** from **tooling**, **vendor producers** and **editor integrations**, keeping responsibilities clear and enabling the ecosystem to scale as more producers and tools are added.
 
-OSIRIS generated documents are standard **JSON** files and are expected to use the `.json` extension; consumers and toolings detects OSIRIS content via schema metadata and/or document structure rather than a custom file extension.
+OSIRIS generated documents are standard **JSON** files and are expected to use the `.json` extension; consumers and tooling detect OSIRIS content via schema metadata and/or document structure rather than a custom file extension.
 
 ```text
 osirisjson/
@@ -117,11 +116,11 @@ osirisjson/
 | osiris | osiris-toolbox | osiris-producers | osiris-extensions | osirisjson.org | .github | osiris-mcp |
 |---|---|---|---|---|---|---|
 | Canonical OSIRIS JSON specification aligned to released versions | OSIRIS JSON Core validation engine (structural, semantic and domain validation) | Vendor-specific producer implementations (e.g. Cisco NX-OS, Azure) | Real-time OSIRIS JSON validation powered by the shared validation engine | Documentation website and developer resources | Community health files, contribution templates and security/support policies | MCP server implementation for automation and ecosystem integrations |
-| Canonical OSIRIS JSON core schema aligned to released versions | OSIRIS JSON Schema validation with enhanced, user-friendly error reporting | Shared producer utilities and fixtures where vendor-specific reuse is needed | Schema-aware autocomplete and navigation | Hosted schema endpoints and downloadable references aligned to released versions | Standardized issue and PR workflows across all repositories | — |
-| Docs and guidelines to support development and project grow | Shared error model and diagnostics format consumed by CLI and editor integrations | Integration and regression test suites per producer | Rich diagnostics with actionable messages and quick fixes | — | — | — |
-| Normative examples referenced by the specification | OSIRIS JSON TypeScript SDK for producer development (base classes, helpers, builders, ID strategy) | Producer documentation (configuration, permissions, examples) inside each producer package | Future integrations (e.g. draw.io export/preview workflows) | — | — | — |
-| Change log and release notes | OSIRIS JSON CLI tool for validation and conversion workflows | — | — | — | — | — |
-| — | Utility functions for OSIRIS JSON document manipulation and analysis | — | — | — | — | — |
+| Canonical OSIRIS JSON core schema aligned to released versions | OSIRIS JSON Schema validation with enhanced, user-friendly error reporting | Shared producer utilities and fixtures where vendor-specific reuse is needed | Schema-aware autocomplete and navigation | Hosted schema endpoints and downloadable references aligned to released versions | Standardized issue and PR workflows across all repositories | - |
+| Docs and guidelines to support development and project grow | Shared error model and diagnostics format consumed by CLI and editor integrations | Integration and regression test suites per producer | Rich diagnostics with actionable messages and quick fixes | - | - | - |
+| Normative examples referenced by the specification | OSIRIS JSON TypeScript SDK for producer development (base classes, helpers, builders, ID strategy) | Producer documentation (configuration, permissions, examples) inside each producer package | Future integrations (e.g. draw.io export/preview workflows) | - | - | - |
+| Change log and release notes | OSIRIS JSON CLI tool for validation and conversion workflows | - | - | - | - | - |
+| - | Utility functions for OSIRIS JSON document manipulation and analysis | - | - | - | - | - |
 
 
 #### Repository boundaries
@@ -133,7 +132,7 @@ Use these rules to avoid duplication and circular dependencies:
 - Producer ergonomics (helpers/builders/base classes, fixtures utilities) belong in `@osirisjson/sdk`
 - Command UX / CI behavior (flags, exit codes, output formats, orchestration) belong in `@osirisjson/cli`
 - Vendor integrations (API calls, auth, inventory mapping, vendor-specific quirks) belong in `osiris-producers`
-- IDE UX (language features, UI performance, quick fixes) belong in `osiris-extensions`.
+- IDE UX (language features, UI performance, quick fixes) belong in `osiris-extensions`
 
 ---
 
@@ -148,8 +147,8 @@ The purpose is to validate OSIRIS documents and emit deterministic, tool-friendl
 | Load and apply OSIRIS JSON Schema validation (Level 1 / structural) | No vendor API integrations or inventory fetching | `@osirisjson/cli` |
 | Execute semantic integrity checks (Level 2 / referential integrity, uniqueness, format constraints) | No editor UI logic, no CLI orchestration | VS Code/VSCodium extension (directly or through an LSP layer) |
 | Execute optional best-practice checks (Level 3 / domain rules) | No network calls during validation (schema resolution must be local/cached) | Third-party tools embedding validation in pipelines |
-| Emit diagnostics in a stable data model consumed by CLI and editor integrations | — | — |
-| Provide validation profiles (e.g. default vs strict) without changing rule meaning | — | — |
+| Emit diagnostics in a stable data model consumed by CLI and editor integrations | - | - |
+| Provide validation profiles (e.g. default vs strict) without changing rule meaning | - | - |
 
 
 ### 2.2.2 @osirisjson/sdk: Producer development kit
@@ -159,8 +158,8 @@ The purpose is to provide reusable building blocks to help producers generate hi
 |---|---|---|
 | Base producer patterns (context, logging, scope tracking) | No embedded vendor-specific mapping logic (that belongs in `osiris-producers`) | Producers depend on `@osirisjson/sdk` at runtime |
 | Deterministic ID helpers and canonicalization utilities | No “hidden validation fork”: SDK may provide optional preflight checks, but canonical validation is `@osirisjson/core` | Producers may depend on `@osirisjson/core` in dev/test to validate fixtures in CI |
-| Builders/helpers to construct resources, connections and groups consistently | — | — |
-| Test utilities (fixtures, snapshot testing helpers, regression harness patterns) | — | — |
+| Builders/helpers to construct resources, connections and groups consistently | - | - |
+| Test utilities (fixtures, snapshot testing helpers, regression harness patterns) | - | - |
 
 
 ### 2.2.3 @osirisjson/cli: Command Line Interface
@@ -170,9 +169,9 @@ The purpose is to provide a CI-friendly and developer-friendly interface to vali
 |---|---|---|
 | Command orchestration and filesystem IO | No validation re-implementation (always delegate to `@osirisjson/core`) | Local: `npx @osirisjson/cli validate file.json` |
 | Invoking `@osirisjson/core` and presenting results | No editor-specific UX assumptions | CI: exit codes + --format json |
-| Stable exit codes for CI/CD | — | — |
-| Machine-readable output (JSON) and human output (text) | — | — |
-| (Optional) conversions that do not change OSIRIS semantics (e.g. formatting, normalization modes) when explicitly requested | — | — |
+| Stable exit codes for CI/CD | - | - |
+| Machine-readable output (JSON) and human output (text) | - | - |
+| (Optional) conversions that do not change OSIRIS semantics (e.g. formatting, normalization modes) when explicitly requested | - | - |
 
 ---
 
@@ -191,25 +190,25 @@ A typical dependency direction looks like this:
 
 ```mermaid
 flowchart LR
-  subgraph Spec
+  subgraph OSIRIS Specification
     SPEC["osiris
     (spec + schema)"]
   end
-  subgraph Toolbox
+  subgraph OSIRIS Toolbox
     CORE["@osirisjson/core"]
     SDK["@osirisjson/sdk"]
     CLI["@osirisjson/cli"]
   end
-  subgraph Producers
+  subgraph OSIRIS Producers
     PROD["osiris-producers
     (vendor integrations)"]
   end
-  subgraph Editors
+  subgraph OSIRIS Editors
     EXT["osiris-extensions
-    (VS Code/VSCodium)"]
+    (VS Code/VS Codium)"]
   end
-  SPEC --> CORE
-  SPEC --> SDK
+  CORE --> SPEC
+  SDK --> SPEC
   CLI --> CORE
   EXT --> CORE
   PROD --> SDK
@@ -233,11 +232,50 @@ OSIRIS versioning is designed to keep the ecosystem compatible while allowing ev
 
 **Toolbox alignment principles**
 - Toolbox packages **MUST** share the same MAJOR version across `@osirisjson/core`, `@osirisjson/sdk` and `@osirisjson/cli`
-- `@osirisjson/cli` **MUST** be compatible with the corresponding major of `@osirisjson/core`.
+- `@osirisjson/cli` **MUST** be compatible with the corresponding major of `@osirisjson/core`
 - Producers and extensions **SHOULD** declare which OSIRIS major they support (documentation and/or package metadata)
 - Breaking changes to diagnostic shapes, rule identifiers, or CLI contract **MUST** be a toolbox MAJOR bump
 
 **Rationale:** a stable major alignment prevents ecosystem “split brain” where producers, editors and CI disagree on what “valid” means.
+
+---
+
+## 2.4 Implementation platform rationale (TypeScript + NPM) (Non-normative)
+OSIRIS is language-agnostic vendor-neutral at the document level: any producer in any language is valid if it emits OSIRIS JSON that validates against the core schema and passes the canonical validation engine in CI.
+
+That said, the OSIRIS **reference implementation** (toolbox: `@osirisjson/core`, `@osirisjson/cli`, `@osirisjson/sdk`) is built on **TypeScript** and distributed as **NPM packages**.
+
+### Decision summary
+- **Reference toolbox platform:** Node.js + TypeScript
+- **Distribution:** NPM packages (SemVer-aligned)
+- **Producers:** Any language is supported. OSIRIS producers are language-agnostic; TS SDK is the **recommended** reference path
+
+### Why TypeScript/NPM for the toolbox
+The main drivers are **ecosystem alignment** and **code reuse**:
+- VS Code/VSCodium extensions runs on Node: sharing diagnostics/schema/validation logic is direct.
+- One runtime for CLI + validator + SDK reduces “split brain” behavior and duplication.
+- NPM makes SemVer alignment and dependency composition straightforward for an ecosystem.
+- TypeScript provides strong typing for diagnostics, rule APIs and SDK builders without sacrificing iteration speed.
+
+### Comparison matrix (toolbox reference implementation)
+| Criteria | TypeScript (Node/NPM) | Go | Python | Rust |
+|---|---|---|---|---|
+| VS Code extension runtime alignment | Excellent (native) | Medium (bridge needed) | Medium (bridge needed) | Medium (bridge needed) |
+| Sharing code between CLI/core/extension | Excellent | Medium | Medium | Medium |
+| Distribution to devs | Excellent (`npm i`, `npx`) | Good (binaries) | Good (pip) | Medium (cargo/binaries) |
+| Type safety for contracts (diagnostics/rules) | Strong | Strong | Weak/Optional | Very strong |
+| Performance for large graphs | Good | Very good | Medium | **Very good |
+| Build complexity for contributors | Low | Medium | Low | High |
+| Ecosystem reach for infra scripting | High | High | **Very high | Medium |
+| Cross-platform UX | High | High | Medium (env friction) | Medium/High |
+| Best fit for “canonical shared validator” | Yes | Possible | Possible | Possible |
+
+**Conclusion:** TypeScript/NPM is the most pragmatic choice for the **canonical toolbox** because it maximizes reuse across CLI + core + editor integrations with the lowest contributor friction. Go/Rust/Python producers remain first-class citizens because OSIRIS is ultimately a JSON interchange format.
+
+### Guidance for non-TypeScript producers
+- Emit OSIRIS JSON with `$schema` when possible.
+- Validate in CI using `@osirisjson/core` (via CLI) to match canonical behavior.
+- Use golden fixtures to prevent drift across releases.
 
 ---
 
@@ -249,9 +287,9 @@ It is intentionally described as a **contract-level lifecycle**; implementation 
 ### 3.1.1 Context and scope
 Producers **MUST** establish explicit export context before emitting an OSIRIS document.
 
-- `metadata.timestamp` reflects when the snapshot was generated (ISO 8601 with timezone).
-- `metadata.generator` identifies the producer/tool name and version.
-- `metadata.scope` describes what the snapshot represents (e.g. providers, accounts/subscriptions, regions, sites, environments) and any known limitations.
+- `metadata.timestamp` reflects when the snapshot was generated (ISO 8601 with timezone)
+- `metadata.generator` identifies the producer/tool name and version
+- `metadata.scope` describes what the snapshot represents (e.g. providers, accounts/subscriptions, regions, sites, environments) and any known limitations
 
 **Guidance**
 - If inventory is incomplete, producers **SHOULD** still export what they know and document limitations in `metadata.scope.description` (or equivalent) rather than failing silently.
@@ -262,10 +300,10 @@ Producers **MUST** establish explicit export context before emitting an OSIRIS d
 Normalization makes documents comparable over time and across producers. It standardizes **representation**, not meaning (normalization must not invent facts).
 
 Producers **SHOULD**:
-- Normalize provider naming and stable identifiers under `provider`.
-- Prefer stable field representations (e.g. consistent casing and units).
-- Avoid embedding volatile, noise-heavy values unless they are essential for the intended use case.
-- Produce diff-friendly output where feasible (e.g. stable ordering of arrays such as sorting by `id`).
+- Normalize provider naming and stable identifiers under `provider`
+- Prefer stable field representations (e.g. consistent casing and units)
+- Avoid embedding volatile, noise-heavy values unless they are essential for the intended use case
+- Produce diff-friendly output where feasible (e.g. stable ordering of arrays such as sorting by `id`)
 
 ---
 
@@ -311,7 +349,227 @@ CLI and editors **MUST** delegate validation behavior to `@osirisjson/core` (no 
   - human-readable summaries
 
 **Editor pipeline (VS Code/VSCodium):**
-- Detect OSIRIS documents (via `$schema` and/or document structure).
-- Validate via `@osirisjson/core` (directly or via LSP).
-- Render diagnostics (squiggles, hovers, quick fixes).
-- Enforce performance constraints (debounce, incremental parsing, avoid UI blocking).
+- Detect OSIRIS documents (via `$schema` and/or document structure)
+- Validate via `@osirisjson/core` (directly or via LSP)
+- Render diagnostics (squiggles, hovers, quick fixes)
+- Enforce performance constraints (debounce, incremental parsing, avoid UI blocking)
+
+
+---
+
+# 4 Core architectural patterns
+This chapter defines the ecosystem patterns that keep OSIRIS toolbox consistent across CLI, editors, producers and third-party consumers.
+
+---
+
+## 4.1 Diagnostics and error handling
+Diagnostics are the common language across the OSIRIS ecosystem. They **MUST** be stable, structured and tool-friendly.
+
+```mermaid
+flowchart TD
+  DOC["OSIRIS JSON document"]
+  PROFILE["Validation profile (default/strict)"]
+
+  subgraph CORE["OSIRIS @osirisjson/core"]
+    direction TB
+
+    L1["Level 1 - Structural JSON schema (2020-12)
+    - required fields
+    - types, formats, enums
+    - pattern constraints"]
+
+    L2["Level 2 - Semantic referential integrity
+    - connection source/target > resource id
+    - group members/children > resource/group id
+    - ID uniqueness per array
+    - cycle detection (groups)"]
+
+    L3["Level 3 - Domain best-practice checks
+    - modeling hints
+    - quality warnings
+    - security posture hints"]
+
+    L1 --> L2 --> L3
+  end
+
+  DOC --> CORE
+  PROFILE -.-> CORE
+
+  subgraph DIAG["OSIRIS diagnostic"]
+    direction LR
+    CODE["code"]
+    SEV["severity"]
+    MSG["message"]
+    PATH["path"]
+    RANGE["range"]
+  end
+
+  CORE --> DIAG
+
+  subgraph CONSUMERS["OSIRIS consumers"]
+    direction LR
+    CLI["CLI
+    exit codes
+    JSON / text"]
+    EDITOR["Editor
+    squiggles
+    quick fixes"]
+    THIRDPARTY["Third-party
+    pipelines
+    dashboards"]
+  end
+
+  DIAG --> CLI
+  DIAG --> EDITOR
+  DIAG --> THIRDPARTY
+```
+
+### 4.1.1 The diagnostic model
+A **diagnostic** represents a single validation finding emitted by `@osirisjson/core`.
+
+**Minimum fields**
+| Field | Meaning |
+|---|---|
+| `code` | Stable identifier for the finding (treat as opaque string; stable across a `MAJOR` toolbox version) |
+| `severity` | One of `error`, `warning`, `info`, `hint` |
+| `message` | Human-readable explanation |
+| `path` | JSON Pointer (RFC 6901) **or equivalent locator** (implementation-defined but stable) |
+| `range` | Document range `{start,end}` with `{line,character}` when available (0-based, LSP-style recommended) |
+
+**Optional fields**
+| Field | Meaning |
+|---|---|
+| `rule` | Rule identifier (useful for domain rules / best-practice checks) |
+| `related` | Related locations for cross-reference issues (e.g. “also referenced here”) |
+| `fix` | Structured quick-fix metadata (only when safe, deterministic and non-destructive) |
+
+**Example (illustrative, not normative):**
+
+```json
+{
+  "code": "OSIRIS-ERR-REF-001",
+  "severity": "error",
+  "message": "Connection target references a resource id that does not exist.",
+  "path": "/topology/connections/12/target",
+  "range": {
+    "start": { "line": 220, "character": 18 },
+    "end":   { "line": 220, "character": 44 }
+  }
+}
+```
+
+
+### 4.1.2 Severity guidance and profiles
+Diagnostics separate what failed (code) from how serious it is (severity). Severity may depend on the active validation profile (e.g. default vs strict), but codes must not change meaning.
+
+**General guidance:**
+
+- **Structural (Level 1)** violations are typically error.
+- **Semantic (Level 2)** violations are typically error (broken references, duplicate IDs), but some may be downgraded under non-strict profiles.
+- **Domain (Level 3)** findings are typically warning, info, or hint.
+
+The authoritative rule catalog and mapping live in `OSIRIS-VALIDATION-LEVELS.md` and are implemented in `@osirisjson/core`
+
+---
+
+# 4.2 Identity strategy (deterministic IDs)
+Stable identity is what makes OSIRIS useful for diffs, correlation and long-lived tooling.
+
+**Core rules:**
+Resource, connection and group IDs **MUST** be unique within a document.
+
+- IDs **SHOULD** remain stable across exports when feasible.
+- IDs are opaque identifiers: consumers should not require parsing ID structure.
+
+**Recommended producer strategy:**
+| Entity | Recommended approach |
+|---|---|
+| Resources | Prefer stable provider identifiers and preserve them under `provider.native_id` when available. Use deterministic `id` generation when no stable native identifier exists. |
+| Connections | Generate deterministic connection IDs from stable endpoint fingerprints. For `direction = "bidirectional"`, canonicalize endpoint ordering to prevent ID flips. |
+| Groups | Generate stable IDs derived from stable boundaries (region/site/datacenter/rack/env, hyperscaler/cloud object IDs, etc.). Groups should remain stable across exports even when temporarily empty. |
+
+**Rationale:** stable IDs enable meaningful topology diffs and downstream correlation without vendor-specific logic.
+
+---
+
+# 4.3 Extensibility mechanism
+OSIRIS is designed to evolve without breaking consumers.
+
+**Forward-compatibility rules:**
+
+- Consumers **MUST** ignore unknown fields (including unknown extension payloads).
+- Producers **SHOULD NOT** introduce new top-level fields in v1.0 beyond optional `$schema`.
+
+**Where to put additional data:**
+| Need | Use |
+|---|---|
+| Generic, broadly useful extra attributes | `properties` |
+| Vendor/org-specific payloads, schemas, or deep objects | `extensions` (namespaced keys) |
+
+**Namespace governance:**
+- Extension keys **MUST** follow `osiris.<identifier>` naming rules (lowercase, dot-separated).
+- The `osiris.` prefix is reserved to prevent collisions and support registry conventions.
+- OSIRIS governs namespace rules (and optionally a registry), not the internal semantics of each extension payload.
+- Consumers **MUST** treat unknown extension fields as opaque.
+
+---
+
+# 4.4 JSON file conventions
+These conventions keep OSIRIS documents portable, editor-friendly and diff-friendly.
+
+### 4.4.1 File format
+- Documents **MUST** be valid JSON format RFC8259.
+- Canonical OSIRIS documents **MUST NOT** use comments (no JSONC).
+- Character encoding **MUST** be in `UTF-8` adhering to RFC8259.
+- Documents are expected to use the `.json` extension (tools detect OSIRIS via `$schema` and/or structure).
+
+### 4.4.2 Top-level fields
+- Producers **MAY** include `$schema` (recommended for tooling/editor resolution).
+- Other top-level fields **SHOULD NOT** be emitted in OSIRIS v1.0.
+
+### 4.4.3 Recommended ordering and diffs
+- Prefer consistent key ordering for common objects (at least at the top level).
+- Prefer stable ordering for arrays when it does not change semantics:
+  - `topology.resources` sorted by `id`
+  - `topology.connections` sorted by `id`
+  - `topology.groups` sorted by `id`
+- Avoid nondeterministic iteration order that creates noisy diffs.
+
+### 4.4.4 Recommended formatting
+- 2-space indentation
+- newline at end of file
+
+---
+
+# 4.5 Terminology
+| Term | Description |
+|---|---|
+| Document | A single OSIRIS JSON file representing a point-in-time snapshot. |
+| Producer | A tool that exports source inventory into an OSIRIS document. |
+| Consumer | A tool that reads OSIRIS documents (validator, diagrammer, diff engine, inventory, etc.). |
+| Topology | The `topology` object containing resources, connections and groups. |
+| Resource | An entity described in `topology.resources`. |
+| Connection | A relationship/edge described in `topology.connections`. |
+| Group | A container/hierarchy described in `topology.groups`. |
+| Properties | Freeform attributes for broadly useful non-standard data. |
+| Extensions | Namespaced payloads for vendor/org-specific data. |
+| Diagnostics | Structured validation findings emitted by `@osirisjson/core`. |
+| Structural validation | Schema-based validation (Level 1). |
+| Semantic validation | Referential integrity and consistency checks (Level 2). |
+| Domain validation | Optional best-practice checks (Level 3). |
+
+---
+
+# 4.6 Stability tiers
+This table defines which ecosystem surfaces are expected to remain stable within a `MAJOR` version.
+
+| Artifact/Surface | Stability within MAJOR | What is stable | What may change |
+|---|---|---|---|
+| OSIRIS specification (`osiris`) | High | Field meanings, normative rules, namespace rules | Clarifications, additional guidance, new optional fields/features in `MINOR` (non-breaking) |
+| Schema endpoint (`/schema/v1.0/...`) | High | Validators **MAY** accept `1.x.y` at the `v1.0` endpoint; producers targeting `v1.0` **SHOULD** emit `1.0.0`. | Adds new optional fields / clarifications; Schema **MUST NOT** tighten constraints for existing fields within v1.x. |
+| `@osirisjson/core` public API | High | Validator entry points, diagnostic shape, severity model | Internal pipeline, performance optimizations, new rules |
+| Diagnostic codes catalog | Medium/High | Existing codes retain meaning once published | New codes added; deprecations announced before `MAJOR` removal |
+| `@osirisjson/cli` contract | High | Command names, exit codes, JSON output format promises | New flags/options, improved formatting |
+| `@osirisjson/sdk` contract | Medium | Core helpers and base patterns | New helpers, refactors, optional utilities (avoid breaks without `MAJOR`) |
+| Producers (`osiris-producers`) | Medium | Supported vendors/scopes per producer (documented) | Coverage changes as vendor APIs evolve |
+| Extensions (`osiris-extensions`) | Medium | Delegation to `@osirisjson/core`, editor performance constraints | UI/UX improvements, new features |
