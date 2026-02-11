@@ -4,7 +4,7 @@
 | Authors   | Tia Zanella [skhell](https://github.com/skhell) |
 | Revision  | 1.0.0-DRAFT |
 | Creation date      | 04 February 2026 |
-| Last revision date | 08 February 2026 |
+| Last revision date | 11 February 2026 |
 | Status    | Draft |
 | Document ID | OSIRIS-ADG-1.0 |
 | Document URI | [OSIRIS-ADG-1.0](https://github.com/osirisjson/osiris/tree/main/docs/guidelines/v1.0/OSIRIS-ARCHITECTURE.md) |
@@ -550,27 +550,26 @@ A **diagnostic** represents a single validation finding emitted by `@osirisjson/
 **Minimum fields**
 | Field | Meaning |
 |---|---|
-| `code` | Stable identifier for the finding (treat as opaque string; stable across a `MAJOR` toolbox version) |
-| `severity` | One of `error`, `warning`, `info`, `hint` |
-| `message` | Human-readable explanation |
-| `path` | JSON Pointer (RFC 6901) **or equivalent locator** (implementation-defined but stable) |
-| `range` | Document range `{start,end}` with `{line,character}` when available (0-based, LSP-style recommended) |
+| `code` | Stable identifier for the finding as defined by the OSIRIS specification for the targeted `version` (treat as opaque string; meaning MUST NOT change within a spec `MAJOR`). |
+| `severity` | One of `error`, `warning`, `info` (spec-defined severities). |
+| `message` | Human-readable explanation (not normative; may evolve for clarity/localization). |
+| `path` | A stable locator to the relevant value (JSON Pointer RFC 6901 RECOMMENDED; equivalent stable locator accepted). |
 
 **Optional fields**
 | Field | Meaning |
 |---|---|
-| `rule` | Rule identifier (useful for domain rules / best-practice checks) |
-| `related` | Related locations for cross-reference issues (e.g. “also referenced here”) |
-| `fix` | Structured quick-fix metadata (only when safe, deterministic and non-destructive) |
+| `range` | Document range `{start,end}` with `{line,character}` when source text is available (0-based, LSP-style recommended). |
+| `rule` | Implementation-defined rule key (optional). `code` remains the primary contract identifier. |
+| `related` | Related locations for cross-reference issues (e.g. “also referenced here”). |
+| `fix` | Structured quick-fix metadata (only when safe, deterministic and non-destructive). |
 
 **Example (illustrative, not normative):**
-
 ```json
 {
-  "code": "OSIRIS-ERR-REF-001",
+  "code": "V-REF-002",
   "severity": "error",
-  "message": "Connection target references a resource id that does not exist.",
-  "path": "/topology/connections/12/target",
+  "message": "Connection target references non-existent resource 'aws::db-nonexistent'.",
+  "path": "/topology/connections/0/target",
   "range": {
     "start": { "line": 220, "character": 18 },
     "end":   { "line": 220, "character": 44 }
@@ -579,7 +578,8 @@ A **diagnostic** represents a single validation finding emitted by `@osirisjson/
 ```
 
 > [!NOTE]
-> The full engine result contract is defined in [OSIRIS-ADG-VL-1.0](https://github.com/osirisjson/osiris/tree/main/docs/guidelines/v1.0/OSIRIS-VALIDATION-LEVELS.md).
+> Rule definitions and canonical code meanings are specified in the [OSIRIS-JSON-v1.0](https://github.com/osirisjson/osiris/tree/main/specification/v1.0/OSIRIS-JSON-v1.0.md).
+> The engine input/output contract and profile mapping are defined in [OSIRIS-ADG-VL-1.0](https://github.com/osirisjson/osiris/tree/main/docs/guidelines/v1.0/OSIRIS-VALIDATION-LEVELS.md).
 
 
 ### 4.1.2 Severity guidance and profiles
