@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-draft.7] - 2026-02-12
+### Added
+- OSIRIS-ADG-VL-1.0 chapter 2 section (2.1-2.4)
+
+
 ## [1.0.0-draft.6] - 2026-02-11
 ### Added
 - OSIRIS-ADG-VL-1.0 chapter 1 section (1.1-1.4)
