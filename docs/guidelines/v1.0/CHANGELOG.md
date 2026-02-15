@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-draft.9] - 2026-02-15
+### Added
+- OSIRIS-ADG-PR-1.0 chapter 1 section (1.1-1.2)
+- OSIRIS-ADG-1.0 additional RFCs normative references
+
+### Fixed
+- Language redirect references for osirisjson.org website from docs/en/* to en/docs/*
+
+
 ## [1.0.0-draft.8] - 2026-02-13
 ### Added
 - OSIRIS-ADG-VL-1.0 chapter 3 section

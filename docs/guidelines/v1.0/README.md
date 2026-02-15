@@ -19,7 +19,7 @@ Use the matrix below to find the right entry point.
 | Working on producer SDK internals | [OSIRIS-ADG-PR-SDK-1.0](https://github.com/osirisjson/osiris-producers/tree/main/docs/guidelines/v1.0/OSIRIS-PRODUCER-SDK.md) | Understand producer base classes, mapping helpers, ID strategy and shared utilities |
 | Unsure where your change belongs | Section “Repository boundaries” in this document | Choose the correct repo/package to avoid duplication and dependency violations |
 | Working on the spec/schema itself | [OSIRIS specification](https://github.com/osirisjson/osiris/tree/main/specification/v1.0/OSIRIS-JSON-v1.0.md) | Understand the OSIRIS spec, schema and normative examples |
-| Contributing rules & governance | [OSIRIS community](https://osirisjson.org/docs/en/get-involved/community) | Understand how you can contribute to OSIRIS |
+| Contributing rules & governance | [OSIRIS community](https://osirisjson.org/en/docs/get-involved/community) | Understand how you can contribute to OSIRIS |
 
 ## Contributing
 For contribution workflow, see:

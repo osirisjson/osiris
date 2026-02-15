@@ -43,4 +43,4 @@ Visit https://osirisjson.org/docs for more informations.
 
 
 ## Contribute
-OSIRIS is developed in public and warmly welcomes contributions of any size, visit https://osirisjson.org/docs/en/get-involved/community for more informations.
+OSIRIS is developed in public and warmly welcomes contributions of any size, visit https://osirisjson.org/en/docs/get-involved/community for more informations.
