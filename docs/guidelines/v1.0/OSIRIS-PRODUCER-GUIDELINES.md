@@ -16,8 +16,51 @@
 | Repository | [github.com/osirisjson/osiris](https://github.com/osirisjson/osiris) |
 
 # Table of Content
-<!-- work in progress -->
-
+- [Table of Content](#table-of-content)
+- [1 The producer mindset](#1-the-producer-mindset)
+  - [1.1 Discovery vs. static definition](#11-discovery-vs-static-definition)
+  - [1.2 Scope of responsibility (what NOT to map)](#12-scope-of-responsibility-what-not-to-map)
+- [2 The ingestion workflow](#2-the-ingestion-workflow)
+  - [2.1 Discovery normalization redaction emission](#21-discovery-normalization-redaction-emission)
+  - [2.2 Identity strategy (deterministic IDs and naming patterns)](#22-identity-strategy-deterministic-ids-and-naming-patterns)
+    - [2.2.1 Resource IDs](#221-resource-ids)
+    - [2.2.2 Connection IDs](#222-connection-ids)
+    - [2.2.3 Group IDs](#223-group-ids)
+  - [2.3 Schema compliance essentials](#23-schema-compliance-essentials)
+    - [2.3.1 The `$schema` field](#231-the-schema-field)
+    - [2.3.2 Top-level field rules](#232-top-level-field-rules)
+    - [2.3.3 The `provider.name = "custom"` namespace requirement](#233-the-providername--custom-namespace-requirement)
+    - [2.3.4 Properties vs. extensions (quick rule)](#234-properties-vs-extensions-quick-rule)
+  - [2.4 Handling relationships (Physical vs. logical links)](#24-handling-relationships-physical-vs-logical-links)
+    - [2.4.1 When to use connections](#241-when-to-use-connections)
+    - [2.4.2 When to use groups](#242-when-to-use-groups)
+    - [2.4.3 Avoiding duplication](#243-avoiding-duplication)
+    - [2.4.4 Inferred relationships](#244-inferred-relationships)
+  - [2.5 Data normalization (units, timestamps, casing standards)](#25-data-normalization-units-timestamps-casing-standards)
+    - [2.5.1 Units](#251-units)
+    - [2.5.2 Timestamps](#252-timestamps)
+    - [2.5.3 Casing standards](#253-casing-standards)
+    - [2.5.4 Vendor-native type preservation](#254-vendor-native-type-preservation)
+- [3 Security and redaction (deep dive)](#3-security-and-redaction-deep-dive)
+  - [3.1 Secret stripping (non-negotiable patterns)](#31-secret-stripping-non-negotiable-patterns)
+    - [3.1.1 Prohibited content categories](#311-prohibited-content-categories)
+    - [3.1.2 Detection patterns](#312-detection-patterns)
+    - [3.1.3 Sanitization strategy for connection strings](#313-sanitization-strategy-for-connection-strings)
+  - [3.2 Filtering irrelevant vendor metadata](#32-filtering-irrelevant-vendor-metadata)
+    - [3.2.1 Producers configurable detail levels](#321-producers-configurable-detail-levels)
+  - [3.3 Safe failure behavior modes](#33-safe-failure-behavior-modes)
+    - [3.3.1 Fail-closed (default for regulated environments)](#331-fail-closed-default-for-regulated-environments)
+    - [3.3.2 Log-and-redact (opt-in for tolerant environments)](#332-log-and-redact-opt-in-for-tolerant-environments)
+- [4 Quality assurance](#4-quality-assurance)
+  - [4.1 Golden files (Standardizing test fixtures)](#41-golden-files-standardizing-test-fixtures)
+    - [4.1.1 Structure](#411-structure)
+    - [4.1.2 Requirements for golden files](#412-requirements-for-golden-files)
+    - [4.1.3 Golden file maintenance workflow](#413-golden-file-maintenance-workflow)
+  - [4.2 Regression testing against schema and @osirisjson/core](#42-regression-testing-against-schema-and-osirisjsoncore)
+    - [4.2.1 CI validation pipeline](#421-ci-validation-pipeline)
+    - [4.2.2 What to test](#422-what-to-test)
+    - [4.2.3 Version alignment](#423-version-alignment)
+    - [4.2.4 Snapshot comparison strategy](#424-snapshot-comparison-strategy)
 
 
 # 1 The producer mindset
@@ -593,3 +636,113 @@ flowchart LR
 - Producers **MUST NOT** log, print, or include the actual secret value in any output (logs, error messages, diagnostics, stack traces).
 - Producers **MUST NOT** silently pass through detected secrets.
 - The choice between fail-closed and log-and-redact **MUST** be an explicit producer configuration option, never implicit.
+
+---
+
+# 4 Quality assurance
+Producers **MUST** be testable and their output **MUST** be reproducible. The OSIRIS ecosystem relies on canonical validation via `@osirisjson/core`; producers do not implement their own validation but **MUST** ensure their output passes it.
+
+> [!NOTE]
+> Back-reference: The canonical truth rule (validation behavior is never re-implemented) is defined in [OSIRIS-ADG-1.0](https://github.com/osirisjson/osiris/tree/main/docs/guidelines/v1.0/OSIRIS-ARCHITECTURE.md)  section 1.2.1.
+> Validation levels and profiles are defined in [OSIRIS-ADG-VL-1.0](https://github.com/osirisjson/osiris/tree/main/docs/guidelines/v1.0/OSIRIS-VALIDATION-LEVELS.md).
+
+---
+
+## 4.1 Golden files (Standardizing test fixtures)
+A **golden file** is a known-good OSIRIS document that represents the expected output for a given input. Golden files are the primary regression defense for producers.
+
+### 4.1.1 Structure
+Each producer **SHOULD** maintain a `testdata/` (or `fixtures/`) directory containing paired files:
+
+```text
+testdata/
+├── vendor_scenario_a/
+│   ├── input.json # Mocked vendor API response or static source
+│   ├── golden.json # Expected OSIRIS output
+│   └── README.md # Scenario description and coverage notes
+├── vendor_scenario_b/
+│   ├── input.json
+│   ├── golden.json
+│   └── README.md
+├── README.md # Test suite overview and run instructions
+└── ...
+```
+
+### 4.1.2 Requirements for golden files
+- Golden files **MUST** pass `@osirisjson/core` validation at the `strict` profile with zero errors.
+- Golden files **MUST** be committed to version control and updated only through deliberate, reviewed changes.
+- Golden files **SHOULD** include `$schema` for editor support.
+- Golden files **SHOULD NOT** contain synthetic data that looks like real production infrastructure (real-looking IPs, real hostnames, real serial numbers). Use obviously fictional values documented in the OSIRIS specification examples (e.g. IPv4 Address Blocks Reserved for Documentation like `203.0.113.x` adhering to [RFC 5737](https://datatracker.ietf.org/doc/html/rfc5737)).
+- Golden files **SHOULD** cover edge cases: empty topologies, resources with minimal fields, resources with full properties and extensions, custom provider namespaces, multiple connection types, nested group hierarchies.
+
+### 4.1.3 Golden file maintenance workflow
+1. Developer makes a mapping change in the producer.
+2. Run the producer against the mocked input.
+3. Diff the output against the golden file.
+4. If the diff is intentional: update the golden file, document the change reason in the commit message.
+5. If the diff is unintentional: investigate and fix the regression.
+6. CI validates all golden files against `@osirisjson/core` on every commit.
+
+---
+
+## 4.2 Regression testing against schema and @osirisjson/core
+Producers **MUST** integrate canonical validation into their CI pipeline. This ensures that no mapping change silently producing invalid OSIRIS output.
+
+### 4.2.1 CI validation pipeline
+
+```mermaid
+flowchart LR
+  BUILD["Producer
+  build"] --> RUN["Run against
+  test fixtures"]
+
+  RUN --> DIFF["Diff against
+  golden files"]
+
+  DIFF --> VALIDATE["Validate with
+  @osirisjson/core"]
+
+  VALIDATE --> GATE{errors?}
+
+  GATE -- "none" --> PASS["Pass"]
+  GATE -- "any" --> FAIL["Fail"]
+```
+
+**Implementation:**
+Producers invoke the canonical TypeScript validator via the CLI. Producers **MUST NOT** embed `@osirisjson/core` as a library; they call it as an external tool.
+
+```bash
+# Validate a single golden file at the strict profile
+npx @osirisjson/cli validate --profile strict testdata/vendor_scenario_a/golden.json
+
+# Validate all golden files in a directory
+npx @osirisjson/cli validate --profile strict testdata/**/golden.json
+```
+
+### 4.2.2 What to test
+
+| Test category | What to verify | Failure means |
+|---|---|---|
+| **Schema compliance** | All golden files pass Level 1 (structural) | Producer emits malformed OSIRIS |
+| **Semantic integrity** | All golden files pass Level 2 (referential integrity, uniqueness) | Broken references, duplicate IDs |
+| **Domain best practices** | Golden files pass Level 3 with no errors under `strict` | Non-standard types, missing recommended fields |
+| **Determinism** | Running the producer twice with the same input produces identical output (byte-for-byte after normalization) | Non-deterministic ID generation, unstable ordering |
+| **Redaction** | Golden files contain no credential patterns (run secret scanner on output) | Secret leakage in test fixtures |
+| **Snapshot stability** | Golden file diffs are empty when input has not changed | Unintended mapping drift |
+
+### 4.2.3 Version alignment
+- Producer CI **SHOULD** pin the `@osirisjson/cli` version and update deliberately.
+- When `@osirisjson/core` introduces new validation rules (e.g. in a MINOR release), producers **SHOULD** update their golden files to address any new warnings before tagging a release.
+- Producers **SHOULD** declare which OSIRIS specification `MAJOR` version they target in their documentation and package metadata.
+
+### 4.2.4 Snapshot comparison strategy
+Producers **SHOULD** normalize JSON output before comparison to avoid false-positive diffs from insignificant formatting changes:
+- Sort top-level arrays (`resources`, `connections`, `groups`) by `id`.
+- Use consistent 2-space indentation.
+- Emit a trailing newline.
+
+This produces clean, reviewable diffs when golden files change intentionally.
+
+**Go implementation note:**
+- Do not build output arrays by iterating over maps. Collect into slices and **sort explicitly** (e.g. by `id`) before emission.
+- Always sort `resources`, `connections`, and `groups` deterministically (and any nested arrays with semantic meaning).
