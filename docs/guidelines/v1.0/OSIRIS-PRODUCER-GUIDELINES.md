@@ -4,7 +4,7 @@
 | Authors   | Tia Zanella [skhell](https://github.com/skhell) |
 | Revision  | 1.0.0-DRAFT |
 | Creation date      | 08 February 2026 |
-| Last revision date | 15 February 2026 |
+| Last revision date | 16 February 2026 |
 | Status    | Draft |
 | Document ID | OSIRIS-ADG-PR-1.0 |
 | Document URI | [OSIRIS-ADG-PR-1.0](https://github.com/osirisjson/osiris/tree/main/docs/guidelines/v1.0/OSIRIS-PRODUCER-GUIDELINES.md) |
@@ -448,3 +448,148 @@ While the OSIRIS `type` field is normalized to the standard taxonomy, the origin
 ```
 
 This enables round-trip correlation: consumers can identify the OSIRIS-normalized type (`compute.vm`) and the vendor's original classification (`AWS::EC2::Instance`).
+
+---
+
+# 3 Security and redaction (deep dive)
+OSIRIS documents describe infrastructure topology. They **MUST** be safe to share under controlled policies. Producers are the first and most critical line of defense against accidental secret disclosure.
+
+> [!NOTE]
+> Back-reference: Normative security requirements are defined in the OSIRIS specification Chapter 13.
+> Cross-cutting security constraints are summarized in [OSIRIS-ADG-1.0](https://github.com/osirisjson/osiris/tree/main/docs/guidelines/v1.0/OSIRIS-ARCHITECTURE.md) section 5.2.
+
+---
+
+## 3.1 Secret stripping (non-negotiable patterns)
+OSIRIS documents **MUST NOT** contain credentials, secrets, or authentication material. Producers **MUST** scan document content for common credential patterns before emission and **MUST** refuse to emit fields known to contain secrets.
+
+### 3.1.1 Prohibited content categories
+- Passwords (plaintext, hashed, or encoded)
+- API keys and access tokens
+- SSH private keys or certificates (private material)
+- Database connection strings with embedded credentials
+- OAuth client secrets
+- Cloud access keys/secret keys (e.g. AWS `AKIA*`, GCP service account JSON keys)
+- Encryption keys or private certificates
+- Bearer tokens, JWTs with secrets, session tokens
+- PII that is not required for topology (employee names, phone numbers, email addresses in non-generator contexts)
+
+### 3.1.2 Detection patterns
+Producers **MUST** implement heuristic scanning before emission. The following patterns are non-exhaustive but represent the minimum coverage.
+
+**Key-name matching (case-insensitive):**
+Any property key containing: `password`, `secret`, `token`, `credential`, `private_key`, `api_key`, `access_key`, `client_secret`, `auth`.
+
+**Examples of value-pattern matching:**
+
+| Pattern | What it catches |
+|---|---|
+| `AKIA[0-9A-Z]{16}` | AWS access key IDs |
+| `[A-Za-z0-9/+=]{40}` adjacent to `AKIA` | AWS secret access keys |
+| `ghp_[A-Za-z0-9]{36}` | GitHub personal access tokens |
+| `gho_[A-Za-z0-9]{36}` | GitHub OAuth tokens |
+| `-----BEGIN .* PRIVATE KEY-----` | PEM-encoded private keys |
+| `Bearer [A-Za-z0-9\-._~+/]+=*` | Bearer tokens |
+| `Basic [A-Za-z0-9+/]+=*` | Base64-encoded basic auth |
+| `eyJ[A-Za-z0-9_-]*\.eyJ[A-Za-z0-9_-]*\.` | JWT tokens |
+| `xox[boaprs]-[A-Za-z0-9-]+` | Slack tokens |
+| Connection strings with `://user:pass@` | Embedded credentials in URIs |
+
+### 3.1.3 Sanitization strategy for connection strings
+Producers **MUST** decompose connection strings rather than emitting them whole.
+
+**Prohibited:**
+```json
+{ "connection_string": "postgresql://admin:s3cret@db.prod.internal:5432/app" }
+```
+
+**Required:**
+```json
+{
+  "endpoint": "db.prod.internal:5432",
+  "database": "app",
+  "protocol": "postgresql"
+}
+```
+
+Credentials are omitted entirely, not replaced with placeholders.
+
+---
+
+## 3.2 Filtering irrelevant vendor metadata
+Not every field returned by a vendor API belongs in an OSIRIS document. Producers **SHOULD** apply data minimization ([OSIRIS-JSON-v1.0](https://github.com/osirisjson/osiris/blob/main/specification/v1.0/OSIRIS-JSON-v1.0.md#1313-data-minimization) specification section 13.1.3) and emit only what serves the intended use case.
+
+| Filter out | Keep |
+|---|---|
+| Internal vendor request/response metadata (request IDs, pagination tokens, HTTP headers, rate-limit counters) | Resource identity and classification (IDs, types, names, descriptions) |
+| Volatile operational telemetry that changes every second (real-time CPU load, instantaneous packet counters, live session counts) | Provider attribution (native IDs, regions, accounts, zones, sites) |
+| Redundant or derived fields that consumers can compute from existing data | Stable configuration properties (instance type, memory, CPU, firmware version) |
+| Vendor marketing or billing metadata unrelated to topology (pricing tier names, promotional flags) | Network addressing when required for topology (IPs, MAC addresses, VLANs, subnets) |
+| Debugging artifacts (stack traces, internal error codes from the vendor API) | Physical characteristics for on-premise resources (serial numbers, rack positions, hardware models) |
+| - | Vendor-specific features that affect behavior, placed in `extensions` (e.g. `ebs_optimized`, `fault_tolerance`) |
+
+### 3.2.1 Producers configurable detail levels
+Producers **SHOULD** support a configuration option to control emission detail (e.g. `--detail minimal|detailed`). This allows the same producer to serve documentation-focused exports (minimal) and audit-focused exports (detailed) as described in the [OSIRIS-JSON-v1.0](https://github.com/osirisjson/osiris/blob/main/specification/v1.0/OSIRIS-JSON-v1.0.md#1313-data-minimization) specification section 13.1.3.
+
+---
+
+## 3.3 Safe failure behavior modes
+When a producer detects potential secrets or encounters an ambiguous field, it **MUST** choose a safe failure mode.
+
+### 3.3.1 Fail-closed (default for regulated environments)
+The producer **MUST** halt emission for the affected resource or fail the entire export pipeline when credentials are detected. This is the safest posture and **SHOULD** be the default.
+
+```mermaid
+flowchart LR
+  SCAN["Scan field value"] --> DETECT{"Credential
+  pattern found?"}
+
+  DETECT -- "no" --> PASS["Continue
+  emission"]
+
+  DETECT -- "yes" --> LOG["Log error
+  (field path only,
+  **never** the value)"]
+
+  LOG --> MODE{"Producer
+  config?"}
+
+  MODE -- "fail-closed
+  (default)" --> ABORT["Skip resource
+  or abort run"]
+
+  MODE -- "log-and-redact
+  (opt-in)" --> REDACT["Replace value
+  with REDACTED"]
+
+  ABORT --> EXIT["Exit non-zero
+  (fail CI)"]
+
+  REDACT --> META["Set metadata.redacted: true
+  + redaction_policy"]
+```
+
+### 3.3.2 Log-and-redact (opt-in for tolerant environments)
+When explicitly configured, the producer **MAY** replace the detected value with a `"REDACTED"` placeholder and continue emission. This mode trades safety for completeness when operators accept the risk.
+
+```mermaid
+flowchart LR
+  DETECT["Credential
+  pattern detected"] --> REPLACE["Replace value
+  with REDACTED"]
+
+  REPLACE --> LOG["Log warning
+  (field path only,
+  **never** the value)"]
+
+  LOG --> META["Set metadata.redacted: true
+  + metadata.redaction_policy"]
+
+  META --> CONTINUE["Continue
+  emission"]
+```
+
+**Rules for both safe failure behavior modes:**
+- Producers **MUST NOT** log, print, or include the actual secret value in any output (logs, error messages, diagnostics, stack traces).
+- Producers **MUST NOT** silently pass through detected secrets.
+- The choice between fail-closed and log-and-redact **MUST** be an explicit producer configuration option, never implicit.
