@@ -16,7 +16,22 @@
 | Repository | [github.com/osirisjson/osiris](https://github.com/osirisjson/osiris) |
 
 # Table of Content
-<!-- work in progress -->
+- [Table of Content](#table-of-content)
+- [1 The versioning trinity](#1-the-versioning-trinity)
+  - [1.1 Specification vs. schema and packages](#11-specification-vs-schema-and-packages)
+    - [1.1.1 The OSIRIS JSON specification](#111-the-osiris-json-specification)
+    - [1.1.2 The OSIRIS JSON schema](#112-the-osiris-json-schema)
+    - [1.1.3 The OSIRIS JSON toolbox packages](#113-the-osiris-json-toolbox-packages)
+    - [1.1.4 The specification leads everything else follows](#114-the-specification-leads-everything-else-follows)
+- [2 Compatibility matrix](#2-compatibility-matrix)
+  - [2.1 Forward compatibility](#21-forward-compatibility)
+  - [2.2 Backward compatibility](#22-backward-compatibility)
+  - [2.3 Breaking change definition](#23-breaking-change-definition)
+  - [2.4 Cross-package alignment](#24-cross-package-alignment)
+- [3 The release lifecycle](#3-the-release-lifecycle)
+  - [3.1 Release candidates and beta gates](#31-release-candidates-and-beta-gates)
+  - [3.2 Synchronized release windows](#32-synchronized-release-windows)
+  - [3.3 Deprecation timelines](#33-deprecation-timelines)
 
 
 # 1 The versioning trinity

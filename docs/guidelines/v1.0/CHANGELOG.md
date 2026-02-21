@@ -7,6 +7,12 @@ Package versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ---
 
+## [1.0.0-draft.16] - 2026-02-21
+### Added
+- OSIRIS-ADG-EI-1.0 chapter 4 section (4.1-4.3) and Table of content
+- OSIRIS-ADG-VR-1.0 Table of content
+
+
 ## [1.0.0-draft.15] - 2026-02-21
 ### Added
 - OSIRIS-ADG-EI-1.0 chapter 3 section (3.1-3.2)

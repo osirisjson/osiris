@@ -16,7 +16,23 @@
 | Repository | [github.com/osirisjson/osiris-editor-integrations](https://github.com/osirisjson/osiris-editor-integrations) |
 
 # Table of Content
-<!-- work in progress -->
+- [Table of Content](#table-of-content)
+- [1 Extension architecture](#1-extension-architecture)
+  - [1.1 LSP vs. direct integration](#11-lsp-vs-direct-integration)
+  - [1.2 Consuming @osirisjson/core diagnostics](#12-consuming-osirisjsoncore-diagnostics)
+    - [1.2.1 Pre-validation JSON parse failures (editor behavior)](#121-pre-validation-json-parse-failures-editor-behavior)
+  - [1.3 Schema resolution alignment](#13-schema-resolution-alignment)
+- [2 User experience standards](#2-user-experience-standards)
+  - [2.1 Visualizing diagnostics](#21-visualizing-diagnostics)
+  - [2.2 Autocomplete snippets and schema awareness](#22-autocomplete-snippets-and-schema-awareness)
+  - [2.3 Resource navigation](#23-resource-navigation)
+- [3 Performance constraints](#3-performance-constraints)
+  - [3.1 Debounce logic for large documents](#31-debounce-logic-for-large-documents)
+  - [3.2 Background worker strategy](#32-background-worker-strategy)
+- [4 Telemetry and privacy](#4-telemetry-and-privacy)
+  - [4.1 Opt-in telemetry principles](#41-opt-in-telemetry-principles)
+  - [4.2 Privacy wall](#42-privacy-wall)
+  - [4.3 Offline-first validation](#43-offline-first-validation)
 
 
 # 1 Extension architecture
@@ -180,3 +196,53 @@ The LSP server process is inherently separate from the editor UI thread. Validat
 
 **Progress indication:**
 For documents where validation takes more than 500 ms, the extension **SHOULD** display a progress indicator (e.g. VS Code status bar item or progress notification) so the user knows validation is running. The indicator **MUST** be dismissed when validation completes or is cancelled.
+
+---
+
+# 4 Telemetry and privacy
+OSIRIS documents describe infrastructure topology, which is inherently sensitive. The extension's telemetry and network behavior **MUST** respect this reality.
+
+> [!NOTE]
+> Back-reference: The OSIRIS specification's security considerations are defined in [OSIRIS-JSON-v1.0](https://github.com/osirisjson/osiris/tree/main/specification/v1.0/OSIRIS-JSON-v1.0.md) Chapter 13.
+> Cross-cutting security constraints are defined in [OSIRIS-ADG-1.0](https://github.com/osirisjson/osiris/tree/main/docs/guidelines/v1.0/OSIRIS-ARCHITECTURE.md) section 5.2.
+
+---
+
+## 4.1 Opt-in telemetry principles
+If the extension collects any telemetry, it **MUST** be strictly opt-in. Telemetry **MUST** be disabled by default and enabled only through an explicit user action (e.g. a settings toggle with clear disclosure).
+
+**Permitted telemetry (when opted in):**
+- Extension activation/deactivation events
+- Validation profile usage (which profile is selected, not what documents are validated)
+- Aggregate diagnostic counts by code family (e.g. "3 V-REF errors, 1 V-DOM warning") without document content
+- Performance metrics (validation duration, document size bucket) for optimization
+
+**Prohibited telemetry (regardless of opt-in):**
+- Document content (partial or complete), resource IDs, names or property values
+- File paths or workspace structure
+- Network topology, IP addresses or any field values from OSIRIS documents
+- Diagnostic messages (which may contain document-derived values like IDs)
+
+---
+
+## 4.2 Privacy wall
+The extension **MUST** enforce a hard boundary between document content and any outbound data.
+
+**The rule:**
+No document content or document-derived data (IDs, values, paths, topology) may be transmitted. Network features (e.g. update checks) are allowed only if they are strictly independent of document content.
+
+**Crash reports:**
+If the extension reports crashes, stack traces **MUST** be scrubbed of any document-derived values (IDs, paths, field values) before transmission. Only extension code paths and engine version information are permitted.
+
+---
+
+## 4.3 Offline-first validation
+Validation **MUST** work fully offline. This is a non-negotiable architectural constraint inherited from the ecosystem (see [OSIRIS-ADG-1.0](https://github.com/osirisjson/osiris/tree/main/docs/guidelines/v1.0/OSIRIS-ARCHITECTURE.md) section 5.1 and [OSIRIS-ADG-TLB-CORE-1.0](https://github.com/osirisjson/osiris-toolbox/tree/main/docs/guidelines/v1.0/OSIRIS-TOOLBOX-CORE.md) section 1.1.3).
+
+**Mandatory constraints:**
+- The extension **MUST** bundle all required schemas. It **MUST NOT** require network access to validate a document.
+- Schema resolution **MUST NOT** trigger HTTP requests to `osirisjson.org` or any other endpoint during validation.
+- The extension **MUST** function identically on air-gapped machines, behind corporate proxies and in offline environments.
+
+**Optional network features:**
+The extension **MAY** offer opt-in network features (e.g. checking for extension updates, fetching newer schema versions via an explicit "update schemas" command). These features **MUST** be clearly separated from validation behavior, disabled by default in restricted environments and documented in the extension's privacy policy.
