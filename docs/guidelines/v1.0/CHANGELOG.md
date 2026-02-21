@@ -1,5 +1,17 @@
 # Changelog
-All notable changes to this project will be documented in this file.
+
+All notable changes to the OSIRIS JSON Guidelines will be documented in this file.
+
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+Package versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [1.0.0-draft.15] - 2026-02-21
+### Added
+- OSIRIS-ADG-EI-1.0 chapter 3 section (3.1-3.2)
+- OSIRIS-ADG-VR-1.0 chapter 3 section (3.1-3.3)
+
 
 ## [1.0.0-draft.14] - 2026-02-21
 ### Added

@@ -130,3 +130,53 @@ The extension **SHOULD** support "Find All References" on a resource or group `i
 
 **Document outline:**
 The extension **SHOULD** contribute to the editor's document outline (VS Code Outline view / breadcrumbs) with a structured tree: top-level sections (`metadata`, `topology`), then `resources`, `connections` and `groups` as expandable nodes, with individual items labeled by `id` or `name`.
+
+---
+
+# 3 Performance constraints
+OSIRIS documents range from minimal topologies (<1 KB) to large-scale inventories with thousands of resources. Editor integrations **MUST** remain responsive regardless of document size.
+
+**Diagnostic bounding**
+Editor integrations **MUST** keep diagnostic rendering bounded. They **SHOULD** keep engine caps at defaults or lower for UI responsiveness and **MUST NOT** publish unbounded diagnostic arrays.
+(See engine diagnostic capping and ecosystem performance constraints.)
+
+> [!NOTE]
+> Back-reference: Ecosystem performance constraints are defined in [OSIRIS-ADG-1.0](https://github.com/osirisjson/osiris/tree/main/docs/guidelines/v1.0/OSIRIS-ARCHITECTURE.md) section 5.1.
+> The engine's concurrency model (synchronous, single-threaded, consumer-side parallelism) is defined in [OSIRIS-ADG-TLB-CORE-1.0](https://github.com/osirisjson/osiris-toolbox/tree/main/docs/guidelines/v1.0/OSIRIS-TOOLBOX-CORE.md) section 3.1.
+
+---
+
+## 3.1 Debounce logic for large documents
+The extension **MUST** debounce validation to avoid triggering a full pipeline run on every keystroke.
+
+**Debounce strategy:**
+- On `textDocument/didChange`: reset a debounce timer. Do not validate immediately.
+- After the debounce interval elapses with no further changes: trigger validation.
+- On `textDocument/didSave`: trigger validation immediately (bypass debounce). Users expect save to produce fresh results.
+
+**Recommended debounce intervals:**
+
+| Document size | Interval | Rationale |
+|---|---|---|
+| < 100 KB | 300 ms | Small documents validate fast; near-instant feedback. |
+| 100 KB – 1 MB | 750 ms | Avoid repeated validation of mid-size documents during rapid editing. |
+| > 1 MB | 1500 ms | Large documents take longer to validate; longer debounce prevents stacking. |
+
+These intervals are **recommendations**, not normative requirements. Implementations **MAY** adjust based on measured validation latency and **SHOULD** expose a user-configurable setting (e.g. `osiris.validationDelay`).
+
+**Cancellation:**
+If a new edit arrives while validation is in progress, the extension **SHOULD** cancel the in-flight validation (or discard its results) and schedule a new run. Stale diagnostics from a cancelled run **MUST NOT** be published to the editor.
+
+---
+
+## 3.2 Background worker strategy
+Validation **MUST NOT** block the editor's UI thread.
+
+**VS Code / direct integration:**
+`@osirisjson/core` is synchronous. To avoid blocking the extension host, the extension **SHOULD** run validation in a `Worker` thread (Node.js `worker_threads`). The main thread sends the document text to the worker; the worker runs `validate()` and returns `Diagnostic[]`. The main thread maps results to the editor's diagnostic API.
+
+**LSP-based integration:**
+The LSP server process is inherently separate from the editor UI thread. Validation runs in the server process. The server **SHOULD** handle cancellation via LSP `$/cancelRequest` or by discarding stale results when a newer document version arrives.
+
+**Progress indication:**
+For documents where validation takes more than 500 ms, the extension **SHOULD** display a progress indicator (e.g. VS Code status bar item or progress notification) so the user knows validation is running. The indicator **MUST** be dismissed when validation completes or is cancelled.

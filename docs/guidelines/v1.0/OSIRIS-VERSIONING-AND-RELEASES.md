@@ -123,3 +123,68 @@ Toolbox packages **MUST** share the same `MAJOR` version across `@osirisjson/cor
 - Editor integrations (`osiris-editor-integrations`) version independently but **MUST** declare a compatible `@osirisjson/core` `MAJOR` range in their `package.json` peer dependency.
 
 **Rationale:** the major version lock prevents ecosystem "split brain" where CLI, editor and CI disagree on what constitutes a valid diagnostic, a valid exit code or a valid type export.
+
+---
+
+# 3 The release lifecycle
+This chapter defines the policies that govern how OSIRIS artifacts move from development to stable release.
+
+> [!NOTE]
+> Back-reference: The deprecation policy for specification features, fields and types is defined normatively in [OSIRIS-JSON-v1.0](https://github.com/osirisjson/osiris/blob/main/specification/v1.0/OSIRIS-JSON-v1.0.md#1231-deprecation-process) sections 12.3.1 through 12.3.5.
+
+---
+
+## 3.1 Release candidates and beta gates
+All `MAJOR` and significant `MINOR` releases **MUST** pass through a release candidate (RC) phase before stable publication.
+
+**RC lifecycle:**
+1. **Development branch:** features land on a development branch and are validated against the full test suite (specification examples, golden fixtures, regression tests).
+2. **RC publication:** when the release scope is complete, an RC is published (e.g. `1.1.0-rc.1` for NPM packages, `v1.1.0-RC1` tag for the specification). RC artifacts are available for community testing but **MUST NOT** be used in production.
+3. **Feedback window:** RCs remain open for a minimum of **14 calendar days** for `MAJOR` releases and **7 calendar days** for `MINOR` releases. Feedback is collected via GitHub issues.
+4. **RC iteration:** if changes are required, a new RC is published (e.g. `1.1.0-rc.2`) and the feedback window resets. Once no blocking issues remain, the RC is promoted to stable with no code changes (only version string and metadata updates).
+
+**Beta gates (minimum criteria for RC promotion to stable):**
+- All specification examples validate against the updated schema and engine.
+- The CLI produces identical exit codes for the reference test suite across the RC and the prior stable release (for backward-compatible releases).
+- No unresolved `severity: error` issues in the RC GitHub milestone. Changelog and migration guide (if applicable) are complete and reviewed.
+
+---
+
+## 3.2 Synchronized release windows
+Specification and toolbox releases are coordinated to prevent version drift.
+
+**Release sequence for a specification MINOR (e.g. 1.1.0):**
+1. Specification text and schema are finalized and tagged.
+2. `@osirisjson/core` is updated with new rules/schema support and released.
+3. `@osirisjson/cli` and `@osirisjson/sdk` are updated if affected and released.
+4. Editor integrations are updated to consume the new `@osirisjson/core` and released.
+5. Producer SDK documentation is updated to reflect new types or fields.
+
+Steps 2 through 4 **SHOULD** ship within **5 business days** of the specification tag to minimize the window where the spec is published but tooling lags behind. The specification **MUST NOT** be announced publicly until at least `@osirisjson/core` and `@osirisjson/cli` are published with matching support.
+
+**Release sequence for a toolbox-only MINOR (e.g. new CLI flag):**
+Toolbox packages release independently. No specification or schema change is required. The release follows standard NPM publishing and changelog practices.
+
+---
+
+## 3.3 Deprecation timelines
+OSIRIS uses an **N-2 support policy** for specification `MAJOR` versions and a structured deprecation lifecycle for features within a `MAJOR`.
+
+**N-2 MAJOR version support:**
+When specification `MAJOR` version `N` is released as stable, the project **MUST** continue to maintain `N-1` (security fixes and critical bug fixes) and **SHOULD** accept critical patches for `N-2`. Versions older than `N-2` are end-of-life.
+
+| Current stable | Active support | Security fixes only | End-of-life |
+|---|---|---|---|
+| `3.x` | `3.x` | `2.x` | `1.x` and older |
+
+**Feature deprecation within a MAJOR:**
+Features, fields and types follow the lifecycle defined in the [OSIRIS-JSON-v1.0](https://github.com/osirisjson/osiris/blob/main/specification/v1.0/OSIRIS-JSON-v1.0.md#123-deprecation-policy) specification (Chapter 12.3):
+1. **Deprecation announcement** in a `MINOR` release with warnings, replacement guidance and rationale.
+2. **Transition period** of at least one full `MINOR` cycle where the deprecated feature remains valid and functional.
+3. **Removal** only in the next `MAJOR` version.
+
+**Toolbox deprecation:**
+Deprecated CLI flags, SDK helpers or engine options follow the same pattern: announced in a toolbox `MINOR` with console warnings, functional for at least one additional `MINOR` and removed only in the next toolbox `MAJOR`. Deprecated APIs **MUST** be marked with `@deprecated` JSDoc tags and documented in the changelog.
+
+**Diagnostic code deprecation:**
+Published diagnostic codes (`V-*`) **MUST NOT** change meaning within a specification `MAJOR`. Codes **MAY** be deprecated (announced, documented, retained) and removed only in the next `MAJOR`. Deprecated codes **SHOULD** remain in the machine-readable registry with `status: "deprecated"` until removal.
