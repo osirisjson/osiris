@@ -85,7 +85,7 @@ Package versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.
 - Document header identifiers (Document ID/URI/Name)
 - All documents mentioned in chapter 1 section 1.1 with base document header identifiers
 
-### Updated
+### Changed
 - Refined multiple sections for clarity and consistency
 - README.md
 

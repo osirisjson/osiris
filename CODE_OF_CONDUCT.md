@@ -10,7 +10,7 @@ We are committed to an inclusive, intentionally safe community. We respect and e
 - People of all races, ethnicities, nationalities, and cultures
 - People with disabilities and neurodivergent people
 
-Harassment, discrimination and hate **have zero place** in this OSIRIS community. **We enforce this Code of Conduct and prioritize community safety.**
+Harassment, discrimination and hate **have zero place** in OSIRIS JSON community. **We enforce this Code of Conduct and prioritize community safety.**
 
 
 ## Scope

@@ -8,7 +8,7 @@ Package versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.
 ---
 
 # [1.0.0] - 2026-02-01
-### Updated
+### Changed
 - Specification to Stable release
 - README
 - CODE_OF_CONDUCT
@@ -29,7 +29,7 @@ Package versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.
 ### Added
 - Chapter 14: (14.1-14.2)
  
-### Updated
+### Changed
 - Section 8.4.2 added reference and registered namespace for SONiC Network Operating System (open NOS)
  
 ### Fixed
@@ -41,7 +41,7 @@ Package versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.
 ### Added
 - Chapter 13: (13.1-13.3)
 
-### Updated
+### Changed
 - Section 3.3.3 added "intended_audience" and "purpose" this aligns with examples of section 13.1.3
 
 
@@ -68,7 +68,7 @@ Package versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.
 - Drafted first version of core schema osiris.schema.json
 - Drafted contributing.md and code_of_conduct.md
 
-### Updated
+### Changed
 - Examples for IT and OT environments
 
 ### Fixed
@@ -95,7 +95,7 @@ Package versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 
 # [1.0.0-draft.9] - 2025-12-31
-### Updated
+### Changed
 - Standardized ID format across all object types
 - Unified naming conventions improvement
 - Enhanced examples throughout chapters 2-6 with realistic data
@@ -118,12 +118,12 @@ Package versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 
 # [1.0.0-draft.8] - 2025-12-30
-### Updated
+### Changed
 - Table of contents and linking with Markdown All in One module
 
 
 # [1.0.0-draft.7] - 2025-12-30
-### Updated
+### Changed
 - Dividers between sections on chapter 5 for improved readability.
 
 ### Added
@@ -131,7 +131,7 @@ Package versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 
 # [1.0.0-draft.6] - 2025-12-28
-### Updated
+### Changed
 - Chapter 4 DELL poweredge model to 770 model for making real examples with Arista DCS-7050SX3-48YC12 equipment and transceivers.
 
 ### Added
@@ -139,7 +139,7 @@ Package versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 
 # [1.0.0-draft.5] - 2025-12-26
-### Updated
+### Changed
 - TOC
 - Sub-section numbering
 
@@ -158,7 +158,7 @@ Package versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 
 # [1.0.0-draft.2] - 2025-12-18
-### Updated
+### Changed
 - Titles formatting for better readability and added section dividers.
 
 ### Added
