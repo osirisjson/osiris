@@ -39,7 +39,7 @@ Assist evidence collection and traceability by standardizing structure and relat
 
 
 ## Get started
-Visit https://osirisjson.org/docs for more informations.
+Visit https://osirisjson.org/en/docs for more informations.
 
 
 ## Contribute
