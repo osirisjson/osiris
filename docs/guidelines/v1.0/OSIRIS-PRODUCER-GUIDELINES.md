@@ -64,7 +64,7 @@
 
 
 # 1 The producer mindset
-An OSIRIS producer (also commonly named a **parser**) is any component that reads a vendor device or platform inventory and emits an OSIRIS JSON document. OSIRIS Producers are the bridge between proprietary data sources and the OSIRIS Open Standard interchange format. Their quality determines whether downstream consumers (validators, diagram engines, CMDBs, diff tools etc.) can trust the exported snapshot at a point in time.
+An OSIRIS producer (also commonly named a **parser**) is any component that reads a vendor device or platform inventory and emits an OSIRIS JSON document. OSIRIS Producers are the bridge between proprietary data sources and the OSIRIS Open Specification interchange format. Their quality determines whether downstream consumers (validators, diagram engines, CMDBs, diff tools etc.) can trust the exported snapshot at a point in time.
 
 This guide defines the mapping contract that every producer **MUST** honor. It is intentionally language-agnostic: the rules apply whether the producer is written in Go (recommended for first-party producers), Python, Rust, C or any other high or low-level language. Implementation-level patterns (transport, concurrency, SDK helpers) belong in the Go producer SDK documentation, not here.
 

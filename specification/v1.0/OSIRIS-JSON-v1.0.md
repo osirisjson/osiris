@@ -25,7 +25,7 @@
     - [1.3.3 Version specific considerations](#133-version-specific-considerations)
     - [1.3.4 Future Extensibility](#134-future-extensibility)
   - [1.4 Design principles](#14-design-principles)
-    - [1.4.1 Open Standard and driven by Community Governance](#141-open-standard-and-driven-by-community-governance)
+    - [1.4.1 Open Specification and driven by Community Governance](#141-open-standard-and-driven-by-community-governance)
     - [1.4.2 Simplicity](#142-simplicity)
     - [1.4.3 Vendor neutrality](#143-vendor-neutrality)
     - [1.4.4 Extensibility without fragmentation](#144-extensibility-without-fragmentation)
@@ -491,7 +491,7 @@
 
 
 ## Preface
-This document specifies the Open Standard for Infrastructure Resource Interchange Schema (OSIRIS), a JSON-based data format for describing infrastructure resources, their properties and their topological relationships in a vendor-neutral manner.
+This document specifies the Open Specification for Infrastructure Resource Interchange Schema (OSIRIS), a JSON-based data format for describing infrastructure resources, their properties and their topological relationships in a vendor-neutral manner.
 
 OSIRIS is intended to define a unified comprehensible schema to normalize data exported from diverse IT environments. OSIRIS is also designed to be extended to Operational Technology (OT) systems to support the inclusion of industrial infrastructure resources.
 
@@ -509,7 +509,7 @@ This specification is Intended for:
 ---
 
 # 1 Introduction
-OSIRIS (Open Standard for Infrastructure Resource Interchange Schema) defines a vendor-neutral JSON format for describing infrastructure resources, their properties and their topological relationships across heterogeneous IT and OT environments.
+OSIRIS (Open Specification for Infrastructure Resource Interchange Schema) defines a vendor-neutral JSON format for describing infrastructure resources, their properties and their topological relationships across heterogeneous IT and OT environments.
 
 OSIRIS is designed to normalize infrastructure data exported from diverse domains, including public hyperscalers, cloud platforms, private Data Centers, network devices, virtualization platforms and where applicable Operational Technology (OT) assets. OSIRIS focuses on describing what exists and how it relates, enabling cross-platform visibility and portable consumption by tools without requiring consumers to implement vendor-specific parsers.
 
@@ -562,7 +562,7 @@ OSIRIS addresses the fragmentation described in section 1.1 by defining a canoni
 Rather than requiring each consuming application to implement and maintain vendor-specific parsers, OSIRIS adopts a translation layer approach:
 
 - **Producers** (parsers, translators or discovery agents) transform vendor-specific representations into OSIRIS format.
-- **Consumers** (diagramming tools, CMDBs, IPAMs, DCIMs, monitoring systems, documentation pipelines) read a single, Open Standard well-defined schema.
+- **Consumers** (diagramming tools, CMDBs, IPAMs, DCIMs, monitoring systems, documentation pipelines) read a single, Open Specification well-defined schema.
 
 This decouples data sources from consuming applications, reducing integration complexity from S×C (S sources × C consumers) to P+C (P producers + C consumers)
 
@@ -599,12 +599,12 @@ Instead, OSIRIS is optimized for interchange scenarios where infrastructure topo
 - supporting audit workflows
 - enabling cross-platform analytics
 
-By providing a stable interchange schema, OSIRIS allows the ecosystem to develop reusable parsers (vendor > OSIRIS) and consumers (OSIRIS > application-specific models) independently as an Open Standard, fostering interoperability and reducing duplicate and complexity effort.
+By providing a stable interchange schema, OSIRIS allows the ecosystem to develop reusable parsers (vendor > OSIRIS) and consumers (OSIRIS > application-specific models) independently as an Open Specification, fostering interoperability and reducing duplicate and complexity effort.
 
 ---
 
 ## 1.3 Scope
-OSIRIS defines an **Open Standard JSON schema** for describing infrastructure resources and their topological relationships across heterogeneous environments.
+OSIRIS defines an **Open Specification JSON schema** for describing infrastructure resources and their topological relationships across heterogeneous environments.
 
 
 ### 1.3.1 In Scope
@@ -674,8 +674,8 @@ The core schema structure and extension mechanisms are designed primarly for sta
 ## 1.4 Design principles
 OSIRIS is guided by the following core principles:
 
-### 1.4.1 Open Standard and driven by Community Governance
-OSIRIS is an **Open Standard** Intended for broad adoption across vendors, platforms and communities. The specification and evolution of the schema are intended to be community-driven and openly reviewable.
+### 1.4.1 Open Specification and driven by Community Governance
+OSIRIS is an **Open Specification** Intended for broad adoption across vendors, platforms and communities. The specification and evolution of the schema are intended to be community-driven and openly reviewable.
 
 ### 1.4.2 Simplicity
 OSIRIS prioritizes ease of understanding and implementation. The schema uses straightforward JSON structures with clear field semantics. Complexity is introduced only where necessary to represent real-world infrastructure. Producers and consumers **SHOULD** be able to implement basic OSIRIS support without extensive specialized knowledge.
@@ -12013,7 +12013,7 @@ The schema defines:
   "$schema": "https://json-schema.org/draft/2020-12/schema#",
   "$id": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
   "title": "Core OSIRIS JSON Schema v1.0",
-  "description": "OSIRIS Open Standard for Infrastructure Resource Interchange Schema. This schema encodes baseline interoperability requirements; additional semantic rules (e.g. referential integrity, uniqueness) are validated by tooling.",
+  "description": "OSIRIS Open Specification for Infrastructure Resource Interchange Schema. This schema encodes baseline interoperability requirements; additional semantic rules (e.g. referential integrity, uniqueness) are validated by tooling.",
   "type": "object",
   "required": [
     "version",

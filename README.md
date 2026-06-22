@@ -1,5 +1,5 @@
 # OSIRIS JSON format specification
-OSIRIS (Open Standard for Infrastructure Resource Interchange Schema) defines a vendor-neutral JSON format for describing infrastructure resources, their properties and their topological relationships across heterogeneous IT and OT environments.
+OSIRIS (Open Specification for Infrastructure Resource Interchange Schema) defines a vendor-neutral JSON format for describing infrastructure resources, their properties and their topological relationships across heterogeneous IT and OT environments.
 
 ---
 
@@ -11,7 +11,7 @@ Accurate topology documentation is expensive and fragile. Teams rely on partial,
 
 
 ## The solution
-OSIRIS normalizes exports from hyperscalers and cloud providers, on-prem datacenters (compute, storage, network) and supports OT inclusion where applicable (initial v1.0 scope).
+OSIRIS JSON normalizes exports from hyperscalers and cloud providers, on-prem datacenters (compute, storage, network) and supports OT inclusion where applicable (initial v1.0 scope).
 Designed for cross-platform visibility and portable consumption by tools (diagramming, inventory, audit) without requiring each consumer to implement vendor-specific parsers.
 
 ---
