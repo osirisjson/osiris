@@ -12062,7 +12062,7 @@ The schema defines:
 
 ### A.3 Using the schema
 **Validation tools:**
-- [Validate OSIRIS JSON Document](https://osirisjson.org/validate)
+- [Validate OSIRIS JSON Document](https://osirisjson.org/en/docs/validate/validate)
 
 
 ### A.4 Schema evolution

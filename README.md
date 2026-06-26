@@ -4,10 +4,10 @@ OSIRIS (Open Specification for Infrastructure Resource Interchange Schema) defin
 ---
 
 ## The challenge
-Modern infrastructure spans multiple stacks and providers: hyperscalers (AWS, Azure, GCP etc.), public clouds providers, on-prem datacenters, hybrid networks and complex OT environments integration.
+Modern infrastructure spans multiple stacks and providers: hyperscalers (AWS, Azure, GCP etc.), public cloud and hosting providers, on-prem datacenters, hybrid networks and complex OT environments integration.
 
-While some platforms export inventories (often as JSON), the representations are inconsistent across vendors even for equivalent concepts like identity, properties and relationships.
-Accurate topology documentation is expensive and fragile. Teams rely on partial, inaccurate documentation and hand-drawn diagrams. Critical context lives in people's heads.
+While some platforms export inventories (often as JSON), the representations are inconsistent across providers/vendors even for equivalent concepts like identity, properties and relationships.
+Accurate topology documentation is expensive and fragile. Teams rely on partial, inaccurate documentation and hand-drawn diagrams and manual maintained documents leaving **critical context** in people's heads.
 
 
 ## The solution
@@ -17,9 +17,9 @@ Designed for cross-platform visibility and portable consumption by tools (diagra
 ---
 
 ## Design principles
-OSIRIS is a static snapshot interchange format. It captures what exists and how it relates at a point in time. It was not designed as a real-time monitoring system, a deployment tool, or an Infrastructure-as-Code engine.
+OSIRIS JSON is a static snapshot interchange format. It captures what exists and how it relates at a point in time. It was not designed as a real-time monitoring system, a deployment tool, or an Infrastructure-as-Code engine.
 
-#### What OSIRIS IS
+#### What OSIRIS JSON is
 Optimized for scenarios where documentation and topology must be exchanged between systems and teams.
 
 - **Reliable, flexible infrastructure snapshots**
@@ -43,4 +43,4 @@ Visit https://osirisjson.org/en/docs for more informations.
 
 
 ## Contribute
-OSIRIS is developed in public and warmly welcomes contributions of any size, visit https://osirisjson.org/en/docs/get-involved/community for more informations.
+OSIRIS JSON is developed in public and warmly welcomes contributions of any size, visit https://osirisjson.org/en/docs/get-involved/community for more informations.
