@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema#",
   "$id": "https://osirisjson.org/schema/v1.0/osiris.schema.json",
   "title": "Core OSIRIS JSON Schema v1.0",
-  "description": "OSIRIS Open Standard for Infrastructure Resource Interchange Schema. This schema encodes baseline interoperability requirements; additional semantic rules (e.g. referential integrity, uniqueness) are validated by tooling.",
+  "description": "OSIRIS Open Specification for Infrastructure Resource Interchange Schema. This schema encodes baseline interoperability requirements; additional semantic rules (e.g. referential integrity, uniqueness) are validated by tooling.",
   "type": "object",
   "required": [
     "version",
