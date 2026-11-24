@@ -16,12 +16,13 @@
 
 ## Maintainers List
 
-When reading this list, please look for the most precise areas first. When adding to this list, please keep the entries in alphabetical order.
+When reading this list, please look for the most precise areas first.
+When adding to this list, please keep the entries in alphabetical order.
 
 **ORIGINAL CREATOR & LEAD MAINTAINER**
 | Tag | Field |
 |---|---|
-|M|Tia Zanella @skhell" <tiazanella@osirisjson.org>|
+|M|Tia Zanella @skhell <tiazanella@osirisjson.org>|
 |S|Maintained|
 |F|*|
 
