@@ -4,7 +4,7 @@
 | Authors   | Tia Zanella [skhell](https://github.com/skhell) |
 | Revision  | 1.0.0-DRAFT |
 | Creation date      | 04 February 2026 |
-| Last revision date | 11 February 2026 |
+| Last revision date | 24 November 2026 |
 | Status    | Draft |
 | Document ID | OSIRIS-ADG-1.0 |
 | Document URI | [OSIRIS-ADG-1.0](https://github.com/osirisjson/osiris/tree/main/docs/guidelines/v1.0/OSIRIS-ARCHITECTURE.md) |
@@ -27,6 +27,7 @@
   - [2.1 Ecosystem structure](#21-ecosystem-structure)
     - [2.1.1 Repository layout (Polyrepo vs monorepo)](#211-repository-layout-polyrepo-vs-monorepo)
     - [2.1.2 Repository responsibilities](#212-repository-responsibilities)
+      - [Repository boundaries](#repository-boundaries)
   - [2.2 The toolbox monorepo (@osirisjson/\*)](#22-the-toolbox-monorepo-osirisjson)
     - [2.2.1 @osirisjson/core: The validation engine](#221-osirisjsoncore-the-validation-engine)
     - [2.2.2 @osirisjson/sdk: IDEs and tooling SDK](#222-osirisjsonsdk-ides-and-tooling-sdk)
@@ -112,7 +113,7 @@ Use the matrix below to find the right entry point.
 | Working on producer SDK internals | [OSIRIS-ADG-PR-SDK-1.0](https://github.com/osirisjson/osiris-producers/tree/main/docs/guidelines/v1.0/OSIRIS-PRODUCER-SDK.md) | Understand producer base classes, mapping helpers, ID strategy and shared utilities |
 | Unsure where your change belongs | Section “Repository boundaries” in this document | Choose the correct repo/package to avoid duplication and dependency violations |
 | Working on the spec/schema itself | [OSIRIS specification](https://github.com/osirisjson/osiris/tree/main/specification/v1.0/OSIRIS-JSON-v1.0.md) | Understand the OSIRIS spec, schema and normative examples |
-| Contributing rules & governance | [OSIRIS community](https://osirisjson.org/en/docs/get-involved/community) | Understand how you can contribute to OSIRIS |
+| Contributing rules & governance | [OSIRIS community](https://docs.osirisjson.org/community/contributing/) | Understand how you can contribute to OSIRIS |
 
 ---
 
@@ -122,7 +123,7 @@ OSIRIS is designed to avoid fragmentation. The ecosystem must agree on **one** c
 
 | Single source of truth sources | Non-negotiable rules |
 |---|---|
-| **OSIRIS specification** in the [OSIRIS](https://github.com/osirisjson/osiris/tree/main/specification/v1.0/OSIRIS-JSON-v1.0.md) repository and served through [osirisjson.org](https://osirisjson.org/en/docs/spec/v10/00-preface) are the authoritative definition of OSIRIS v1.0 | Producers **MUST NOT** store manipulated copies or add incompatible interpretations of the specification |
+| **OSIRIS specification** in the [OSIRIS](https://github.com/osirisjson/osiris/tree/main/specification/v1.0/OSIRIS-JSON-v1.0.md) repository and served through [osirisjson.org](https://osirisjson.org/en/specification) are the authoritative definition of OSIRIS v1.0 | Producers **MUST NOT** store manipulated copies or add incompatible interpretations of the specification |
 | **OSIRIS core schema** in the [OSIRIS](https://github.com/osirisjson/osiris/tree/main/schema/v1.0/osiris.schema.json) repository and served through [osirisjson.org](https://osirisjson.org/schema/v1.0/osiris.schema.json) are the authoritative schema for OSIRIS v1.0 | Producers **MUST NOT** store manipulated copies or add incompatible interpretations of the core schema |
 | **OSIRIS schema endpoints** (e.g. `/schema/v1.0/`) are canonical for tooling resolution and editor integration | Tooling **SHOULD** prefer `$schema` for resolution when available |
 | **OSIRIS validation engine** (`@osirisjson/core`) is the canonical implementation of validation behavior and diagnostic formatting | CLI and editor integrations **MUST NOT** re-implement validation logic that belongs to `@osirisjson/core` |

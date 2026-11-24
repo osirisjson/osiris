@@ -7,6 +7,18 @@ Package versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ---
 
+## [Unreleased]
+
+
+## [1.0.0-draft.17] - 2026-11-24
+### Changed
+- OSIRIS-ADG-1.0 Table of content, added "Repository boundaries" entry
+
+### Fixed
+- OSIRIS-ADG-1.0 osirisjson.org URI references for specification and community pages
+- README.md osirisjson.org URI reference for community page
+
+
 ## [1.0.0-draft.16] - 2026-02-21
 ### Added
 - OSIRIS-ADG-EI-1.0 chapter 4 section (4.1-4.3) and Table of content
