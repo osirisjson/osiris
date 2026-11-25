@@ -6,13 +6,15 @@
 The vendor-neutral interchange format to describe infrastructure
 resources, connections and groups.
 
-**OSIRIS** stands for **Open Standard for Infrastructure Resource Interchange Schema**.
+**OSIRIS** stands for
+**Open Specification for Infrastructure Resource Interchange Schema**.
 
 The specification defines a common, vendor-neutral way to describe what
 infrastructure exists and how its resources relate to one another, using
 a portable JSON document representing a point-in-time snapshot.
 
-This repository is the **authoritative source for the OSIRIS Specification and core schema**.
+This repository is the
+**authoritative source for the OSIRIS Specification and core schema**.
 It defines the interchange format independently of the softwares used to
 discover, validate, visualize or consume infrastructure data.
 
